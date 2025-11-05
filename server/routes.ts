@@ -672,23 +672,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get analytics for all properties
-  app.get('/api/admin/analytics/properties', requireBrokerAuth, async (req, res) => {
-    try {
-      const { propertyAnalytics } = await import("@shared/schema");
-      
-      // Get all property analytics
-      const allAnalytics = await db
-        .select()
-        .from(propertyAnalytics);
-      
-      res.json(allAnalytics);
-    } catch (error) {
-      console.error('Error fetching all property analytics:', error);
-      res.status(500).json({ error: 'Failed to fetch property analytics' });
-    }
-  });
-
   app.get('/api/admin/analytics/property/:id', requireBrokerAuth, async (req, res) => {
     try {
       const { propertyAnalytics, visitorLogs } = await import("@shared/schema");

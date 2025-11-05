@@ -83,16 +83,6 @@ export default function BrokerBrowsePage() {
     queryKey: ['/api/broker/submissions', 'approved'],
   });
 
-  // Fetch analytics for all properties
-  const { data: allPropertyAnalytics } = useQuery<PropertyAnalytics[]>({
-    queryKey: ['/api/admin/analytics/properties'],
-  });
-
-  // Create a map of property ID to analytics
-  const analyticsMap = new Map(
-    allPropertyAnalytics?.map(analytics => [analytics.propertyId, analytics]) || []
-  );
-
   // Fetch property analytics for selected property
   const { data: propertyAnalytics, isLoading: analyticsLoading } = useQuery<PropertyAnalytics>({
     queryKey: selectedPropertyId 
@@ -315,16 +305,6 @@ export default function BrokerBrowsePage() {
                           {parseFloat(property.price).toLocaleString()} TND
                         </Badge>
                       </div>
-
-                      {/* Total Views Badge */}
-                      {analyticsMap.get(property.id) && (
-                        <div className="absolute top-3 left-3">
-                          <Badge className="bg-[#1a5f3f] text-white font-semibold text-sm px-3 py-1.5 flex items-center gap-1.5 shadow-lg">
-                            <Eye className="h-4 w-4" />
-                            {analyticsMap.get(property.id)!.totalViews} views
-                          </Badge>
-                        </div>
-                      )}
                     </div>
                   </Link>
 
