@@ -9,11 +9,15 @@
       }
     },
     {
-      "src": "api/index.ts",
+      "src": "api/**/*.ts",
       "use": "@vercel/node"
     }
   ],
   "routes": [
+    {
+      "src": "/api/broker/login",
+      "dest": "/api/broker/login.ts"
+    },
     {
       "src": "/api/(.*)",
       "dest": "/api/index.ts"
