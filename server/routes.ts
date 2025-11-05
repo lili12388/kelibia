@@ -6,7 +6,7 @@ import multer from "multer";
 import sharp from "sharp";
 import path from "path";
 import { mkdir } from "fs/promises";
-import { insertPropertySubmissionSchema, propertySubmissions, properties } from "@shared/schema";
+import { insertPropertySubmissionSchema, propertySubmissions, properties } from "../shared/schema.js";
 import { z } from "zod";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
@@ -586,7 +586,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Analytics endpoints
   app.get('/api/admin/analytics/summary', requireBrokerAuth, async (req, res) => {
     try {
-      const { visitorLogs, propertyAnalytics, siteAnalytics } = await import("@shared/schema");
+      const { visitorLogs, propertyAnalytics, siteAnalytics } = await import("../shared/schema.js");
       const { sql, desc } = await import("drizzle-orm");
       
       // Get today's date
@@ -630,7 +630,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .limit(10);
       
       // Fetch property details (titles) for top properties
-      const { properties } = await import("@shared/schema");
+      const { properties } = await import("../shared/schema.js");
       const topPropertiesWithDetails = await Promise.all(
         topPropertiesData.map(async (analytics) => {
           const property = await db.query.properties.findFirst({
@@ -660,7 +660,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/admin/analytics/visitors', requireBrokerAuth, async (req, res) => {
     try {
-      const { visitorLogs } = await import("@shared/schema");
+      const { visitorLogs } = await import("../shared/schema.js");
       const { desc, isNotNull, sql } = await import("drizzle-orm");
       
       const limit = parseInt(req.query.limit as string) || 50;
@@ -676,7 +676,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('📋 Total visitor logs in database:', totalCount);
       
       // Return ALL visits (including non-property pages for debugging)
-      const { properties } = await import("@shared/schema");
+      const { properties } = await import("../shared/schema.js");
       
       const visitorsRaw = await db
         .select()
@@ -727,7 +727,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/admin/analytics/property/:id', requireBrokerAuth, async (req, res) => {
     try {
-      const { propertyAnalytics, visitorLogs } = await import("@shared/schema");
+      const { propertyAnalytics, visitorLogs } = await import("../shared/schema.js");
       const { desc, sql } = await import("drizzle-orm");
       
       const { id } = req.params;
@@ -787,7 +787,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/admin/analytics/real-time', requireBrokerAuth, async (req, res) => {
     try {
-      const { visitorLogs } = await import("@shared/schema");
+      const { visitorLogs } = await import("../shared/schema.js");
       const { sql, desc } = await import("drizzle-orm");
       
       // Get active visitors RIGHT NOW (last 6 seconds - heartbeat is every 3 seconds)
@@ -848,7 +848,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { v4: uuidv4 } = await import("uuid");
-      const { visitorLogs, propertyAnalytics, siteAnalytics } = await import("@shared/schema");
+      const { visitorLogs, propertyAnalytics, siteAnalytics } = await import("../shared/schema.js");
       const { sql, eq } = await import("drizzle-orm");
       
       const { pageUrl, referrer } = req.body;
@@ -980,7 +980,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { v4: uuidv4 } = await import("uuid");
-      const { visitorLogs } = await import("@shared/schema");
+      const { visitorLogs } = await import("../shared/schema.js");
       const { eq, sql } = await import("drizzle-orm");
       
       // Get or create session ID
@@ -1062,7 +1062,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete all visitor logs (clear activity history only, keep statistics)
   app.delete('/api/admin/analytics/visitors', requireBrokerAuth, async (req, res) => {
     try {
-      const { visitorLogs } = await import("@shared/schema");
+      const { visitorLogs } = await import("../shared/schema.js");
       
       // Delete ONLY visitor logs (keep property analytics and site analytics)
       await db.delete(visitorLogs).execute();
@@ -1077,7 +1077,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete a single visitor log
   app.delete('/api/admin/analytics/visitors/:id', requireBrokerAuth, async (req, res) => {
     try {
-      const { visitorLogs } = await import("@shared/schema");
+      const { visitorLogs } = await import("../shared/schema.js");
       const { id } = req.params;
       
       await db.delete(visitorLogs).where(eq(visitorLogs.id, id)).execute();
@@ -1092,7 +1092,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete property analytics for a specific property
   app.delete('/api/admin/analytics/property/:id', requireBrokerAuth, async (req, res) => {
     try {
-      const { propertyAnalytics } = await import("@shared/schema");
+      const { propertyAnalytics } = await import("../shared/schema.js");
       const { id } = req.params;
       
       await db.delete(propertyAnalytics).where(eq(propertyAnalytics.propertyId, id)).execute();
@@ -1107,7 +1107,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Reset all statistics (set all counts to 0)
   app.post('/api/admin/analytics/reset', requireBrokerAuth, async (req, res) => {
     try {
-      const { propertyAnalytics, siteAnalytics } = await import("@shared/schema");
+      const { propertyAnalytics, siteAnalytics } = await import("../shared/schema.js");
       
       // Reset all property analytics
       await db.delete(propertyAnalytics).execute();
@@ -1126,3 +1126,4 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   return httpServer;
 }
+

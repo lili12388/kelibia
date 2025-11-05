@@ -11,7 +11,7 @@ import {
   type PropertyWithMedia,
   type SubmissionMedia,
   type PropertyMedia,
-} from "@shared/schema";
+} from "../shared/schema.js";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 
