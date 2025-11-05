@@ -1,4 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import formidable from 'formidable';
+import { db } from '../../server/db';
+import { propertySubmissions, submissionMedia, insertPropertySubmissionSchema } from '../../shared/schema';
+import sharp from 'sharp';
+import path from 'path';
+import fs from 'fs/promises';
 
 export const config = {
   api: {
@@ -13,14 +19,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // Import necessary modules
-    const formidable = await import('formidable');
-    const { db } = await import('../../server/db');
-    const { propertySubmissions, submissionMedia } = await import('../../shared/schema');
-    const { insertPropertySubmissionSchema } = await import('../../shared/schema');
-    const sharp = await import('sharp');
-    const path = await import('path');
-    const fs = await import('fs/promises');
     
     const uploadDir = path.join(process.cwd(), 'public', 'uploads');
     
@@ -32,7 +30,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Parse the multipart form
-    const form = formidable.default({
+    const form = formidable({
       uploadDir,
       keepExtensions: true,
       maxFileSize: 50 * 1024 * 1024, // 50MB
@@ -87,7 +85,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const optimizedFilename = `opt-${Date.now()}-${i}.jpg`;
         const outputPath = path.join(uploadDir, optimizedFilename);
         
-        await sharp.default(file.filepath)
+        await sharp(file.filepath)
           .resize(1920, 1080, {
             fit: 'inside',
             withoutEnlargement: true,

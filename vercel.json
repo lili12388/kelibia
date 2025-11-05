@@ -19,8 +19,36 @@
       "dest": "/api/broker/login.ts"
     },
     {
+      "src": "/api/broker/auth-status",
+      "dest": "/api/broker/auth-status.ts"
+    },
+    {
+      "src": "/api/broker/logout",
+      "dest": "/api/broker/logout.ts"
+    },
+    {
+      "src": "/api/broker/submissions/([^/]+)/approve",
+      "dest": "/api/broker/submissions/[id]/approve.ts?id=$1"
+    },
+    {
+      "src": "/api/broker/submissions/([^/]+)/reject",
+      "dest": "/api/broker/submissions/[id]/reject.ts?id=$1"
+    },
+    {
+      "src": "/api/broker/submissions/([^/]+)",
+      "dest": "/api/broker/submissions/[status].ts?status=$1"
+    },
+    {
       "src": "/api/properties/submit",
       "dest": "/api/properties/submit.ts"
+    },
+    {
+      "src": "/api/properties/([^/]+)",
+      "dest": "/api/properties/[id]/index.ts?id=$1"
+    },
+    {
+      "src": "/api/properties",
+      "dest": "/api/properties/index.ts"
     },
     {
       "src": "/api/(.*)",
