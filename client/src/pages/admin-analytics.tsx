@@ -102,7 +102,7 @@ export default function AdminAnalytics() {
   const handleDeletePropertyAnalytics = async (propertyId: string) => {
     setDeletingPropertyId(propertyId);
     try {
-      const response = await apiRequest(`/api/admin/analytics/property/${propertyId}`, {
+      const response = await apiRequest(`/api/admin/analytics?endpoint=property&id=${propertyId}`, {
         method: "DELETE",
       });
       
@@ -112,7 +112,7 @@ export default function AdminAnalytics() {
           description: "Les statistiques de cette propriété ont été supprimées.",
         });
         
-        queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics/summary"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics?endpoint=summary"] });
       } else {
         throw new Error("Failed to delete property analytics");
       }
@@ -131,7 +131,7 @@ export default function AdminAnalytics() {
   const handleResetAllStatistics = async () => {
     setIsDeleting(true);
     try {
-      const response = await apiRequest("/api/admin/analytics/reset", {
+      const response = await apiRequest("/api/admin/analytics?endpoint=reset", {
         method: "POST",
       });
       
@@ -160,7 +160,7 @@ export default function AdminAnalytics() {
   const handleDeleteAllData = async () => {
     setIsDeleting(true);
     try {
-      const response = await apiRequest("/api/admin/analytics/visitors", {
+      const response = await apiRequest("/api/admin/analytics?endpoint=visitors", {
         method: "DELETE",
       });
       
@@ -170,7 +170,7 @@ export default function AdminAnalytics() {
           description: "Tous les logs de visites ont été supprimés.",
         });
         
-        queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics/summary"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics?endpoint=summary"] });
       } else {
         throw new Error("Failed to delete data");
       }
@@ -187,9 +187,9 @@ export default function AdminAnalytics() {
 
   // Fetch analytics summary
   const { data: summary, isLoading: summaryLoading } = useQuery<AnalyticsSummary>({
-    queryKey: ["/api/admin/analytics/summary"],
+    queryKey: ["/api/admin/analytics?endpoint=summary"],
     queryFn: async () => {
-      const response = await apiRequest("/api/admin/analytics/summary");
+      const response = await apiRequest("/api/admin/analytics?endpoint=summary");
       return await response.json();
     },
   });
@@ -198,7 +198,7 @@ export default function AdminAnalytics() {
   useEffect(() => {
     const fetchRealTime = async () => {
       try {
-        const response = await apiRequest("/api/admin/analytics/real-time");
+        const response = await apiRequest("/api/admin/analytics?endpoint=real-time");
         const data = await response.json();
         setRealTimeData(data);
       } catch (error) {
@@ -232,7 +232,7 @@ export default function AdminAnalytics() {
             <div className="flex gap-2">
               <Button 
                 onClick={() => {
-                  queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics/summary"] });
+                  queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics?endpoint=summary"] });
                   toast({ title: "Données actualisées", description: "Les statistiques ont été mises à jour" });
                 }}
                 variant="outline" 

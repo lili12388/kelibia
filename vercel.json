@@ -51,6 +51,10 @@
       "dest": "/api/properties/index.ts"
     },
     {
+      "src": "/api/admin/analytics(.*)",
+      "dest": "/api/admin/analytics/index.ts"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api/[...path].ts"
     },
