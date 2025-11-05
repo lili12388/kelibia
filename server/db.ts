@@ -1,3 +1,6 @@
+// Load environment variables first
+import "./env";
+
 // Referenced from javascript_database blueprint integration
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';

@@ -6,8 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShieldCheck } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import Navbar from "@/components/navbar";
 
 export default function BrokerLoginPage() {
   const [, setLocation] = useLocation();
@@ -16,12 +17,27 @@ export default function BrokerLoginPage() {
 
   const loginMutation = useMutation({
     mutationFn: async (password: string) => {
-      return apiRequest('POST', '/api/broker/login', { password });
+      console.log('Attempting login with password:', password);
+      const response = await apiRequest('POST', '/api/broker/login', { password });
+      const data = await response.json();
+      console.log('Login response:', data);
+      return data;
     },
-    onSuccess: () => {
-      setLocation('/broker/dashboard');
+    onSuccess: (data) => {
+      console.log('Login successful, data:', data);
+      // Invalidate auth status to refresh the navbar
+      queryClient.invalidateQueries({ queryKey: ['/api/broker/auth-status'] });
+      toast({
+        title: "Login Successful",
+        description: "Welcome back, admin!",
+      });
+      // Use setTimeout to ensure state updates before navigation
+      setTimeout(() => {
+        setLocation('/admin/browse');
+      }, 100);
     },
     onError: (error: any) => {
+      console.error('Login error:', error);
       toast({
         title: "Login Failed",
         description: error.message || "Invalid password. Please try again.",
@@ -38,8 +54,10 @@ export default function BrokerLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6">
-      <Card className="max-w-md w-full">
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <div className="flex items-center justify-center p-6 min-h-[calc(100vh-80px)]">
+        <Card className="max-w-md w-full">
         <CardHeader className="text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mx-auto mb-4">
             <ShieldCheck className="w-8 h-8" />
@@ -75,6 +93,7 @@ export default function BrokerLoginPage() {
           </form>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

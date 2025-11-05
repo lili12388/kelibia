@@ -5,45 +5,63 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Upload, X, Image as ImageIcon, Video } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Upload, X, Image as ImageIcon, Video } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { insertPropertySubmissionSchema, type InsertPropertySubmission } from "@shared/schema";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import Navbar from "@/components/navbar";
 
 export default function ListPropertyPage() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
+  
+  // Check if user is admin and if they're on admin route
+  const { data: authStatus } = useQuery<{ isAuthenticated: boolean }>({
+    queryKey: ['/api/broker/auth-status'],
+  });
+  
+  const isAdmin = authStatus?.isAuthenticated;
+  const isAdminRoute = location.startsWith('/admin');
 
   const form = useForm<InsertPropertySubmission>({
     resolver: zodResolver(insertPropertySubmissionSchema),
     defaultValues: {
-      title: "",
+      title: "", // Will be auto-generated
+      propertyType: "Apartment",
+      floorLevel: "",
+      isFurnished: false,
+      hasLivingRoom: false,
+      hasFridge: false,
+      hasGasStove: false,
       description: "",
       rooms: 1,
       bathrooms: 1,
-      sizeM2: 0,
       location: "",
       price: "",
       ownerName: "",
       ownerEmail: "",
       ownerPhone: "",
       status: "pending",
+      googleMapsUrl: "",
+      requiresDeposit: true,
+      neighborhoodMapUrl: null,
     },
   });
 
   const submitPropertyMutation = useMutation({
-    mutationFn: async (data: InsertPropertySubmission & { files: File[] }) => {
+    mutationFn: async (data: InsertPropertySubmission & { files: File[]; isAdmin?: boolean }) => {
       const formData = new FormData();
       
       // Append property data
       Object.entries(data).forEach(([key, value]) => {
-        if (key !== 'files') {
+        if (key !== 'files' && key !== 'isAdmin') {
           formData.append(key, String(value));
         }
       });
@@ -53,10 +71,22 @@ export default function ListPropertyPage() {
         formData.append('media', file);
       });
 
-      return apiRequest('POST', '/api/properties/submit', formData);
+      // Use admin endpoint if admin is posting
+      const endpoint = data.isAdmin ? '/api/broker/properties/submit-admin' : '/api/properties/submit';
+      return apiRequest('POST', endpoint, formData);
     },
-    onSuccess: () => {
-      setLocation('/submission-confirmed');
+    onSuccess: (data, variables) => {
+      if (variables.isAdmin) {
+        // Admin posts go directly to admin browse page
+        toast({
+          title: "Property Published",
+          description: "The property has been published successfully and is now live.",
+        });
+        setLocation('/admin/browse');
+      } else {
+        // Regular users see confirmation
+        setLocation('/submission-confirmed');
+      }
     },
     onError: (error: any) => {
       toast({
@@ -102,29 +132,31 @@ export default function ListPropertyPage() {
       return;
     }
 
-    submitPropertyMutation.mutate({ ...data, files });
+    // Auto-generate title from property details
+    const furni = data.isFurnished ? "Meublé" : "Non meublé";
+    const floor = data.floorLevel ? ` - ${data.floorLevel}` : "";
+    const salon = data.hasLivingRoom ? " - Avec salon" : "";
+    const autoTitle = `${data.propertyType}${floor}${salon} - ${furni}`;
+    
+    // Add default sizeM2 since we removed the input field
+    // Use isAdminRoute to determine if posting as admin
+    submitPropertyMutation.mutate({ ...data, title: autoTitle, sizeM2: 0, files, isAdmin: isAdminRoute });
   };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-background sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <Link href="/" data-testid="link-home">
-            <Button variant="ghost" size="sm" data-testid="button-back">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Home
-            </Button>
-          </Link>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Form Section */}
       <div className="max-w-3xl mx-auto px-6 py-12">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-3">List Your Property</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-3">
+            {isAdminRoute ? "Post Property as Admin" : "List Your Property"}
+          </h1>
           <p className="text-muted-foreground text-lg">
-            All information is private and will be reviewed by our broker before publication.
+            {isAdmin 
+              ? "Your property will be published immediately and appear on the browse page." 
+              : "All information is private and will be reviewed by our broker before publication."}
           </p>
         </div>
 
@@ -137,59 +169,103 @@ export default function ListPropertyPage() {
                 <CardDescription>Provide information about your property</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
+                {/* Property Type & Floor Level - First Row */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="propertyType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Type de bien</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-property-type">
+                              <SelectValue placeholder="Choisir le type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Apartment">Appartement</SelectItem>
+                            <SelectItem value="Studio">Studio</SelectItem>
+                            <SelectItem value="House">Maison / Villa</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="floorLevel"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Étage</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-floor-level">
+                              <SelectValue placeholder="Choisir l'étage" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Rez-de-chaussée">Rez-de-chaussée</SelectItem>
+                            <SelectItem value="1er étage">1er étage</SelectItem>
+                            <SelectItem value="2ème étage">2ème étage</SelectItem>
+                            <SelectItem value="3ème étage">3ème étage</SelectItem>
+                            <SelectItem value="4ème étage">4ème étage</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Furnished Option */}
                 <FormField
                   control={form.control}
-                  name="title"
+                  name="isFurnished"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Property Title</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="e.g., Modern 2 Bedroom Apartment near Olympic Stadium" 
-                          data-testid="input-title"
-                          {...field} 
-                        />
-                      </FormControl>
+                      <FormLabel>Meublé?</FormLabel>
+                      <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-furnished">
+                            <SelectValue placeholder="Choisir" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="false">Non meublé</SelectItem>
+                          <SelectItem value="true">Meublé</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Describe your property in detail..."
-                          className="min-h-32"
-                          data-testid="input-description"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
+                {/* Rooms, Bathrooms, Living Room - Row with Dropdowns */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <FormField
                     control={form.control}
                     name="rooms"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Rooms</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            min="1"
-                            data-testid="input-rooms"
-                            {...field}
-                            onChange={e => field.onChange(parseInt(e.target.value))}
-                          />
-                        </FormControl>
+                        <FormLabel>Chambres</FormLabel>
+                        <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-rooms">
+                              <SelectValue placeholder="Nombre" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="0">Studio (0)</SelectItem>
+                            <SelectItem value="1">1 chambre</SelectItem>
+                            <SelectItem value="2">2 chambres</SelectItem>
+                            <SelectItem value="3">3 chambres</SelectItem>
+                            <SelectItem value="4">4 chambres</SelectItem>
+                            <SelectItem value="5">5+ chambres</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -200,14 +276,127 @@ export default function ListPropertyPage() {
                     name="bathrooms"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Bathrooms</FormLabel>
+                        <FormLabel>Salles de bain</FormLabel>
+                        <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-bathrooms">
+                              <SelectValue placeholder="Nombre" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="1">1 salle de bain</SelectItem>
+                            <SelectItem value="2">2 salles de bain</SelectItem>
+                            <SelectItem value="3">3+ salles de bain</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="hasLivingRoom"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Salon?</FormLabel>
+                        <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-living-room">
+                              <SelectValue placeholder="Choisir" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="false">Non</SelectItem>
+                            <SelectItem value="true">Oui</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Kitchen Amenities - Fridge and Gas Stove */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="hasFridge"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>La cuisine a-t-elle un frigo?</FormLabel>
+                        <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-fridge">
+                              <SelectValue placeholder="Choisir" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="false">Non</SelectItem>
+                            <SelectItem value="true">Oui</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="hasGasStove"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Y a-t-il une cuisinière à gaz?</FormLabel>
+                        <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-gas-stove">
+                              <SelectValue placeholder="Choisir" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="false">Non</SelectItem>
+                            <SelectItem value="true">Oui</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Description - Moved to bottom */}
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Décrivez votre propriété en détail..."
+                          className="min-h-32"
+                          data-testid="input-description"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Price & Deposit - Moved up */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Loyer mensuel (TND)</FormLabel>
                         <FormControl>
                           <Input 
-                            type="number" 
-                            min="1"
-                            data-testid="input-bathrooms"
-                            {...field}
-                            onChange={e => field.onChange(parseInt(e.target.value))}
+                            placeholder="ex: 1200" 
+                            data-testid="input-price"
+                            {...field} 
                           />
                         </FormControl>
                         <FormMessage />
@@ -217,19 +406,21 @@ export default function ListPropertyPage() {
 
                   <FormField
                     control={form.control}
-                    name="sizeM2"
+                    name="requiresDeposit"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Size (m²)</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            min="1"
-                            data-testid="input-size"
-                            {...field}
-                            onChange={e => field.onChange(parseInt(e.target.value))}
-                          />
-                        </FormControl>
+                        <FormLabel>Cautionnement requis?</FormLabel>
+                        <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-deposit">
+                              <SelectValue placeholder="Choisir" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="false">Non</SelectItem>
+                            <SelectItem value="true">Oui</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -238,10 +429,10 @@ export default function ListPropertyPage() {
               </CardContent>
             </Card>
 
-            {/* Location & Pricing Section */}
+            {/* Location & Additional Information Section */}
             <Card>
               <CardHeader>
-                <CardTitle>Location & Pricing</CardTitle>
+                <CardTitle>Localisation & Informations Complémentaires</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <FormField
@@ -249,10 +440,10 @@ export default function ListPropertyPage() {
                   name="location"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Exact Location</FormLabel>
+                      <FormLabel>Localisation exacte</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="e.g., Hay Khadhra, near main street"
+                          placeholder="ex: Hay Khadhra, près de l'avenue principale"
                           data-testid="input-location"
                           {...field} 
                         />
@@ -264,18 +455,22 @@ export default function ListPropertyPage() {
 
                 <FormField
                   control={form.control}
-                  name="price"
+                  name="googleMapsUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Monthly Rent (TND)</FormLabel>
+                      <FormLabel>Lien Google Maps (Optionnel)</FormLabel>
                       <FormControl>
                         <Input 
-                          type="text"
-                          placeholder="e.g., 1200"
-                          data-testid="input-price"
-                          {...field} 
+                          type="url"
+                          placeholder="ex: https://maps.app.goo.gl/..."
+                          data-testid="input-google-maps"
+                          {...field}
+                          value={field.value ?? ''}
                         />
                       </FormControl>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Trouvez votre propriété sur Google Maps, cliquez sur Partager, et collez le lien ici
+                      </p>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -350,8 +545,12 @@ export default function ListPropertyPage() {
             {/* Contact Information Section */}
             <Card>
               <CardHeader>
-                <CardTitle>Your Contact Information</CardTitle>
-                <CardDescription>How can the broker reach you?</CardDescription>
+                <CardTitle>
+                  {isAdminRoute ? "Home Owner Contact Information" : "Your Contact Information (will only be shown to the broker !!)"}
+                </CardTitle>
+                <CardDescription>
+                  {isAdminRoute ? "Contact information for future use" : "How can the broker reach you?"}
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <FormField
@@ -399,12 +598,18 @@ export default function ListPropertyPage() {
                       <FormItem>
                         <FormLabel>Phone Number</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="tel"
-                            placeholder="+216 XX XXX XXX"
-                            data-testid="input-owner-phone"
-                            {...field} 
-                          />
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center bg-muted px-3 py-2 rounded-md border border-input h-10">
+                              <span className="text-sm font-medium text-foreground">+216</span>
+                            </div>
+                            <Input 
+                              type="tel"
+                              placeholder="XX XXX XXX"
+                              data-testid="input-owner-phone"
+                              className="flex-1"
+                              {...field} 
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>

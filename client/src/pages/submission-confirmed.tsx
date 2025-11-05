@@ -2,11 +2,14 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2 } from "lucide-react";
+import Navbar from "@/components/navbar";
 
 export default function SubmissionConfirmedPage() {
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6">
-      <Card className="max-w-md w-full">
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <div className="flex items-center justify-center p-6 min-h-[calc(100vh-80px)]">
+        <Card className="max-w-md w-full">
         <CardContent className="pt-12 pb-8 text-center">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 text-primary mb-6">
             <CheckCircle2 className="w-12 h-12" data-testid="icon-success" />
@@ -31,6 +34,7 @@ export default function SubmissionConfirmedPage() {
           </Link>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

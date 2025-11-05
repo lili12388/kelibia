@@ -1,8 +1,14 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Table,
   TableBody,
@@ -19,18 +25,53 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { MapPin, BedDouble, Bath, Maximize, CheckCircle2, XCircle, Eye } from "lucide-react";
+import { MapPin, BedDouble, Bath, CheckCircle2, XCircle, Eye, Pencil, Upload, Search, ChefHat, Refrigerator, Flame } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { PropertySubmissionWithMedia } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import Navbar from "@/components/navbar";
+import { Link } from "wouter";
 
 export default function BrokerDashboardPage() {
   const { toast } = useToast();
   const [selectedSubmission, setSelectedSubmission] = useState<PropertySubmissionWithMedia | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [neighborhoodMapFile, setNeighborhoodMapFile] = useState<File | null>(null);
+  const [neighborhoodMapPreview, setNeighborhoodMapPreview] = useState<string | null>(null);
+  
+  const editForm = useForm({
+    defaultValues: {
+      title: "",
+      propertyType: "Apartment",
+      floorLevel: "",
+      isFurnished: false,
+      hasLivingRoom: false,
+      hasFridge: false,
+      hasGasStove: false,
+      description: "",
+      rooms: 1,
+      bathrooms: 1,
+      sizeM2: 0,
+      location: "",
+      price: "",
+      googleMapsUrl: "",
+      requiresDeposit: true,
+      showOwnerContact: false,
+      showGoogleMaps: true,
+      showExactLocation: false,
+      showNeighborhoodMap: true,
+      showPrice: true,
+      showRooms: true,
+      showBathrooms: true,
+      showSize: true,
+      showDescription: true,
+      showDeposit: true,
+    },
+  });
 
   const { data: pendingSubmissions, isLoading: pendingLoading } = useQuery<PropertySubmissionWithMedia[]>({
     queryKey: ['/api/broker/submissions', 'pending'],
@@ -83,10 +124,102 @@ export default function BrokerDashboardPage() {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data, file }: { id: string; data: any; file: File | null }) => {
+      const formData = new FormData();
+      
+      // Append all property data
+      Object.entries(data).forEach(([key, value]) => {
+        formData.append(key, String(value));
+      });
+      
+      // Append neighborhood map if provided
+      if (file) {
+        formData.append('neighborhoodMap', file);
+      }
+      
+      return apiRequest('PUT', `/api/broker/submissions/${id}`, formData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/broker/submissions'] });
+      toast({
+        title: "Property Updated",
+        description: "The property details have been updated successfully.",
+      });
+      setEditDialogOpen(false);
+      setNeighborhoodMapFile(null);
+      setNeighborhoodMapPreview(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update property. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleViewSubmission = (submission: PropertySubmissionWithMedia) => {
     setSelectedSubmission(submission);
     setCurrentImageIndex(0);
     setViewDialogOpen(true);
+  };
+
+  const handleEditSubmission = (submission: PropertySubmissionWithMedia) => {
+    setSelectedSubmission(submission);
+    editForm.reset({
+      title: submission.title,
+      propertyType: submission.propertyType,
+      floorLevel: submission.floorLevel || "",
+      isFurnished: submission.isFurnished,
+      hasLivingRoom: submission.hasLivingRoom,
+      hasFridge: submission.hasFridge,
+      hasGasStove: submission.hasGasStove,
+      description: submission.description,
+      rooms: submission.rooms,
+      bathrooms: submission.bathrooms,
+      sizeM2: submission.sizeM2,
+      location: submission.location,
+      price: submission.price,
+      googleMapsUrl: submission.googleMapsUrl || "",
+      requiresDeposit: submission.requiresDeposit,
+      showOwnerContact: submission.showOwnerContact,
+      showGoogleMaps: submission.showGoogleMaps,
+      showExactLocation: submission.showExactLocation,
+      showNeighborhoodMap: submission.showNeighborhoodMap,
+      showPrice: submission.showPrice,
+      showRooms: submission.showRooms,
+      showBathrooms: submission.showBathrooms,
+      showSize: submission.showSize,
+      showDescription: submission.showDescription,
+      showDeposit: submission.showDeposit,
+    });
+    setNeighborhoodMapFile(null);
+    setNeighborhoodMapPreview(submission.neighborhoodMapUrl || null);
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!selectedSubmission) return;
+    
+    const formData = editForm.getValues();
+    updateMutation.mutate({
+      id: selectedSubmission.id,
+      data: formData,
+      file: neighborhoodMapFile,
+    });
+  };
+
+  const handleNeighborhoodMapChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setNeighborhoodMapFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNeighborhoodMapPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleApprove = (submissionId: string) => {
@@ -101,13 +234,25 @@ export default function BrokerDashboardPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-background">
+      <Navbar />
+
+      {/* Page Header */}
+      <div className="border-b border-border bg-background">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <h1 className="text-3xl font-bold text-foreground">Broker Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Manage property submissions and listings</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Broker Dashboard</h1>
+              <p className="text-muted-foreground mt-1">Manage property submissions and listings</p>
+            </div>
+            <Link href="/broker/browse">
+              <Button variant="default" size="lg">
+                <Search className="mr-2 h-5 w-5" />
+                Browse as Admin
+              </Button>
+            </Link>
+          </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
@@ -206,12 +351,18 @@ export default function BrokerDashboardPage() {
                                 <span className="text-foreground">{submission.bathrooms} baths</span>
                               </div>
                               <div className="flex items-center gap-1">
-                                <Maximize className="w-4 h-4 text-muted-foreground" />
-                                <span className="text-foreground">{submission.sizeM2}m²</span>
+                                <ChefHat className="w-4 h-4 text-muted-foreground" />
                               </div>
-                              <Badge className="font-bold" data-testid={`badge-price-${submission.id}`}>
-                                {parseFloat(submission.price).toLocaleString()} TND
-                              </Badge>
+                              {submission.hasFridge && (
+                                <div className="flex items-center gap-1">
+                                  <Refrigerator className="w-4 h-4 text-muted-foreground" />
+                                </div>
+                              )}
+                              {submission.hasGasStove && (
+                                <div className="flex items-center gap-1">
+                                  <Flame className="w-4 h-4 text-muted-foreground" />
+                                </div>
+                              )}
                             </div>
 
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -237,6 +388,15 @@ export default function BrokerDashboardPage() {
                             >
                               <Eye className="mr-2 h-4 w-4" />
                               View
+                            </Button>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => handleEditSubmission(submission)}
+                              data-testid={`button-edit-${submission.id}`}
+                            >
+                              <Pencil className="mr-2 h-4 w-4" />
+                              Edit
                             </Button>
                             <Button
                               variant="default"
@@ -457,6 +617,397 @@ export default function BrokerDashboardPage() {
                 </Button>
               </>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Submission Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Property Submission</DialogTitle>
+            <DialogDescription>
+              Modify property details and control what's visible to the public
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            {/* Property Type & Floor */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-property-type">Type de bien</Label>
+                <Select
+                  value={editForm.watch("propertyType")}
+                  onValueChange={(value) => editForm.setValue("propertyType", value)}
+                >
+                  <SelectTrigger id="edit-property-type">
+                    <SelectValue placeholder="Choisir le type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Apartment">Apartment</SelectItem>
+                    <SelectItem value="Studio">Studio</SelectItem>
+                    <SelectItem value="House">Maison/Villa</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-floor-level">Étage</Label>
+                <Select
+                  value={editForm.watch("floorLevel") || ""}
+                  onValueChange={(value) => editForm.setValue("floorLevel", value)}
+                >
+                  <SelectTrigger id="edit-floor-level">
+                    <SelectValue placeholder="Choisir l'étage" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Rez-de-chaussée">Rez-de-chaussée</SelectItem>
+                    <SelectItem value="1er étage">1er étage</SelectItem>
+                    <SelectItem value="2ème étage">2ème étage</SelectItem>
+                    <SelectItem value="3ème étage">3ème étage</SelectItem>
+                    <SelectItem value="4ème étage">4ème étage</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Furnished & Living Room */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-furnished">Meublé?</Label>
+                <Select
+                  value={editForm.watch("isFurnished") ? "true" : "false"}
+                  onValueChange={(value) => editForm.setValue("isFurnished", value === "true")}
+                >
+                  <SelectTrigger id="edit-furnished">
+                    <SelectValue placeholder="Choisir" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="false">Non</SelectItem>
+                    <SelectItem value="true">Oui</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-living-room">Salon?</Label>
+                <div className="flex items-center gap-4">
+                  <Select
+                    value={editForm.watch("hasLivingRoom") ? "true" : "false"}
+                    onValueChange={(value) => editForm.setValue("hasLivingRoom", value === "true")}
+                  >
+                    <SelectTrigger id="edit-living-room">
+                      <SelectValue placeholder="Choisir" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="false">Non</SelectItem>
+                      <SelectItem value="true">Oui</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Kitchen Amenities */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-fridge">La cuisine a-t-elle un frigo?</Label>
+                <Select
+                  value={editForm.watch("hasFridge") ? "true" : "false"}
+                  onValueChange={(value) => editForm.setValue("hasFridge", value === "true")}
+                >
+                  <SelectTrigger id="edit-fridge">
+                    <SelectValue placeholder="Choisir" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="false">Non</SelectItem>
+                    <SelectItem value="true">Oui</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-gas-stove">Y a-t-il une cuisinière à gaz?</Label>
+                <Select
+                  value={editForm.watch("hasGasStove") ? "true" : "false"}
+                  onValueChange={(value) => editForm.setValue("hasGasStove", value === "true")}
+                >
+                  <SelectTrigger id="edit-gas-stove">
+                    <SelectValue placeholder="Choisir" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="false">Non</SelectItem>
+                    <SelectItem value="true">Oui</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Title */}
+            <div className="space-y-2">
+              <Label htmlFor="edit-title">Property Title</Label>
+              <Input
+                id="edit-title"
+                {...editForm.register("title")}
+                placeholder="e.g., Apartment - 2ème étage - Avec salon - Meublé"
+              />
+            </div>
+
+            {/* Rooms, Bathrooms, Price, Deposit */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="edit-rooms">Chambres</Label>
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="show-rooms"
+                      checked={editForm.watch("showRooms")}
+                      onCheckedChange={(checked) => editForm.setValue("showRooms", !!checked)}
+                    />
+                    <Label htmlFor="show-rooms" className="text-xs text-blue-600 cursor-pointer">
+                      Show to public?
+                    </Label>
+                  </div>
+                </div>
+                <Select
+                  value={String(editForm.watch("rooms"))}
+                  onValueChange={(value) => editForm.setValue("rooms", parseInt(value))}
+                >
+                  <SelectTrigger id="edit-rooms">
+                    <SelectValue placeholder="Choisir" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">Studio (0 chambre)</SelectItem>
+                    <SelectItem value="1">1 chambre</SelectItem>
+                    <SelectItem value="2">2 chambres</SelectItem>
+                    <SelectItem value="3">3 chambres</SelectItem>
+                    <SelectItem value="4">4 chambres</SelectItem>
+                    <SelectItem value="5">5+ chambres</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="edit-bathrooms">Salles de bain</Label>
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="show-bathrooms"
+                      checked={editForm.watch("showBathrooms")}
+                      onCheckedChange={(checked) => editForm.setValue("showBathrooms", !!checked)}
+                    />
+                    <Label htmlFor="show-bathrooms" className="text-xs text-blue-600 cursor-pointer">
+                      Show to public?
+                    </Label>
+                  </div>
+                </div>
+                <Select
+                  value={String(editForm.watch("bathrooms"))}
+                  onValueChange={(value) => editForm.setValue("bathrooms", parseInt(value))}
+                >
+                  <SelectTrigger id="edit-bathrooms">
+                    <SelectValue placeholder="Choisir" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 salle de bain</SelectItem>
+                    <SelectItem value="2">2 salles de bain</SelectItem>
+                    <SelectItem value="3">3+ salles de bain</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="edit-price">Loyer mensuel (TND)</Label>
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="show-price"
+                      checked={editForm.watch("showPrice")}
+                      onCheckedChange={(checked) => editForm.setValue("showPrice", !!checked)}
+                    />
+                    <Label htmlFor="show-price" className="text-xs text-blue-600 cursor-pointer">
+                      Show to public?
+                    </Label>
+                  </div>
+                </div>
+                <Input
+                  id="edit-price"
+                  {...editForm.register("price")}
+                  placeholder="e.g., 1200"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="edit-deposit">Cautionnement requis?</Label>
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="show-deposit"
+                      checked={editForm.watch("showDeposit")}
+                      onCheckedChange={(checked) => editForm.setValue("showDeposit", !!checked)}
+                    />
+                    <Label htmlFor="show-deposit" className="text-xs text-blue-600 cursor-pointer">
+                      Show to public?
+                    </Label>
+                  </div>
+                </div>
+                <Select
+                  value={editForm.watch("requiresDeposit") ? "true" : "false"}
+                  onValueChange={(value) => editForm.setValue("requiresDeposit", value === "true")}
+                >
+                  <SelectTrigger id="edit-deposit">
+                    <SelectValue placeholder="Choisir" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="false">Non</SelectItem>
+                    <SelectItem value="true">Oui</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="edit-description">Description</Label>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="show-description"
+                    checked={editForm.watch("showDescription")}
+                    onCheckedChange={(checked) => editForm.setValue("showDescription", !!checked)}
+                  />
+                  <Label htmlFor="show-description" className="text-xs text-blue-600 cursor-pointer">
+                    Show to public?
+                  </Label>
+                </div>
+              </div>
+              <Textarea
+                id="edit-description"
+                {...editForm.register("description")}
+                rows={4}
+                placeholder="Décrivez votre propriété en détail..."
+              />
+            </div>
+
+            {/* Location */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="edit-location">Localisation exacte</Label>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="show-location"
+                    checked={editForm.watch("showExactLocation")}
+                    onCheckedChange={(checked) => editForm.setValue("showExactLocation", !!checked)}
+                  />
+                  <Label htmlFor="show-location" className="text-xs text-blue-600 cursor-pointer">
+                    Show to public?
+                  </Label>
+                </div>
+              </div>
+              <Input
+                id="edit-location"
+                {...editForm.register("location")}
+                placeholder="e.g., Hay Khadhra, près de l'avenue principale"
+              />
+            </div>
+
+            {/* Google Maps URL */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="edit-google-maps">Lien Google Maps (Optionnel)</Label>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="show-google-maps"
+                    checked={editForm.watch("showGoogleMaps")}
+                    onCheckedChange={(checked) => editForm.setValue("showGoogleMaps", !!checked)}
+                  />
+                  <Label htmlFor="show-google-maps" className="text-xs text-blue-600 cursor-pointer">
+                    Show to public?
+                  </Label>
+                </div>
+              </div>
+              <Input
+                id="edit-google-maps"
+                type="url"
+                {...editForm.register("googleMapsUrl")}
+                placeholder="e.g., https://maps.app.goo.gl/..."
+              />
+            </div>
+
+            {/* Neighborhood Map Upload */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="edit-neighborhood-map">Neighborhood Map (Optional)</Label>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="show-neighborhood-map"
+                    checked={editForm.watch("showNeighborhoodMap")}
+                    onCheckedChange={(checked) => editForm.setValue("showNeighborhoodMap", !!checked)}
+                  />
+                  <Label htmlFor="show-neighborhood-map" className="text-xs text-blue-600 cursor-pointer">
+                    Show to public?
+                  </Label>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <Input
+                  id="edit-neighborhood-map"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleNeighborhoodMapChange}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Upload a map or screenshot showing the neighborhood location
+                </p>
+                
+                {neighborhoodMapPreview && (
+                  <div className="mt-3">
+                    <p className="text-sm font-medium mb-2">Preview:</p>
+                    <img
+                      src={neighborhoodMapPreview}
+                      alt="Neighborhood map preview"
+                      className="w-full max-h-48 object-contain rounded-lg border"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Owner Contact Visibility */}
+            <div className="space-y-2 pt-4 border-t">
+              <div className="flex items-center justify-between">
+                <Label>Owner Contact Information</Label>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="show-owner-contact"
+                    checked={editForm.watch("showOwnerContact")}
+                    onCheckedChange={(checked) => editForm.setValue("showOwnerContact", !!checked)}
+                  />
+                  <Label htmlFor="show-owner-contact" className="text-xs text-blue-600 cursor-pointer">
+                    Show to public?
+                  </Label>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Owner: {selectedSubmission?.ownerName} • {selectedSubmission?.ownerEmail} • {selectedSubmission?.ownerPhone}
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditDialogOpen(false)}
+              disabled={updateMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveEdit}
+              disabled={updateMutation.isPending}
+            >
+              {updateMutation.isPending ? "Saving..." : "Save Changes"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

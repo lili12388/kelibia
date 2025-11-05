@@ -2,8 +2,22 @@ import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { analyticsMiddleware } from "./middleware/analytics";
+import path from "path";
 
 const app = express();
+
+// Serve uploaded files statically (both in development and production)
+const uploadsPath = path.join(process.cwd(), "public", "uploads");
+app.use("/uploads", express.static(uploadsPath));
+
+// Extend session with custom properties
+declare module 'express-session' {
+  interface SessionData {
+    visitorId?: string;
+    isAuthenticated?: boolean;
+  }
+}
 
 // Session configuration for broker authentication
 app.use(session({
@@ -59,6 +73,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// Add analytics middleware after session but before routes
+app.use(analyticsMiddleware);
+
 (async () => {
   const server = await registerRoutes(app);
 
@@ -84,11 +101,8 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
+  const host = process.env.NODE_ENV === 'development' ? '127.0.0.1' : '0.0.0.0';
+  server.listen(port, host, () => {
+    log(`serving on ${host}:${port}`);
   });
 })();

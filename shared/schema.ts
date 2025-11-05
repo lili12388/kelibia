@@ -8,15 +8,35 @@ import { z } from "zod";
 export const propertySubmissions = pgTable("property_submissions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   title: text("title").notNull(),
+  propertyType: text("property_type").notNull(), // Apartment, Studio, House, S+1, S+2, S+3
+  floorLevel: text("floor_level"), // Rez-de-chaussée, 1er étage, 2ème étage, etc.
+  isFurnished: boolean("is_furnished").notNull().default(false), // whether property is furnished
+  hasLivingRoom: boolean("has_living_room").notNull().default(false), // whether property has a living room/salon
+  hasFridge: boolean("has_fridge").notNull().default(false), // whether kitchen has a fridge
+  hasGasStove: boolean("has_gas_stove").notNull().default(false), // whether house has a gas stove/cooker
   description: text("description").notNull(),
   rooms: integer("rooms").notNull(),
   bathrooms: integer("bathrooms").notNull(),
   sizeM2: integer("size_m2").notNull(),
   location: text("location").notNull(), // exact location within neighborhood
+  googleMapsUrl: text("google_maps_url"), // Google Maps link to the property
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  requiresDeposit: boolean("requires_deposit").notNull().default(true), // whether deposit is required
+  neighborhoodMapUrl: text("neighborhood_map_url"), // URL to neighborhood map image (added by broker)
   ownerName: text("owner_name").notNull(),
   ownerEmail: text("owner_email").notNull(),
   ownerPhone: text("owner_phone").notNull(),
+  // Admin visibility controls (what regular users can see) - granular per field
+  showOwnerContact: boolean("show_owner_contact").notNull().default(false), // show owner contact to public users
+  showGoogleMaps: boolean("show_google_maps").notNull().default(true), // show Google Maps link to public users
+  showExactLocation: boolean("show_exact_location").notNull().default(false), // show exact address to public users
+  showNeighborhoodMap: boolean("show_neighborhood_map").notNull().default(true), // show neighborhood map to public users
+  showPrice: boolean("show_price").notNull().default(true), // show price to public users
+  showRooms: boolean("show_rooms").notNull().default(true), // show room count to public users
+  showBathrooms: boolean("show_bathrooms").notNull().default(true), // show bathroom count to public users
+  showSize: boolean("show_size").notNull().default(true), // show size to public users
+  showDescription: boolean("show_description").notNull().default(true), // show full description to public users
+  showDeposit: boolean("show_deposit").notNull().default(true), // show deposit requirement to public users
   status: text("status").notNull().default("pending"), // pending, approved, rejected
   createdAt: timestamp("created_at").notNull().defaultNow(),
   approvedAt: timestamp("approved_at"),
@@ -27,12 +47,32 @@ export const properties = pgTable("properties", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   submissionId: varchar("submission_id").notNull().references(() => propertySubmissions.id),
   title: text("title").notNull(),
+  propertyType: text("property_type").notNull(), // Apartment, Studio, House, S+1, S+2, S+3
+  floorLevel: text("floor_level"), // Rez-de-chaussée, 1er étage, 2ème étage, etc.
+  isFurnished: boolean("is_furnished").notNull().default(false), // whether property is furnished
+  hasLivingRoom: boolean("has_living_room").notNull().default(false), // whether property has a living room/salon
+  hasFridge: boolean("has_fridge").notNull().default(false), // whether kitchen has a fridge
+  hasGasStove: boolean("has_gas_stove").notNull().default(false), // whether house has a gas stove/cooker
   description: text("description").notNull(),
   rooms: integer("rooms").notNull(),
   bathrooms: integer("bathrooms").notNull(),
   sizeM2: integer("size_m2").notNull(),
   location: text("location").notNull(),
+  googleMapsUrl: text("google_maps_url"), // Google Maps link to the property
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  requiresDeposit: boolean("requires_deposit").notNull().default(true), // whether deposit is required
+  neighborhoodMapUrl: text("neighborhood_map_url"), // URL to neighborhood map image
+  // Admin visibility controls (copied from submission) - granular per field
+  showOwnerContact: boolean("show_owner_contact").notNull().default(false), // show owner contact to public users
+  showGoogleMaps: boolean("show_google_maps").notNull().default(true), // show Google Maps link to public users
+  showExactLocation: boolean("show_exact_location").notNull().default(false), // show exact address to public users
+  showNeighborhoodMap: boolean("show_neighborhood_map").notNull().default(true), // show neighborhood map to public users
+  showPrice: boolean("show_price").notNull().default(true), // show price to public users
+  showRooms: boolean("show_rooms").notNull().default(true), // show room count to public users
+  showBathrooms: boolean("show_bathrooms").notNull().default(true), // show bathroom count to public users
+  showSize: boolean("show_size").notNull().default(true), // show size to public users
+  showDescription: boolean("show_description").notNull().default(true), // show full description to public users
+  showDeposit: boolean("show_deposit").notNull().default(true), // show deposit requirement to public users
   publishedAt: timestamp("published_at").notNull().defaultNow(),
 });
 
@@ -89,6 +129,45 @@ export const propertyMediaRelations = relations(propertyMedia, ({ one }) => ({
   }),
 }));
 
+// Analytics tables
+export const visitorLogs = pgTable("visitor_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id").notNull(),
+  timestamp: timestamp("timestamp").notNull().defaultNow(),
+  pageUrl: text("page_url").notNull(),
+  propertyId: varchar("property_id"),
+  tunisianCity: varchar("tunisian_city"),
+  deviceType: varchar("device_type").notNull(), // 'desktop' or 'mobile'
+  userAgent: text("user_agent"),
+  referrer: text("referrer"),
+  timeOnPage: integer("time_on_page").default(0),
+  contactClicked: boolean("contact_clicked").default(false),
+});
+
+export const propertyAnalytics = pgTable("property_analytics", {
+  propertyId: varchar("property_id").primaryKey(),
+  totalViews: integer("total_views").default(0),
+  totalClicks: integer("total_clicks").default(0),
+  desktopViews: integer("desktop_views").default(0),
+  mobileViews: integer("mobile_views").default(0),
+  lastViewedAt: timestamp("last_viewed_at"),
+  cityViews: text("city_views").default('{}'), // JSON string
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const siteAnalytics = pgTable("site_analytics", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  date: text("date").notNull().unique(), // YYYY-MM-DD format
+  totalVisitors: integer("total_visitors").default(0),
+  totalPageViews: integer("total_page_views").default(0),
+  uniqueSessions: integer("unique_sessions").default(0),
+  desktopVisitors: integer("desktop_visitors").default(0),
+  mobileVisitors: integer("mobile_visitors").default(0),
+  cityBreakdown: text("city_breakdown").default('{}'), // JSON string
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertPropertySubmissionSchema = createInsertSchema(propertySubmissions).omit({
   id: true,
@@ -98,7 +177,7 @@ export const insertPropertySubmissionSchema = createInsertSchema(propertySubmiss
   price: z.string().regex(/^\d+(\.\d{1,2})?$/, "Price must be a valid number"),
   rooms: z.number().min(1, "At least 1 room required"),
   bathrooms: z.number().min(1, "At least 1 bathroom required"),
-  sizeM2: z.number().min(1, "Size must be greater than 0"),
+  sizeM2: z.number().min(0, "Size must be 0 or greater").default(0), // Made optional, defaults to 0
   ownerEmail: z.string().email("Valid email required"),
   ownerPhone: z.string().min(8, "Valid phone number required"),
 });
@@ -123,3 +202,8 @@ export type PropertySubmissionWithMedia = PropertySubmission & {
 export type PropertyWithMedia = Property & {
   media: PropertyMedia[];
 };
+
+// Analytics types
+export type VisitorLog = typeof visitorLogs.$inferSelect;
+export type PropertyAnalytics = typeof propertyAnalytics.$inferSelect;
+export type SiteAnalytics = typeof siteAnalytics.$inferSelect;

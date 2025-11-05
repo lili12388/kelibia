@@ -1,12 +1,13 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, MapPin, BedDouble, Bath, Maximize, Search } from "lucide-react";
+import { MapPin, BedDouble, Bath, Search, ChefHat, Refrigerator, Flame } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { PropertyWithMedia } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
+import Navbar from "@/components/navbar";
 
 export default function BrowsePropertiesPage() {
   const { data: properties, isLoading } = useQuery<PropertyWithMedia[]>({
@@ -15,17 +16,12 @@ export default function BrowsePropertiesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-background sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
-          <Link href="/" data-testid="link-home">
-            <Button variant="ghost" size="sm" data-testid="button-back">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Home
-            </Button>
-          </Link>
-          
-          <div className="flex-1 max-w-md">
+      <Navbar />
+      
+      {/* Search Bar */}
+      <div className="bg-background border-b border-border">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="max-w-md mx-auto">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
@@ -36,7 +32,7 @@ export default function BrowsePropertiesPage() {
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-12">
@@ -108,12 +104,6 @@ export default function BrowsePropertiesPage() {
                         </div>
                       )}
                       
-                      {/* Price Badge */}
-                      <div className="absolute top-3 right-3">
-                        <Badge className="bg-primary text-primary-foreground font-bold text-base px-3 py-1.5" data-testid={`badge-price-${property.id}`}>
-                          {parseFloat(property.price).toLocaleString()} TND
-                        </Badge>
-                      </div>
                     </div>
 
                     {/* Property Info */}
@@ -128,19 +118,28 @@ export default function BrowsePropertiesPage() {
                       </div>
                       
                       {/* Metadata */}
-                      <div className="flex items-center gap-3 mt-auto text-sm text-muted-foreground flex-wrap">
-                        <div className="flex items-center gap-1" data-testid={`text-rooms-${property.id}`}>
+                      <div className="flex items-center gap-3 mt-auto text-sm flex-wrap">
+                        <div className="flex items-center gap-1 text-muted-foreground" data-testid={`text-rooms-${property.id}`}>
                           <BedDouble className="w-4 h-4" />
                           <span>{property.rooms}</span>
                         </div>
-                        <div className="flex items-center gap-1" data-testid={`text-bathrooms-${property.id}`}>
+                        <div className="flex items-center gap-1 text-muted-foreground" data-testid={`text-bathrooms-${property.id}`}>
                           <Bath className="w-4 h-4" />
                           <span>{property.bathrooms}</span>
                         </div>
-                        <div className="flex items-center gap-1" data-testid={`text-size-${property.id}`}>
-                          <Maximize className="w-4 h-4" />
-                          <span>{property.sizeM2}m²</span>
+                        <div className="flex items-center gap-1 text-muted-foreground" data-testid={`text-kitchen-${property.id}`}>
+                          <ChefHat className="w-4 h-4" />
                         </div>
+                        {property.hasFridge && (
+                          <div className="flex items-center gap-1 text-muted-foreground" data-testid={`text-fridge-${property.id}`}>
+                            <Refrigerator className="w-4 h-4" />
+                          </div>
+                        )}
+                        {property.hasGasStove && (
+                          <div className="flex items-center gap-1 text-muted-foreground" data-testid={`text-gas-${property.id}`}>
+                            <Flame className="w-4 h-4" />
+                          </div>
+                        )}
                       </div>
                       
                       <div className="mt-4">

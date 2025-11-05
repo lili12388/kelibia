@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrokerAuthGuard } from "@/components/broker-auth-guard";
+import { usePageView, useActiveUserHeartbeat } from "@/hooks/use-analytics";
 import HomePage from "@/pages/home";
 import ListPropertyPage from "@/pages/list-property";
 import SubmissionConfirmedPage from "@/pages/submission-confirmed";
@@ -11,9 +12,16 @@ import BrowsePropertiesPage from "@/pages/browse-properties";
 import PropertyDetailPage from "@/pages/property-detail";
 import BrokerLoginPage from "@/pages/broker-login";
 import BrokerDashboardPage from "@/pages/broker-dashboard";
+import BrokerBrowsePage from "@/pages/broker-browse";
+import AdminAnalyticsPage from "@/pages/admin-analytics";
 import NotFound from "@/pages/not-found";
 
 function Router() {
+  // Track page views for analytics
+  usePageView();
+  // Send heartbeat to track active users
+  useActiveUserHeartbeat();
+  
   return (
     <Switch>
       <Route path="/" component={HomePage} />
@@ -25,6 +33,27 @@ function Router() {
       <Route path="/broker/dashboard">
         <BrokerAuthGuard>
           <BrokerDashboardPage />
+        </BrokerAuthGuard>
+      </Route>
+      <Route path="/broker/browse">
+        <BrokerAuthGuard>
+          <BrokerBrowsePage />
+        </BrokerAuthGuard>
+      </Route>
+      {/* Admin routes - same as broker routes but with /admin prefix */}
+      <Route path="/admin/list-property">
+        <BrokerAuthGuard>
+          <ListPropertyPage />
+        </BrokerAuthGuard>
+      </Route>
+      <Route path="/admin/browse">
+        <BrokerAuthGuard>
+          <BrokerBrowsePage />
+        </BrokerAuthGuard>
+      </Route>
+      <Route path="/admin/analytics">
+        <BrokerAuthGuard>
+          <AdminAnalyticsPage />
         </BrokerAuthGuard>
       </Route>
       <Route component={NotFound} />

@@ -1,11 +1,14 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Building2, Home, MapPin, Users, CheckCircle2 } from "lucide-react";
-import heroImage from "@assets/generated_images/Tunisian_neighborhood_hero_background_8d671b82.png";
+import heroImage from "/hero-background.png";
+import Navbar from "@/components/navbar";
 
 export default function HomePage() {
   return (
     <div className="min-h-screen">
+      <Navbar variant="transparent" />
+
       {/* Hero Section */}
       <section 
         className="relative h-screen flex items-center justify-center overflow-hidden"
