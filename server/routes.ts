@@ -69,8 +69,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const BROKER_PASSWORD = process.env.BROKER_PASSWORD || 'broker123';
       
       if (password === BROKER_PASSWORD) {
-        req.session.isBroker = true;
-        req.session.isAuthenticated = true;
+        // Use JWT for serverless compatibility
+        const jwt = await import('jsonwebtoken');
+        const secret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+        const token = jwt.sign(
+          { isBroker: true, isAuthenticated: true },
+          secret,
+          { expiresIn: '24h' }
+        );
+        
+        // Set HTTP-only cookie
+        res.cookie('broker_token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        });
+        
+        // Also set session for backward compatibility
+        if (req.session) {
+          req.session.isBroker = true;
+          req.session.isAuthenticated = true;
+        }
+        
         res.json({ success: true });
       } else {
         res.status(401).json({ error: 'Invalid password' });
@@ -93,7 +114,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Check broker auth status
-  app.get('/api/broker/auth-status', (req, res) => {
+  app.get('/api/broker/auth-status', async (req, res) => {
+    // Check JWT token first
+    const token = req.cookies?.broker_token;
+    const secret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+    
+    if (token) {
+      try {
+        const jwt = await import('jsonwebtoken');
+        const decoded = jwt.verify(token, secret) as { isBroker: boolean };
+        if (decoded.isBroker) {
+          res.json({ isAuthenticated: true });
+          return;
+        }
+      } catch (error) {
+        // Token invalid or expired
+      }
+    }
+    
+    // Fall back to session check
     res.json({ 
       isAuthenticated: !!(req.session && req.session.isBroker) 
     });

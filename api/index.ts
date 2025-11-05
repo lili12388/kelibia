@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import express, { Express } from "express";
 import session from "express-session";
+import cookieParser from "cookie-parser";
 import path from "path";
 
 let app: Express | null = null;
@@ -15,6 +16,9 @@ async function getApp() {
   // Note: File uploads and sessions may have limitations in serverless environment
   const uploadsPath = path.join(process.cwd(), "public", "uploads");
   app.use("/uploads", express.static(uploadsPath));
+
+  // Cookie parser for JWT tokens
+  app.use(cookieParser());
 
   app.use(session({
     secret: process.env.SESSION_SECRET || "rental-hub-secret-key-change-in-production",
