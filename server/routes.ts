@@ -641,7 +641,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('📊 Fetched', visitorsRaw.length, 'visitor logs');
       
       // Fetch all property titles in one go
-      const propertyIds = Array.from(new Set(visitorsRaw.map(v => v.propertyId).filter(Boolean))) as string[];
+      const propertyIds = Array.from(
+        new Set(
+          visitorsRaw
+            .map(v => v.propertyId)
+            .filter((id): id is string => id !== null && id !== undefined)
+        )
+      );
       
       let propertiesData: any[] = [];
       if (propertyIds.length > 0) {
