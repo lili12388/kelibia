@@ -3,7 +3,6 @@ import formidable from 'formidable';
 import { db } from '../../server/db';
 import { propertySubmissions, submissionMedia, insertPropertySubmissionSchema } from '../../shared/schema';
 import sharp from 'sharp';
-import path from 'path';
 import fs from 'fs/promises';
 
 export const config = {
@@ -19,21 +18,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    
-    // Ensure upload directory exists
-    try {
-      await fs.mkdir(uploadDir, { recursive: true });
-    } catch (err) {
-      // Directory might already exist
-    }
+    // Use /tmp directory for Vercel serverless environment
+    const uploadDir = '/tmp';
 
     // Parse the multipart form
     const form = formidable({
       uploadDir,
       keepExtensions: true,
-      maxFileSize: 50 * 1024 * 1024, // 50MB
+      maxFileSize: 10 * 1024 * 1024, // 10MB limit for base64 storage
       multiples: true,
     });
 
@@ -74,47 +66,56 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Insert property submission
     const [submission] = await db.insert(propertySubmissions).values(propertyData).returning();
 
-    // Process uploaded files
+    // Process uploaded files - convert to base64 data URLs for database storage
     const uploadedFiles = Array.isArray(files.media) ? files.media : files.media ? [files.media] : [];
     
     for (let i = 0; i < uploadedFiles.length; i++) {
       const file = uploadedFiles[i];
-      let url: string;
+      let dataUrl: string;
 
       if (file.mimetype?.startsWith('image/')) {
-        const optimizedFilename = `opt-${Date.now()}-${i}.jpg`;
-        const outputPath = path.join(uploadDir, optimizedFilename);
-        
-        await sharp(file.filepath)
+        // Optimize and convert image to base64
+        const optimizedBuffer = await sharp(file.filepath)
           .resize(1920, 1080, {
             fit: 'inside',
             withoutEnlargement: true,
           })
-          .jpeg({ quality: 85, progressive: true })
-          .toFile(outputPath);
+          .jpeg({ quality: 80, progressive: true })
+          .toBuffer();
         
-        url = `/uploads/${optimizedFilename}`;
+        // Convert to base64 data URL
+        const base64 = optimizedBuffer.toString('base64');
+        dataUrl = `data:image/jpeg;base64,${base64}`;
         
-        // Delete temp file
+        // Clean up temp file
+        try {
+          await fs.unlink(file.filepath);
+        } catch (err) {
+          // Ignore
+        }
+      } else if (file.mimetype?.startsWith('video/')) {
+        // For videos, read and convert to base64 (note: this might be large!)
+        const videoBuffer = await fs.readFile(file.filepath);
+        const base64 = videoBuffer.toString('base64');
+        dataUrl = `data:${file.mimetype};base64,${base64}`;
+        
+        // Clean up temp file
         try {
           await fs.unlink(file.filepath);
         } catch (err) {
           // Ignore
         }
       } else {
-        // For videos, just move to uploads
-        const videoFilename = `${Date.now()}-${i}${path.extname(file.originalFilename || '')}`;
-        const videoPath = path.join(uploadDir, videoFilename);
-        await fs.rename(file.filepath, videoPath);
-        url = `/uploads/${videoFilename}`;
+        // Skip unsupported file types
+        continue;
       }
 
-      // Insert media record
+      // Insert media record with base64 data URL
       await db.insert(submissionMedia).values({
         submissionId: submission.id,
         filename: file.originalFilename || `file-${i}`,
         mimeType: file.mimetype || 'application/octet-stream',
-        url,
+        url: dataUrl,
         isPrimary: i === 0,
       });
     }

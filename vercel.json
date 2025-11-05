@@ -51,6 +51,26 @@
       "dest": "/api/properties/index.ts"
     },
     {
+      "src": "/api/admin/analytics/summary",
+      "dest": "/api/admin/analytics/summary.ts"
+    },
+    {
+      "src": "/api/admin/analytics/real-time",
+      "dest": "/api/admin/analytics/real-time.ts"
+    },
+    {
+      "src": "/api/admin/analytics/visitors",
+      "dest": "/api/admin/analytics/visitors.ts"
+    },
+    {
+      "src": "/api/admin/analytics/reset",
+      "dest": "/api/admin/analytics/reset.ts"
+    },
+    {
+      "src": "/api/admin/analytics/property/([^/]+)",
+      "dest": "/api/admin/analytics/property/[id].ts?id=$1"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api/[...path].ts"
     },
