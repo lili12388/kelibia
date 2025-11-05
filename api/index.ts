@@ -1,11 +1,11 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import express from "express";
 import session from "express-session";
 import path from "path";
-import { registerRoutes } from "../server/routes";
-import { analyticsMiddleware } from "../server/middleware/analytics";
 
 const app = express();
 
+// Note: File uploads and sessions may have limitations in serverless environment
 const uploadsPath = path.join(process.cwd(), "public", "uploads");
 app.use("/uploads", express.static(uploadsPath));
 
@@ -14,23 +14,29 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === "production",
+    secure: true,
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
   },
 }));
 
-app.use(express.json({
-  verify: (req: any, _res, buf) => {
-    req.rawBody = buf;
-  },
-}));
-
+app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(analyticsMiddleware);
 
-// Register all API routes
-registerRoutes(app);
+// Import routes dynamically to avoid issues
+let routesRegistered = false;
+
+async function setupRoutes() {
+  if (!routesRegistered) {
+    const { registerRoutes } = await import("../server/routes");
+    const { analyticsMiddleware } = await import("../server/middleware/analytics");
+    
+    app.use(analyticsMiddleware);
+    await registerRoutes(app);
+    
+    routesRegistered = true;
+  }
+}
 
 // Error handler
 app.use((err: any, _req: any, res: any, _next: any) => {
@@ -39,4 +45,8 @@ app.use((err: any, _req: any, res: any, _next: any) => {
   res.status(status).json({ message });
 });
 
-export default app;
+// Vercel serverless function handler
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  await setupRoutes();
+  return app(req as any, res as any);
+}
