@@ -12,12 +12,23 @@ export const config = {
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Add CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
   // Only allow POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
+    console.log('Starting property submission...');
+    
     // Use /tmp directory for Vercel serverless environment
     const uploadDir = '/tmp';
 
@@ -29,12 +40,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       multiples: true,
     });
 
+    console.log('Parsing form data...');
     const [fields, files] = await new Promise<[any, any]>((resolve, reject) => {
       form.parse(req as any, (err: any, fields: any, files: any) => {
-        if (err) reject(err);
+        if (err) {
+          console.error('Form parse error:', err);
+          reject(err);
+        }
         else resolve([fields, files]);
       });
     });
+    console.log('Form parsed successfully');
 
     // Helper to get field value
     const getField = (field: any) => Array.isArray(field) ? field[0] : field;
@@ -64,24 +80,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     // Insert property submission
+    console.log('Inserting property submission...');
     const [submission] = await db.insert(propertySubmissions).values(propertyData).returning();
+    console.log('Submission created:', submission.id);
 
     // Process uploaded files - convert to base64 data URLs for database storage
     const uploadedFiles = Array.isArray(files.media) ? files.media : files.media ? [files.media] : [];
+    console.log(`Processing ${uploadedFiles.length} files...`);
     
     for (let i = 0; i < uploadedFiles.length; i++) {
       const file = uploadedFiles[i];
+      console.log(`Processing file ${i + 1}: ${file.mimetype}`);
       let dataUrl: string;
 
       if (file.mimetype?.startsWith('image/')) {
         // Optimize and convert image to base64
+        console.log('Optimizing image with Sharp...');
         const optimizedBuffer = await sharp(file.filepath)
-          .resize(1920, 1080, {
+          .resize(1200, 800, {  // Reduced size for faster processing
             fit: 'inside',
             withoutEnlargement: true,
           })
-          .jpeg({ quality: 80, progressive: true })
+          .jpeg({ quality: 75, progressive: true })  // Reduced quality for smaller size
           .toBuffer();
+        console.log('Image optimized, converting to base64...');
         
         // Convert to base64 data URL
         const base64 = optimizedBuffer.toString('base64');
@@ -111,6 +133,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       // Insert media record with base64 data URL
+      console.log(`Inserting media ${i + 1} into database...`);
       await db.insert(submissionMedia).values({
         submissionId: submission.id,
         filename: file.originalFilename || `file-${i}`,
@@ -118,8 +141,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         url: dataUrl,
         isPrimary: i === 0,
       });
+      console.log(`Media ${i + 1} inserted successfully`);
     }
 
+    console.log('Property submission completed successfully!');
     return res.status(200).json({
       success: true,
       submissionId: submission.id,
@@ -129,6 +154,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({
       error: 'Failed to submit property',
       message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
     });
   }
 }
