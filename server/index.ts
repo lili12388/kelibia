@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import cookieParser from "cookie-parser";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { analyticsMiddleware } from "./middleware/analytics";
@@ -10,6 +11,9 @@ const app = express();
 // Serve uploaded files statically (both in development and production)
 const uploadsPath = path.join(process.cwd(), "public", "uploads");
 app.use("/uploads", express.static(uploadsPath));
+
+// Cookie parser for JWT tokens
+app.use(cookieParser());
 
 // Extend session with custom properties
 declare module 'express-session' {

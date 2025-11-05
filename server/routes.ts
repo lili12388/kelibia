@@ -104,6 +104,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Broker logout endpoint
   app.post('/api/broker/logout', (req, res) => {
+    // Clear JWT cookie
+    res.clearCookie('broker_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax'
+    });
+    
+    // Also destroy session
     req.session.destroy((err) => {
       if (err) {
         res.status(500).json({ error: 'Logout failed' });
