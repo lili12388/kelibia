@@ -19,6 +19,10 @@
       "dest": "/api/broker/login.ts"
     },
     {
+      "src": "/api/properties/submit",
+      "dest": "/api/properties/submit.ts"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api/[...path].ts"
     },
