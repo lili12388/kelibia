@@ -13,6 +13,9 @@ async function getApp() {
 
   app = express();
 
+  // Disable x-powered-by header
+  app.disable('x-powered-by');
+
   // Note: File uploads and sessions may have limitations in serverless environment
   const uploadsPath = path.join(process.cwd(), "public", "uploads");
   app.use("/uploads", express.static(uploadsPath));
@@ -31,8 +34,9 @@ async function getApp() {
     },
   }));
 
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: false }));
+  // IMPORTANT: Parse body for serverless
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
   // Import and setup routes
   const { registerRoutes } = await import("../server/routes");
@@ -45,6 +49,7 @@ async function getApp() {
   app.use((err: any, _req: any, res: any, _next: any) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
+    console.error('Express error:', err);
     res.status(status).json({ message });
   });
 
@@ -53,16 +58,34 @@ async function getApp() {
 
 // Vercel serverless function handler
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const expressApp = await getApp();
-  
-  // Handle the request with Express
-  return new Promise((resolve, reject) => {
-    expressApp(req as any, res as any, (err?: any) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(undefined);
-      }
+  try {
+    const expressApp = await getApp();
+    
+    // Set CORS headers for API requests
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+    
+    // Handle OPTIONS request
+    if (req.method === 'OPTIONS') {
+      res.status(200).end();
+      return;
+    }
+    
+    // Handle the request with Express
+    return new Promise((resolve, reject) => {
+      expressApp(req as any, res as any, (err?: any) => {
+        if (err) {
+          console.error('Express handler error:', err);
+          reject(err);
+        } else {
+          resolve(undefined);
+        }
+      });
     });
-  });
+  } catch (error) {
+    console.error('Serverless function error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 }
