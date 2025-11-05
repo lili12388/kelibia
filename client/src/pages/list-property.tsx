@@ -57,23 +57,49 @@ export default function ListPropertyPage() {
 
   const submitPropertyMutation = useMutation({
     mutationFn: async (data: InsertPropertySubmission & { files: File[]; isAdmin?: boolean }) => {
-      const formData = new FormData();
-      
-      // Append property data
-      Object.entries(data).forEach(([key, value]) => {
-        if (key !== 'files' && key !== 'isAdmin') {
-          formData.append(key, String(value));
-        }
-      });
-      
-      // Append files
-      data.files.forEach((file) => {
-        formData.append('media', file);
-      });
+      // Convert files to base64
+      const mediaFiles = await Promise.all(
+        data.files.map(async (file) => {
+          return new Promise<{filename: string, mimeType: string, dataUrl: string}>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              resolve({
+                filename: file.name,
+                mimeType: file.type,
+                dataUrl: reader.result as string, // Already base64 data URL
+              });
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        })
+      );
+
+      // Prepare JSON body
+      const { files: _, isAdmin, ...propertyData } = data;
+      const body = {
+        propertyData,
+        mediaFiles,
+      };
 
       // Use admin endpoint if admin is posting
       const endpoint = data.isAdmin ? '/api/broker/properties/submit-admin' : '/api/properties/submit';
-      return apiRequest('POST', endpoint, formData);
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to submit property');
+      }
+
+      return response.json();
     },
     onSuccess: (data, variables) => {
       if (variables.isAdmin) {
