@@ -4,7 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrokerAuthGuard } from "@/components/broker-auth-guard";
-import { usePageView, useActiveUserHeartbeat } from "@/hooks/use-analytics";
+import { useActiveUserHeartbeat } from "@/hooks/use-analytics";
 import HomePage from "@/pages/home";
 import ListPropertyPage from "@/pages/list-property";
 import SubmissionConfirmedPage from "@/pages/submission-confirmed";
@@ -17,8 +17,6 @@ import AdminAnalyticsPage from "@/pages/admin-analytics";
 import NotFound from "@/pages/not-found";
 
 function Router() {
-  // Track page views for analytics
-  usePageView();
   // Send heartbeat to track active users
   useActiveUserHeartbeat();
   

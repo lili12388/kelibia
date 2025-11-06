@@ -22,10 +22,14 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { PropertyWithMedia, PropertySubmissionWithMedia } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { usePageView } from "@/hooks/use-analytics";
 import Navbar from "@/components/navbar";
 
 export default function PropertyDetailPage() {
   const { toast } = useToast();
+  
+  // Track page view for this specific property (increments analytics)
+  usePageView();
   const [, params] = useRoute("/property/:id");
   const propertyId = params?.id;
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
