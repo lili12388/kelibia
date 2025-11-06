@@ -6,7 +6,7 @@ import multer from "multer";
 import sharp from "sharp";
 import path from "path";
 import { mkdir } from "fs/promises";
-import { insertPropertySubmissionSchema, propertySubmissions, properties } from "../shared/schema.js";
+import { insertPropertySubmissionSchema, propertySubmissions, properties, propertyMedia, propertyAnalytics, visitorLogs } from "../shared/schema.js";
 import { z } from "zod";
 import { db } from "./db.js";
 import { eq } from "drizzle-orm";
