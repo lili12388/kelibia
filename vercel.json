@@ -16,6 +16,13 @@
       }
     },
     {
+      "src": "api/broker/properties/submit-admin.ts",
+      "use": "@vercel/node",
+      "config": {
+        "maxDuration": 60
+      }
+    },
+    {
       "src": "api/broker/auth-status.ts",
       "use": "@vercel/node"
     },
@@ -39,6 +46,10 @@
     {
       "src": "/api/properties/submit",
       "dest": "/api/properties/submit.ts"
+    },
+    {
+      "src": "/api/broker/properties/submit-admin",
+      "dest": "/api/broker/properties/submit-admin.ts"
     },
     {
       "src": "/api/broker/auth-status",
