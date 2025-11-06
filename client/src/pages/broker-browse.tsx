@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { MapPin, BedDouble, Bath, Search, Phone, Mail, User, ArrowLeft, Pencil, ChefHat, Refrigerator, Flame, BarChart3, Eye, MousePointer, Monitor, Smartphone } from "lucide-react";
+import { MapPin, BedDouble, Bath, Search, Phone, Mail, User, ArrowLeft, Pencil, ChefHat, Refrigerator, Flame, BarChart3, Eye, MousePointer, Monitor, Smartphone, Trash2 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { PropertyWithMedia, PropertySubmissionWithMedia } from "@shared/schema";
@@ -129,6 +129,42 @@ export default function BrokerBrowsePage() {
       });
     },
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (propertyId: string) => {
+      const response = await fetch(`/api/broker/properties/${propertyId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to delete property');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/properties'] });
+      toast({
+        title: "Property Deleted",
+        description: "The property has been permanently deleted.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Delete Failed",
+        description: error.message || "Failed to delete property. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDeleteProperty = (propertyId: string, propertyTitle: string) => {
+    if (window.confirm(`Are you sure you want to delete "${propertyTitle}"? This action cannot be undone.`)) {
+      deleteMutation.mutate(propertyId);
+    }
+  };
 
   const handleEditSubmission = (submission: PropertySubmissionWithMedia) => {
     setSelectedSubmission(submission);
@@ -349,18 +385,31 @@ export default function BrokerBrowsePage() {
                     {/* Action Buttons - Admin Only */}
                     {submission && (
                       <div className="mt-4 space-y-2">
-                        <Button
-                          variant="default"
-                          size="default"
-                          className="w-full bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 shadow-md"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleEditSubmission(submission);
-                          }}
-                        >
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Modify This Post
-                        </Button>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button
+                            variant="default"
+                            size="default"
+                            className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 shadow-md"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleEditSubmission(submission);
+                            }}
+                          >
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Modify
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="default"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleDeleteProperty(property.id, property.title);
+                            }}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </Button>
+                        </div>
                         <Button
                           variant="outline"
                           size="default"

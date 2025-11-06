@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import jwt from 'jsonwebtoken';
 import { db } from '../../../server/db.js';
-import { properties, propertyMedia, insertPropertySchema } from '../../../shared/schema.js';
+import { properties, propertyMedia, propertySubmissions, submissionMedia, insertPropertySubmissionSchema } from '../../../shared/schema.js';
 
 // Enable JSON body parsing with larger limit
 export const config = {
@@ -59,22 +59,70 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Get data from JSON body (frontend will send base64 images)
     const { propertyData, mediaFiles } = req.body;
     
-    console.log('[ADMIN-SUBMIT] Validating property data...');
-    // Validate and create property directly (admin posts are auto-approved)
-    const validatedData = insertPropertySchema.parse({
+    console.log('[ADMIN-SUBMIT] Validating submission data...');
+    // First create a submission (to maintain referential integrity)
+    const submissionData = insertPropertySubmissionSchema.parse({
       ...propertyData,
-      submissionId: null, // Admin posts don't have a submission
-      publishedAt: new Date(),
+      status: 'approved',
     });
 
-    // Insert property directly
-    console.log('[ADMIN-SUBMIT] Inserting property...');
-    const [property] = await db.insert(properties).values(validatedData).returning();
+    console.log('[ADMIN-SUBMIT] Creating submission...');
+    const [submission] = await db.insert(propertySubmissions).values(submissionData).returning();
+    console.log('[ADMIN-SUBMIT] Submission created:', submission.id);
+
+    // Insert media for submission
+    if (mediaFiles && Array.isArray(mediaFiles) && mediaFiles.length > 0) {
+      console.log(`[ADMIN-SUBMIT] Inserting ${mediaFiles.length} submission media files...`);
+      
+      for (let i = 0; i < mediaFiles.length; i++) {
+        const media = mediaFiles[i];
+        await db.insert(submissionMedia).values({
+          submissionId: submission.id,
+          filename: media.filename || `image-${i}`,
+          mimeType: media.mimeType || 'image/jpeg',
+          url: media.dataUrl,
+          isPrimary: i === 0,
+        });
+      }
+    }
+
+    // Now create the published property
+    console.log('[ADMIN-SUBMIT] Creating published property...');
+    const [property] = await db.insert(properties).values({
+      submissionId: submission.id,
+      title: submission.title,
+      propertyType: submission.propertyType,
+      floorLevel: submission.floorLevel,
+      isFurnished: submission.isFurnished,
+      hasLivingRoom: submission.hasLivingRoom,
+      hasFridge: submission.hasFridge,
+      hasGasStove: submission.hasGasStove,
+      description: submission.description,
+      rooms: submission.rooms,
+      bathrooms: submission.bathrooms,
+      sizeM2: submission.sizeM2,
+      location: submission.location,
+      price: submission.price,
+      googleMapsUrl: submission.googleMapsUrl,
+      requiresDeposit: submission.requiresDeposit,
+      neighborhoodMapUrl: submission.neighborhoodMapUrl,
+      showOwnerContact: submission.showOwnerContact ?? false,
+      showGoogleMaps: submission.showGoogleMaps ?? true,
+      showExactLocation: submission.showExactLocation ?? false,
+      showNeighborhoodMap: submission.showNeighborhoodMap ?? true,
+      showPrice: submission.showPrice ?? true,
+      showRooms: submission.showRooms ?? true,
+      showBathrooms: submission.showBathrooms ?? true,
+      showSize: submission.showSize ?? true,
+      showDescription: submission.showDescription ?? true,
+      showDeposit: submission.showDeposit ?? true,
+      publishedAt: new Date(),
+    }).returning();
     console.log('[ADMIN-SUBMIT] Property created:', property.id);
 
-    // Insert media files (already base64 from frontend)
+    // Copy media to property
     if (mediaFiles && Array.isArray(mediaFiles) && mediaFiles.length > 0) {
-      console.log(`[ADMIN-SUBMIT] Inserting ${mediaFiles.length} media files...`);
+      console.log(`[ADMIN-SUBMIT] Copying ${mediaFiles.length} media files to property...`);
       
       for (let i = 0; i < mediaFiles.length; i++) {
         const media = mediaFiles[i];
@@ -82,11 +130,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           propertyId: property.id,
           filename: media.filename || `image-${i}`,
           mimeType: media.mimeType || 'image/jpeg',
-          url: media.dataUrl, // Already base64 from frontend
+          url: media.dataUrl,
           isPrimary: i === 0,
         });
       }
-      console.log('[ADMIN-SUBMIT] All media files inserted');
+      console.log('[ADMIN-SUBMIT] All media files copied');
     }
 
     console.log('[ADMIN-SUBMIT] Admin property submission completed successfully!');

@@ -404,6 +404,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // PROTECTED BROKER ENDPOINTS - Require authentication
+
+  // Broker: Delete a property
+  app.delete('/api/broker/properties/:id', requireBrokerAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Delete property media first (foreign key constraint)
+      await db.delete(propertyMedia).where(eq(propertyMedia.propertyId, id));
+      
+      // Delete property analytics
+      await db.delete(propertyAnalytics).where(eq(propertyAnalytics.propertyId, id));
+      
+      // Delete visitor logs for this property
+      await db.delete(visitorLogs).where(eq(visitorLogs.propertyId, id));
+      
+      // Delete the property itself
+      await db.delete(properties).where(eq(properties.id, id));
+      
+      res.json({ success: true, message: 'Property deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting property:', error);
+      res.status(500).json({ error: 'Failed to delete property' });
+    }
+  });
   
   // Broker: Get submissions by status
   app.get('/api/broker/submissions/:status', requireBrokerAuth, async (req, res) => {
