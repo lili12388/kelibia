@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { db } from '../../server/db';
-import { propertySubmissions, submissionMedia, insertPropertySubmissionSchema } from '../../shared/schema';
+import { db } from '../../server/db.js';
+import { propertySubmissions, submissionMedia, insertPropertySubmissionSchema } from '../../shared/schema.js';
 
 // Enable JSON body parsing with larger limit
 export const config = {
