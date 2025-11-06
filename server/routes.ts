@@ -410,22 +410,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       
+      console.log('[DELETE] Deleting property:', id);
+      
+      // Get the property to find its submission ID
+      const [property] = await db.select().from(properties).where(eq(properties.id, id));
+      
+      if (!property) {
+        return res.status(404).json({ error: 'Property not found' });
+      }
+      
+      const submissionId = property.submissionId;
+      
       // Delete property media first (foreign key constraint)
+      console.log('[DELETE] Deleting property media...');
       await db.delete(propertyMedia).where(eq(propertyMedia.propertyId, id));
       
       // Delete property analytics
+      console.log('[DELETE] Deleting property analytics...');
       await db.delete(propertyAnalytics).where(eq(propertyAnalytics.propertyId, id));
       
       // Delete visitor logs for this property
+      console.log('[DELETE] Deleting visitor logs...');
       await db.delete(visitorLogs).where(eq(visitorLogs.propertyId, id));
       
       // Delete the property itself
+      console.log('[DELETE] Deleting property...');
       await db.delete(properties).where(eq(properties.id, id));
       
+      // Delete the associated submission and its media
+      if (submissionId) {
+        console.log('[DELETE] Deleting submission media...');
+        const { submissionMedia } = await import("../shared/schema.js");
+        await db.delete(submissionMedia).where(eq(submissionMedia.submissionId, submissionId));
+        
+        console.log('[DELETE] Deleting submission...');
+        await db.delete(propertySubmissions).where(eq(propertySubmissions.id, submissionId));
+      }
+      
+      console.log('[DELETE] Property deleted successfully');
       res.json({ success: true, message: 'Property deleted successfully' });
     } catch (error) {
-      console.error('Error deleting property:', error);
-      res.status(500).json({ error: 'Failed to delete property' });
+      console.error('[DELETE] Error deleting property:', error);
+      console.error('[DELETE] Error stack:', error instanceof Error ? error.stack : 'No stack');
+      res.status(500).json({ error: 'Failed to delete property', details: error instanceof Error ? error.message : String(error) });
     }
   });
   
