@@ -28,6 +28,10 @@ function checkAuth(req: VercelRequest): boolean {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  console.log('[ADMIN-SUBMIT-API] Handler invoked:', req.method, req.url);
+  console.log('[ADMIN-SUBMIT-API] Has cookies:', !!req.cookies);
+  console.log('[ADMIN-SUBMIT-API] Has body:', !!req.body);
+  
   // Add CORS headers
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -35,6 +39,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   
   if (req.method === 'OPTIONS') {
+    console.log('[ADMIN-SUBMIT-API] Handling OPTIONS');
     return res.status(200).end();
   }
   
