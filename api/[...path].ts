@@ -39,8 +39,8 @@ async function getApp() {
   app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
   // Import and setup routes
-  const { registerRoutes } = await import("../server/routes");
-  const { analyticsMiddleware } = await import("../server/middleware/analytics");
+  const { registerRoutes } = await import("../server/routes.js");
+  const { analyticsMiddleware } = await import("../server/middleware/analytics.js");
   
   app.use(analyticsMiddleware);
   await registerRoutes(app);

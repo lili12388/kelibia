@@ -1,4 +1,4 @@
-import { db } from "./db";
+import { db } from "./db.js";
 import { sql } from "drizzle-orm";
 
 async function addVisibilityControls() {
@@ -39,3 +39,4 @@ addVisibilityControls()
     console.error("Migration failed:", error);
     process.exit(1);
   });
+

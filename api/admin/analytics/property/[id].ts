@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import jwt from 'jsonwebtoken';
-import { db } from '../../../../server/db';
-import { propertyAnalytics, visitorLogs } from '../../../../shared/schema';
+import { db } from '../../../../server/db.js';
+import { propertyAnalytics, visitorLogs } from '../../../../shared/schema.js';
 import { eq } from 'drizzle-orm';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

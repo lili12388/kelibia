@@ -1,14 +1,14 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
-import { requireBrokerAuth } from "./middleware/auth";
+import { storage } from "./storage.js";
+import { requireBrokerAuth } from "./middleware/auth.js";
 import multer from "multer";
 import sharp from "sharp";
 import path from "path";
 import { mkdir } from "fs/promises";
 import { insertPropertySubmissionSchema, propertySubmissions, properties } from "../shared/schema.js";
 import { z } from "zod";
-import { db } from "./db";
+import { db } from "./db.js";
 import { eq } from "drizzle-orm";
 
 // Configure multer for file uploads (temporary storage)

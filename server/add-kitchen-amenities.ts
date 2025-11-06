@@ -1,4 +1,4 @@
-import { db } from "./db";
+import { db } from "./db.js";
 import { sql } from "drizzle-orm";
 
 async function addKitchenAmenities() {
@@ -30,3 +30,4 @@ async function addKitchenAmenities() {
 }
 
 addKitchenAmenities();
+

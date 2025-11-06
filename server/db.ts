@@ -1,5 +1,5 @@
 // Load environment variables first
-import "./env";
+import "./env.js";
 
 // Referenced from javascript_database blueprint integration
 import { Pool, neonConfig } from '@neondatabase/serverless';

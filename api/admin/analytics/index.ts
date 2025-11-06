@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import jwt from 'jsonwebtoken';
-import { db } from '../../../server/db';
-import { visitorLogs, propertyAnalytics, siteAnalytics, properties } from '../../../shared/schema';
+import { db } from '../../../server/db.js';
+import { visitorLogs, propertyAnalytics, siteAnalytics, properties } from '../../../shared/schema.js';
 import { sql, desc, eq, gt } from 'drizzle-orm';
 
 // Authentication helper

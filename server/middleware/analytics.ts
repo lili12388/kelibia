@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { db } from "../db";
-import { visitorLogs, propertyAnalytics, siteAnalytics } from "../../shared/schema";
+import { db } from "../db.js";
+import { visitorLogs, propertyAnalytics, siteAnalytics } from "../../shared/schema.js";
 import { v4 as uuidv4 } from "uuid";
 import { sql, eq } from "drizzle-orm";
 
