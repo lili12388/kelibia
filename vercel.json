@@ -20,6 +20,10 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/admin/analytics/index.ts",
+      "use": "@vercel/node"
+    },
+    {
       "src": "api/[...path].ts",
       "use": "@vercel/node",
       "config": {
@@ -39,6 +43,10 @@
     {
       "src": "/api/broker/auth-status",
       "dest": "/api/broker/auth-status.ts"
+    },
+    {
+      "src": "/api/admin/analytics(.*)",
+      "dest": "/api/admin/analytics/index.ts"
     },
     {
       "src": "/api/(.*)",
