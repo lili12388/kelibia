@@ -95,6 +95,7 @@ export default function AdminAnalytics() {
   const [realTimeData, setRealTimeData] = useState<RealTimeData | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deletingPropertyId, setDeletingPropertyId] = useState<string | null>(null);
+  const [deleteAllDialogOpen, setDeleteAllDialogOpen] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -157,11 +158,15 @@ export default function AdminAnalytics() {
   };
 
   // Delete all visitor logs (for "Tout Supprimer" in Properties section)
-  const handleDeleteAllData = async () => {
+  const handleDeleteAllData = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     setIsDeleting(true);
     try {
       const response = await apiRequest("/api/admin/analytics?endpoint=visitors", {
         method: "DELETE",
+        credentials: "include",
       });
       
       if (response.ok) {
@@ -171,10 +176,14 @@ export default function AdminAnalytics() {
         });
         
         queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics?endpoint=summary"] });
+        setDeleteAllDialogOpen(false);
       } else {
+        const error = await response.text();
+        console.error('Delete failed:', error);
         throw new Error("Failed to delete data");
       }
     } catch (error) {
+      console.error('Delete error:', error);
       toast({
         title: "Erreur",
         description: "Impossible de supprimer les données analytiques.",
@@ -379,9 +388,9 @@ export default function AdminAnalytics() {
                   Top 10 des propriétés par nombre de vues
                 </CardDescription>
               </div>
-              <AlertDialog>
+              <AlertDialog open={deleteAllDialogOpen} onOpenChange={setDeleteAllDialogOpen}>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm">
+                  <Button variant="destructive" size="sm" disabled={isDeleting}>
                     <Trash2 className="h-4 w-4 mr-2" />
                     Tout Supprimer
                   </Button>
@@ -395,12 +404,13 @@ export default function AdminAnalytics() {
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                    <AlertDialogCancel disabled={isDeleting}>Annuler</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={handleDeleteAllData}
+                      disabled={isDeleting}
                       className="bg-red-600 hover:bg-red-700"
                     >
-                      Oui, tout supprimer
+                      {isDeleting ? "Suppression..." : "Oui, tout supprimer"}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
