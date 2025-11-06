@@ -135,12 +135,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (token) {
       try {
         const jwt = await import('jsonwebtoken');
-        const decoded = jwt.verify(token, secret) as { isBroker: boolean };
+        const decoded = jwt.default.verify(token, secret) as { isBroker: boolean };
         if (decoded.isBroker) {
           res.json({ isAuthenticated: true });
           return;
         }
       } catch (error) {
+        console.error('[AUTH-STATUS] JWT verification error:', error);
         // Token invalid or expired
       }
     }

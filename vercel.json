@@ -16,6 +16,10 @@
       }
     },
     {
+      "src": "api/broker/auth-status.ts",
+      "use": "@vercel/node"
+    },
+    {
       "src": "api/[...path].ts",
       "use": "@vercel/node",
       "config": {
@@ -31,6 +35,10 @@
     {
       "src": "/api/properties/submit",
       "dest": "/api/properties/submit.ts"
+    },
+    {
+      "src": "/api/broker/auth-status",
+      "dest": "/api/broker/auth-status.ts"
     },
     {
       "src": "/api/(.*)",
