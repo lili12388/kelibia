@@ -178,9 +178,37 @@ export default function ListPropertyPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
+    
+    // Check total file size
+    let totalSize = 0;
+    files.forEach(f => totalSize += f.size);
+    selectedFiles.forEach(f => totalSize += f.size);
+    
+    const totalMB = (totalSize / (1024 * 1024)).toFixed(2);
+    
+    // Warn if total size exceeds 15MB (compressed images + videos)
+    if (totalSize > 15 * 1024 * 1024) {
+      toast({
+        title: "⚠️ Large File Size Warning",
+        description: `Total file size: ${totalMB}MB. Large uploads may fail. Consider using fewer/smaller images or compress videos.`,
+        variant: "destructive",
+      });
+    }
+    
     const validFiles = selectedFiles.filter(file => {
       const isImage = file.type.startsWith('image/');
       const isVideo = file.type.startsWith('video/');
+      
+      // Check individual file size
+      const fileMB = (file.size / (1024 * 1024)).toFixed(2);
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: "File Too Large",
+          description: `"${file.name}" (${fileMB}MB) may be too large. Maximum recommended: 10MB per file.`,
+          variant: "destructive",
+        });
+      }
+      
       return isImage || isVideo;
     });
 
