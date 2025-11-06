@@ -58,8 +58,10 @@ async function getApp() {
 
 // Vercel serverless function handler
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  console.log('[CATCH-ALL] Request:', req.method, req.url);
   try {
     const expressApp = await getApp();
+    console.log('[CATCH-ALL] Express app loaded successfully');
     
     // Set CORS headers for API requests
     res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -85,7 +87,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     });
   } catch (error) {
-    console.error('Serverless function error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('[CATCH-ALL] Serverless function error:', error);
+    console.error('[CATCH-ALL] Error stack:', error instanceof Error ? error.stack : 'No stack');
+    res.status(500).json({ error: 'Internal server error', details: error instanceof Error ? error.message : String(error) });
   }
 }

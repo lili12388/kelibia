@@ -62,21 +62,25 @@ async function optimizeImage(inputPath: string, outputFilename: string): Promise
 export async function registerRoutes(app: Express): Promise<Server> {
   // Broker login endpoint
   app.post('/api/broker/login', async (req, res) => {
+    console.log('[LOGIN] Request received:', { body: req.body, hasPassword: !!req.body?.password });
     try {
       const { password } = req.body;
       
       // Simple password check - in production, use proper authentication
       const BROKER_PASSWORD = process.env.BROKER_PASSWORD || 'broker123';
+      console.log('[LOGIN] Password check:', { provided: password, expected: BROKER_PASSWORD, match: password === BROKER_PASSWORD });
       
       if (password === BROKER_PASSWORD) {
         // Use JWT for serverless compatibility
         const { sign } = await import('jsonwebtoken');
         const secret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+        console.log('[LOGIN] JWT sign function type:', typeof sign);
         const token = sign(
           { isBroker: true, isAuthenticated: true },
           secret,
           { expiresIn: '24h' }
         );
+        console.log('[LOGIN] Token generated successfully');
         
         // Set HTTP-only cookie
         res.cookie('broker_token', token, {
@@ -97,8 +101,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(401).json({ error: 'Invalid password' });
       }
     } catch (error) {
-      console.error('Error during broker login:', error);
-      res.status(500).json({ error: 'Login failed' });
+      console.error('[LOGIN] Error during broker login:', error);
+      console.error('[LOGIN] Error stack:', error instanceof Error ? error.stack : 'No stack');
+      res.status(500).json({ error: 'Login failed', details: error instanceof Error ? error.message : String(error) });
     }
   });
 
@@ -148,6 +153,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Submit a new property
   app.post('/api/properties/submit', upload.array('media', 10), async (req, res) => {
+    console.log('[SUBMIT] User property submission received');
+    console.log('[SUBMIT] Body keys:', Object.keys(req.body));
+    console.log('[SUBMIT] Files:', req.files ? (req.files as any[]).length : 0);
     try {
       // Parse and validate property data
       const propertyData = insertPropertySubmissionSchema.parse({
@@ -213,15 +221,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         submissionId: submission.id 
       });
     } catch (error) {
-      console.error('Error submitting property:', error);
+      console.error('[SUBMIT] Error submitting property:', error);
       if (error instanceof z.ZodError) {
+        console.error('[SUBMIT] Validation errors:', JSON.stringify(error.errors, null, 2));
         res.status(400).json({ 
           error: 'Validation error', 
           details: error.errors 
         });
       } else {
         // Log the full error stack for debugging
-        console.error('Full error details:', error);
+        console.error('[SUBMIT] Full error details:', error);
+        console.error('[SUBMIT] Error stack:', error instanceof Error ? error.stack : 'No stack');
         res.status(500).json({ 
           error: 'Failed to submit property',
           message: error instanceof Error ? error.message : 'Unknown error'
