@@ -12,7 +12,11 @@
       "src": "api/[...path].ts",
       "use": "@vercel/node",
       "config": {
-        "maxDuration": 60
+        "maxDuration": 60,
+        "includeFiles": [
+          "server/**",
+          "shared/**"
+        ]
       }
     }
   ],
