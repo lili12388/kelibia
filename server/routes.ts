@@ -72,10 +72,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (password === BROKER_PASSWORD) {
         // Use JWT for serverless compatibility
-        const { sign } = await import('jsonwebtoken');
+        const jwt = await import('jsonwebtoken');
         const secret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
-        console.log('[LOGIN] JWT sign function type:', typeof sign);
-        const token = sign(
+        console.log('[LOGIN] JWT module:', Object.keys(jwt));
+        const token = jwt.default.sign(
           { isBroker: true, isAuthenticated: true },
           secret,
           { expiresIn: '24h' }
