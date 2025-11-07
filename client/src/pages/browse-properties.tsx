@@ -65,10 +65,15 @@ export default function BrowsePropertiesPage() {
   const FilterSidebar = () => (
     <div className="bg-white rounded-lg border border-border p-6 space-y-6 sticky top-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <SlidersHorizontal className="h-6 w-6" />
-          Filtres
-        </h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <SlidersHorizontal className="h-6 w-6" />
+            Filtres
+          </h2>
+          <Badge variant="secondary" className="text-base font-semibold">
+            {filteredProperties.length}
+          </Badge>
+        </div>
         {hasActiveFilters && (
           <Button 
             variant="ghost" 
@@ -222,13 +227,6 @@ export default function BrowsePropertiesPage() {
           </Button>
         </div>
       </div>
-
-      {/* Results Count */}
-      <div className="pt-4 border-t border-border">
-        <p className="text-center text-lg font-medium text-muted-foreground">
-          {filteredProperties.length} {filteredProperties.length === 1 ? "résultat" : "résultats"}
-        </p>
-      </div>
     </div>
   );
 
@@ -250,7 +248,7 @@ export default function BrowsePropertiesPage() {
       <div className="py-8">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar - Desktop - Far Left, Wider */}
-          <aside className="hidden lg:block w-96 flex-shrink-0 pl-6">
+          <aside className="hidden lg:block w-96 flex-shrink-0 pl-1">
             <FilterSidebar />
           </aside>
 
@@ -273,7 +271,12 @@ export default function BrowsePropertiesPage() {
               <div className="fixed inset-y-0 left-0 w-full max-w-sm bg-white overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold">Filtres</h2>
-                  <Button variant="ghost" size="icon" onClick={() => setMobileFiltersOpen(false)}>
+                  <Button 
+                    variant="destructive" 
+                    size="icon" 
+                    onClick={() => setMobileFiltersOpen(false)}
+                    className="bg-red-600 hover:bg-red-700 w-12 h-12"
+                  >
                     <X className="h-6 w-6" />
                   </Button>
                 </div>
@@ -286,7 +289,7 @@ export default function BrowsePropertiesPage() {
           <main className="flex-1 min-w-0 pr-6">
             {/* Loading State */}
             {isLoading && (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 sm:gap-6">
                 {[...Array(6)].map((_, i) => (
                   <Card key={i} className="overflow-hidden">
                     <Skeleton className="aspect-[4/3] w-full" />
@@ -325,7 +328,7 @@ export default function BrowsePropertiesPage() {
 
             {/* Property Grid */}
             {!isLoading && filteredProperties.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 sm:gap-6">
                 {filteredProperties.map((property) => {
                   const primaryMedia = property.media.find(m => m.isPrimary) || property.media[0];
                   const price = parseFloat(property.price);
@@ -349,16 +352,16 @@ export default function BrowsePropertiesPage() {
                           )}
                           
                           {/* Price Badge */}
-                          <div className="absolute bottom-3 right-3">
-                            <Badge className="bg-gradient-to-r from-[#1a5f3f] to-[#2d8659] text-white border-0 font-bold text-lg px-4 py-2 shadow-xl">
+                          <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3">
+                            <Badge className="bg-gradient-to-r from-[#1a5f3f] to-[#2d8659] text-white border-0 font-bold text-sm sm:text-lg px-2 sm:px-4 py-1 sm:py-2 shadow-xl">
                               {price.toLocaleString()} TND
                             </Badge>
                           </div>
 
                           {/* Furnished Badge */}
                           {property.isFurnished && (
-                            <div className="absolute top-3 left-3">
-                              <Badge className="bg-blue-600 text-white border-0 font-semibold text-sm px-3 py-1">
+                            <div className="absolute top-2 left-2 sm:top-3 sm:left-3">
+                              <Badge className="bg-blue-600 text-white border-0 font-semibold text-xs sm:text-sm px-2 sm:px-3 py-0.5 sm:py-1">
                                 Meublé
                               </Badge>
                             </div>
@@ -366,34 +369,34 @@ export default function BrowsePropertiesPage() {
                         </div>
 
                         {/* Property Info */}
-                        <CardContent className="p-5 flex-1 flex flex-col">
-                          <h3 className="font-bold text-foreground text-xl mb-3 line-clamp-2 group-hover:text-primary transition-colors">
+                        <CardContent className="p-3 sm:p-5 flex-1 flex flex-col">
+                          <h3 className="font-bold text-foreground text-base sm:text-xl mb-2 sm:mb-3 line-clamp-2 group-hover:text-primary transition-colors">
                             {property.title}
                           </h3>
                           
-                          <div className="flex items-center gap-2 text-base text-muted-foreground mb-4">
-                            <MapPin className="w-5 h-5 flex-shrink-0" />
+                          <div className="flex items-center gap-1 sm:gap-2 text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
+                            <MapPin className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                             <span className="line-clamp-1">{property.location}</span>
                           </div>
                           
                           {/* Metadata */}
-                          <div className="flex items-center gap-4 mt-auto text-base flex-wrap">
-                            <div className="flex items-center gap-2 text-foreground font-semibold bg-muted px-3 py-2 rounded-lg">
-                              <BedDouble className="w-5 h-5" />
+                          <div className="flex items-center gap-2 sm:gap-4 mt-auto text-sm sm:text-base flex-wrap">
+                            <div className="flex items-center gap-1 sm:gap-2 text-foreground font-semibold bg-muted px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg">
+                              <BedDouble className="w-4 h-4 sm:w-5 sm:h-5" />
                               <span>{property.rooms}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-foreground font-semibold bg-muted px-3 py-2 rounded-lg">
-                              <Bath className="w-5 h-5" />
+                            <div className="flex items-center gap-1 sm:gap-2 text-foreground font-semibold bg-muted px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg">
+                              <Bath className="w-4 h-4 sm:w-5 sm:h-5" />
                               <span>{property.bathrooms}</span>
                             </div>
                             {property.hasFridge && (
                               <div className="flex items-center gap-1 text-muted-foreground">
-                                <Refrigerator className="w-5 h-5" />
+                                <Refrigerator className="w-4 h-4 sm:w-5 sm:h-5" />
                               </div>
                             )}
                             {property.hasGasStove && (
                               <div className="flex items-center gap-1 text-muted-foreground">
-                                <Flame className="w-5 h-5" />
+                                <Flame className="w-4 h-4 sm:w-5 sm:h-5" />
                               </div>
                             )}
                           </div>
