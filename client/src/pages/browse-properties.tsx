@@ -97,7 +97,7 @@ export default function BrowsePropertiesPage() {
             <Input
               id="min-price"
               type="number"
-              placeholder="Ex: 500"
+              placeholder="Ex: 500 TND"
               value={minPrice}
               onChange={(e) => setMinPrice(e.target.value)}
               className="text-lg h-12"
@@ -108,7 +108,7 @@ export default function BrowsePropertiesPage() {
             <Input
               id="max-price"
               type="number"
-              placeholder="Ex: 2000"
+              placeholder="Ex: 2000 TND"
               value={maxPrice}
               onChange={(e) => setMaxPrice(e.target.value)}
               className="text-lg h-12"
