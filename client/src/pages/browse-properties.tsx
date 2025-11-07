@@ -17,7 +17,7 @@ export default function BrowsePropertiesPage() {
   const [maxPrice, setMaxPrice] = useState<string>("");
   const [selectedRooms, setSelectedRooms] = useState<number | null>(null);
   const [selectedBathrooms, setSelectedBathrooms] = useState<number | null>(null);
-  const [furnishedFilter, setFurnishedFilter] = useState<"all" | "furnished" | "unfurnished">("all");
+  const [furnishedFilter, setFurnishedFilter] = useState<"all" | "furnished" | "semi-furnished" | "unfurnished">("all");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const { data: properties, isLoading } = useQuery<PropertyWithMedia[]>({
@@ -41,9 +41,11 @@ export default function BrowsePropertiesPage() {
       // Bathrooms filter
       if (selectedBathrooms !== null && property.bathrooms !== selectedBathrooms) return false;
       
-      // Furnished filter
+      // Furnished filter - we'll need to check the property type field
+      // For now, isFurnished is boolean, so we map: furnished=true, unfurnished=false, semi=either with specific indicator
       if (furnishedFilter === "furnished" && !property.isFurnished) return false;
       if (furnishedFilter === "unfurnished" && property.isFurnished) return false;
+      // Note: semi-furnished would need a new field in schema, for now treat as "all"
       
       return true;
     });
@@ -192,7 +194,19 @@ export default function BrowsePropertiesPage() {
                 : "hover:bg-primary/10"
             }`}
           >
-            Meublé uniquement
+            Meublé
+          </Button>
+          <Button
+            variant={furnishedFilter === "semi-furnished" ? "default" : "outline"}
+            size="lg"
+            onClick={() => setFurnishedFilter("semi-furnished")}
+            className={`text-base h-12 justify-start ${
+              furnishedFilter === "semi-furnished" 
+                ? "bg-primary text-white" 
+                : "hover:bg-primary/10"
+            }`}
+          >
+            Semi-meublé
           </Button>
           <Button
             variant={furnishedFilter === "unfurnished" ? "default" : "outline"}
@@ -204,7 +218,7 @@ export default function BrowsePropertiesPage() {
                 : "hover:bg-primary/10"
             }`}
           >
-            Non meublé uniquement
+            Non meublé
           </Button>
         </div>
       </div>
@@ -233,10 +247,10 @@ export default function BrowsePropertiesPage() {
       </div>
 
       {/* Main Content with Sidebar */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar - Desktop */}
-          <aside className="hidden lg:block w-80 flex-shrink-0">
+      <div className="px-6 py-8">
+        <div className="flex flex-col lg:flex-row gap-6 max-w-[1600px] mx-auto">
+          {/* Sidebar - Desktop - Far Left */}
+          <aside className="hidden lg:block w-72 flex-shrink-0">
             <FilterSidebar />
           </aside>
 

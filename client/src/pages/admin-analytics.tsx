@@ -2,8 +2,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Users, Eye, MousePointer, Activity, Monitor, Smartphone, ArrowLeft, Building2, Trash2 } from "lucide-react";
+import { Users, Eye, MousePointer, Activity, Monitor, Smartphone, ArrowLeft, Building2, Trash2, Calendar } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
@@ -96,6 +97,7 @@ export default function AdminAnalytics() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deletingPropertyId, setDeletingPropertyId] = useState<string | null>(null);
   const [deleteAllDialogOpen, setDeleteAllDialogOpen] = useState(false);
+  const [timePeriod, setTimePeriod] = useState<"day" | "week" | "month">("day");
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -235,10 +237,26 @@ export default function AdminAnalytics() {
         {/* Header with Navigation */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-4xl font-bold text-[#1a5f3f]">
-              Tableau de bord Analytics
-            </h1>
+            <div>
+              <h1 className="text-4xl font-bold text-[#1a5f3f] mb-2">
+                Tableau de bord Analytics
+              </h1>
+              <p className="text-gray-600">
+                Statistiques et informations sur les visiteurs de votre site
+              </p>
+            </div>
             <div className="flex gap-2">
+              <Select value={timePeriod} onValueChange={(value: any) => setTimePeriod(value)}>
+                <SelectTrigger className="w-[180px]">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="day">Aujourd'hui</SelectItem>
+                  <SelectItem value="week">Cette semaine</SelectItem>
+                  <SelectItem value="month">Ce mois</SelectItem>
+                </SelectContent>
+              </Select>
               <Button 
                 onClick={() => {
                   queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics?endpoint=summary"] });
@@ -253,20 +271,17 @@ export default function AdminAnalytics() {
               <Link href="/broker/dashboard">
                 <Button variant="outline" className="flex items-center gap-2">
                   <ArrowLeft className="h-4 w-4" />
-                  Admin Dashboard
+                  Dashboard
                 </Button>
               </Link>
               <Link href="/admin/browse">
                 <Button variant="outline" className="flex items-center gap-2">
                   <Building2 className="h-4 w-4" />
-                  View Posts
+                  Posts
                 </Button>
               </Link>
             </div>
           </div>
-          <p className="text-gray-600">
-            Statistiques et informations sur les visiteurs de votre site
-          </p>
         </div>
 
         {/* Overview Cards */}
@@ -303,12 +318,12 @@ export default function AdminAnalytics() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <Card className="border-l-4 border-[#1a5f3f]">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
                     <Users className="h-4 w-4" />
-                    Total Visiteurs
+                    Visiteurs Uniques
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -316,7 +331,7 @@ export default function AdminAnalytics() {
                     {summary?.totalVisitors.toLocaleString() || 0}
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    Tous les temps
+                    {timePeriod === "day" ? "Aujourd'hui" : timePeriod === "week" ? "Cette semaine" : "Ce mois"}
                   </p>
                 </CardContent>
               </Card>
@@ -325,7 +340,7 @@ export default function AdminAnalytics() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
                     <Eye className="h-4 w-4" />
-                    Posts Viewed
+                    Vues de Propriétés
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -333,24 +348,7 @@ export default function AdminAnalytics() {
                     {summary?.totalPageViews.toLocaleString() || 0}
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    All time
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-l-4 border-orange-500">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                    <Activity className="h-4 w-4" />
-                    Aujourd'hui
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-orange-600">
-                    {summary?.todayVisitors.toLocaleString() || 0}
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {summary?.todayPageViews.toLocaleString() || 0} pages vues
+                    Pages consultées
                   </p>
                 </CardContent>
               </Card>
@@ -359,7 +357,7 @@ export default function AdminAnalytics() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
                     <Activity className="h-4 w-4 animate-pulse" />
-                    Active Now
+                    En Ligne Maintenant
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -367,13 +365,15 @@ export default function AdminAnalytics() {
                     {realTimeData?.activeVisitors || 0}
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    Users on site right now
+                    Visiteurs actifs
                   </p>
                 </CardContent>
               </Card>
             </div>
           </CardContent>
         </Card>
+
+        {/* Propriétés les Plus Vues */}
 
         {/* Top Properties */}
         <Card className="mb-8">
