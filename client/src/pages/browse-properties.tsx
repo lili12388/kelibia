@@ -250,7 +250,7 @@ export default function BrowsePropertiesPage() {
       <div className="px-6 py-8">
         <div className="flex flex-col lg:flex-row gap-6 max-w-[1600px] mx-auto">
           {/* Sidebar - Desktop - Far Left, Wider */}
-          <aside className="hidden lg:block w-80 flex-shrink-0">
+          <aside className="hidden lg:block w-90 flex-shrink-0">
             <FilterSidebar />
           </aside>
 
