@@ -247,15 +247,15 @@ export default function BrowsePropertiesPage() {
       </div>
 
       {/* Main Content with Sidebar */}
-      <div className="px-6 py-8">
-        <div className="flex flex-col lg:flex-row gap-6 max-w-[1600px] mx-auto">
+      <div className="py-8">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar - Desktop - Far Left, Wider */}
-          <aside className="hidden lg:block w-90 flex-shrink-0">
+          <aside className="hidden lg:block w-96 flex-shrink-0 pl-6">
             <FilterSidebar />
           </aside>
 
           {/* Mobile Filter Button */}
-          <div className="lg:hidden mb-4">
+          <div className="lg:hidden mb-4 px-6">
             <Button
               variant="outline"
               size="lg"
@@ -283,7 +283,7 @@ export default function BrowsePropertiesPage() {
           )}
 
           {/* Properties Grid */}
-          <main className="flex-1 min-w-0">
+          <main className="flex-1 min-w-0 pr-6">
             {/* Loading State */}
             {isLoading && (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
