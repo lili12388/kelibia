@@ -83,7 +83,23 @@ export default function BrokerBrowsePage() {
     queryKey: ['/api/broker/submissions', 'approved'],
   });
 
-  // Fetch property analytics for selected property
+  // Fetch analytics summary to get view counts for all properties
+  const { data: analyticsSummary } = useQuery<{
+    topProperties: Array<{
+      propertyId: string;
+      totalViews: number;
+      totalClicks: number;
+    }>;
+  }>({
+    queryKey: ['/api/admin/analytics?endpoint=summary'],
+  });
+
+  // Create a map of property IDs to their analytics
+  const analyticsMap = new Map(
+    analyticsSummary?.topProperties?.map(a => [a.propertyId, a]) || []
+  );
+
+  // Fetch property analytics for selected property (for detailed view in dialog)
   const { data: propertyAnalytics, isLoading: analyticsLoading } = useQuery<PropertyAnalytics>({
     queryKey: selectedPropertyId 
       ? [`/api/admin/analytics/property/${selectedPropertyId}`]
@@ -316,17 +332,18 @@ export default function BrokerBrowsePage() {
             {properties.map((property) => {
               const primaryMedia = property.media.find(m => m.isPrimary) || property.media[0];
               const submission = submissionsMap.get(property.submissionId);
+              const analytics = analyticsMap.get(property.id);
               
               return (
                 <Card key={property.id} className="overflow-hidden hover-elevate transition-all h-full flex flex-col">
                   {/* Property Image */}
                   <Link href={`/property/${property.id}`}>
-                    <div className="relative aspect-[4/3] overflow-hidden bg-muted cursor-pointer">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-muted cursor-pointer group">
                       {primaryMedia ? (
                         <img
                           src={primaryMedia.url}
                           alt={property.title}
-                          className="w-full h-full object-cover transition-transform hover:scale-105"
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
                           loading="lazy"
                         />
                       ) : (
@@ -335,9 +352,19 @@ export default function BrokerBrowsePage() {
                         </div>
                       )}
                       
-                      {/* Price Badge */}
-                      <div className="absolute top-3 right-3">
-                        <Badge className="bg-primary text-primary-foreground font-bold text-base px-3 py-1.5">
+                      {/* View Count Badge - Top Left */}
+                      {analytics && analytics.totalViews > 0 && (
+                        <div className="absolute top-3 left-3">
+                          <Badge className="bg-black/70 backdrop-blur-sm text-white border-0 font-medium text-sm px-2.5 py-1 shadow-lg">
+                            <Eye className="w-3.5 h-3.5 mr-1.5" />
+                            {analytics.totalViews}
+                          </Badge>
+                        </div>
+                      )}
+                      
+                      {/* Price Badge - Bottom Right with semi-transparent background */}
+                      <div className="absolute bottom-3 right-3">
+                        <Badge className="bg-gradient-to-r from-[#1a5f3f] to-[#2d8659] text-white border-0 font-bold text-base px-4 py-2 shadow-xl backdrop-blur-sm">
                           {parseFloat(property.price).toLocaleString()} TND
                         </Badge>
                       </div>
@@ -384,7 +411,7 @@ export default function BrokerBrowsePage() {
 
                     {/* Action Buttons - Admin Only */}
                     {submission && (
-                      <div className="mt-4 space-y-2">
+                      <div className="mt-4">
                         <div className="grid grid-cols-2 gap-2">
                           <Button
                             variant="default"
@@ -410,19 +437,6 @@ export default function BrokerBrowsePage() {
                             Delete
                           </Button>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="default"
-                          className="w-full"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setSelectedPropertyId(property.id);
-                            setAnalyticsDialogOpen(true);
-                          }}
-                        >
-                          <BarChart3 className="mr-2 h-4 w-4" />
-                          View Analytics
-                        </Button>
                       </div>
                     )}
                   </CardContent>
