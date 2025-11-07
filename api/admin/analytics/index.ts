@@ -102,8 +102,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // DELETE /api/admin/analytics?endpoint=visitors
     if (req.method === 'DELETE' && endpoint === 'visitors') {
+      // Delete all visitor logs
       await db.delete(visitorLogs);
-      return res.status(200).json({ message: 'All visitor logs deleted' });
+      // Delete all property analytics (this is what shows in "Propriétés les Plus Vues")
+      await db.delete(propertyAnalytics);
+      // Reset site analytics
+      await db.execute(sql`
+        UPDATE ${siteAnalytics} 
+        SET 
+          total_visitors = 0,
+          total_page_views = 0,
+          unique_sessions = 0,
+          desktop_visitors = 0,
+          mobile_visitors = 0
+      `);
+      return res.status(200).json({ message: 'All visitor logs and analytics deleted' });
     }
 
     // POST /api/admin/analytics?endpoint=reset

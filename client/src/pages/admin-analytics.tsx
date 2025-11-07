@@ -171,8 +171,8 @@ export default function AdminAnalytics() {
       
       if (response.ok) {
         toast({
-          title: "Logs supprimés",
-          description: "Tous les logs de visites ont été supprimés.",
+          title: "Données supprimées",
+          description: "Toutes les données analytiques ont été supprimées avec succès.",
         });
         
         queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics?endpoint=summary"] });
@@ -397,10 +397,10 @@ export default function AdminAnalytics() {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Supprimer tous les logs ?</AlertDialogTitle>
+                    <AlertDialogTitle>Supprimer toutes les données analytiques ?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Cette action supprimera TOUS les logs de visites de toutes les propriétés.
-                      Cette action est irréversible et effacera l'historique complet des visites.
+                      Cette action supprimera TOUTES les données analytiques : logs de visites, statistiques des propriétés, et compteurs de vues.
+                      Cette action est irréversible et réinitialisera complètement les analytics.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
