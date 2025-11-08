@@ -348,12 +348,21 @@ export default function BrowsePropertiesPage() {
                         {/* Property Image */}
                         <div className="relative aspect-[4/3] overflow-hidden bg-muted">
                           {primaryMedia ? (
-                            <img
-                              src={primaryMedia.url}
-                              alt={property.title}
-                              className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                              loading="lazy"
-                            />
+                            primaryMedia.mimeType.startsWith('video/') ? (
+                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500">
+                                <div className="text-center text-white">
+                                  <div className="text-5xl sm:text-6xl mb-2">🎥</div>
+                                  <div className="text-sm sm:text-base font-medium">Video</div>
+                                </div>
+                              </div>
+                            ) : (
+                              <img
+                                src={primaryMedia.url}
+                                alt={property.title}
+                                className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                                loading="lazy"
+                              />
+                            )
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <MapPin className="w-12 h-12 text-muted-foreground" />
