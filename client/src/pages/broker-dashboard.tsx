@@ -316,12 +316,21 @@ export default function BrokerDashboardPage() {
                           {/* Thumbnail */}
                           <div className="w-full md:w-32 aspect-square rounded-lg overflow-hidden bg-muted flex-shrink-0">
                             {primaryMedia ? (
-                              <img
-                                src={primaryMedia.url}
-                                alt={submission.title}
-                                className="w-full h-full object-cover"
-                                data-testid={`img-submission-${submission.id}`}
-                              />
+                              primaryMedia.mimeType.startsWith('video/') ? (
+                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500">
+                                  <div className="text-center text-white">
+                                    <div className="text-4xl mb-2">🎥</div>
+                                    <div className="text-xs font-medium">Video</div>
+                                  </div>
+                                </div>
+                              ) : (
+                                <img
+                                  src={primaryMedia.url}
+                                  alt={submission.title}
+                                  className="w-full h-full object-cover"
+                                  data-testid={`img-submission-${submission.id}`}
+                                />
+                              )
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
                                 <MapPin className="w-8 h-8 text-muted-foreground" />
