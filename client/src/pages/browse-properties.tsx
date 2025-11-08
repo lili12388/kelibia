@@ -120,61 +120,7 @@ export default function BrowsePropertiesPage() {
 
       <Separator />
 
-      {/* Bedrooms */}
-      <div className="space-y-3">
-        <Label className="text-lg font-semibold text-foreground flex items-center gap-2">
-          <BedDouble className="h-5 w-5" />
-          Chambres
-        </Label>
-        <div className="grid grid-cols-4 gap-2">
-          {[1, 2, 3, 4].map((num) => (
-            <Button
-              key={num}
-              variant={selectedRooms === num ? "default" : "outline"}
-              size="lg"
-              onClick={() => setSelectedRooms(selectedRooms === num ? null : num)}
-              className={`text-lg font-semibold h-14 ${
-                selectedRooms === num 
-                  ? "bg-primary text-white" 
-                  : "hover:bg-primary/10"
-              }`}
-            >
-              {num}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      <Separator />
-
-      {/* Bathrooms */}
-      <div className="space-y-3">
-        <Label className="text-lg font-semibold text-foreground flex items-center gap-2">
-          <Bath className="h-5 w-5" />
-          Salles de bain
-        </Label>
-        <div className="grid grid-cols-4 gap-2">
-          {[1, 2, 3, 4].map((num) => (
-            <Button
-              key={num}
-              variant={selectedBathrooms === num ? "default" : "outline"}
-              size="lg"
-              onClick={() => setSelectedBathrooms(selectedBathrooms === num ? null : num)}
-              className={`text-lg font-semibold h-14 ${
-                selectedBathrooms === num 
-                  ? "bg-primary text-white" 
-                  : "hover:bg-primary/10"
-              }`}
-            >
-              {num}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      <Separator />
-
-      {/* Furnished */}
+      {/* Type/Furnished */}
       <div className="space-y-3">
         <Label className="text-lg font-semibold text-foreground">Type</Label>
         <div className="grid grid-cols-1 gap-2">
@@ -228,6 +174,60 @@ export default function BrowsePropertiesPage() {
           </Button>
         </div>
       </div>
+
+      <Separator />
+
+      {/* Bedrooms */}
+      <div className="space-y-3">
+        <Label className="text-lg font-semibold text-foreground flex items-center gap-2">
+          <BedDouble className="h-5 w-5" />
+          Chambres
+        </Label>
+        <div className="grid grid-cols-4 gap-2">
+          {[1, 2, 3, 4].map((num) => (
+            <Button
+              key={num}
+              variant={selectedRooms === num ? "default" : "outline"}
+              size="lg"
+              onClick={() => setSelectedRooms(selectedRooms === num ? null : num)}
+              className={`text-lg font-semibold h-14 ${
+                selectedRooms === num 
+                  ? "bg-primary text-white" 
+                  : "hover:bg-primary/10"
+              }`}
+            >
+              {num}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Bathrooms */}
+      <div className="space-y-3">
+        <Label className="text-lg font-semibold text-foreground flex items-center gap-2">
+          <Bath className="h-5 w-5" />
+          Salles de bain
+        </Label>
+        <div className="grid grid-cols-4 gap-2">
+          {[1, 2, 3, 4].map((num) => (
+            <Button
+              key={num}
+              variant={selectedBathrooms === num ? "default" : "outline"}
+              size="lg"
+              onClick={() => setSelectedBathrooms(selectedBathrooms === num ? null : num)}
+              className={`text-lg font-semibold h-14 ${
+                selectedBathrooms === num 
+                  ? "bg-primary text-white" 
+                  : "hover:bg-primary/10"
+              }`}
+            >
+              {num}
+            </Button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 
@@ -255,7 +255,7 @@ export default function BrowsePropertiesPage() {
 
       {/* Main Content with Sidebar */}
       <div className="py-8">
-        <div className="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto px-6">
+        <div className="flex flex-col lg:flex-row gap-6 pl-8">
           {/* Sidebar - Desktop */}
           <aside className="hidden lg:block w-80 flex-shrink-0">
             <FilterSidebar />
@@ -295,10 +295,10 @@ export default function BrowsePropertiesPage() {
           )}
 
           {/* Properties Grid */}
-          <main className="flex-1 min-w-0">
+          <main className="flex-1 min-w-0 pr-6">
             {/* Loading State */}
             {isLoading && (
-              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 sm:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {[...Array(6)].map((_, i) => (
                   <Card key={i} className="overflow-hidden">
                     <Skeleton className="aspect-[4/3] w-full" />
@@ -337,7 +337,7 @@ export default function BrowsePropertiesPage() {
 
             {/* Property Grid */}
             {!isLoading && filteredProperties.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 sm:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {filteredProperties.map((property) => {
                   const primaryMedia = property.media.find(m => m.isPrimary) || property.media[0];
                   const price = parseFloat(property.price);
