@@ -24,6 +24,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { usePageView } from "@/hooks/use-analytics";
 import Navbar from "@/components/navbar";
+import { SEO } from "@/components/seo";
+import { Helmet } from "react-helmet-async";
 
 export default function PropertyDetailPage() {
   const { toast } = useToast();
@@ -228,9 +230,60 @@ export default function PropertyDetailPage() {
   }
 
   const currentMedia = property.media[currentImageIndex];
+  
+  // SEO data
+  const primaryImage = property.media.find(m => m.isPrimary) || property.media[0];
+  const seoTitle = `${property.title} - ${property.rooms} Ch, ${property.bathrooms} SDB | Khadhra Rentals`;
+  const seoDescription = `${property.isFurnished ? 'Appartement meublé' : 'Appartement'} avec ${property.rooms} chambres et ${property.bathrooms} salles de bain à ${property.location}. Prix: ${parseFloat(property.price).toLocaleString()} TND/mois. ${property.description.substring(0, 100)}...`;
+  
+  // Structured Data (Schema.org) for Google rich snippets
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateListing",
+    "name": property.title,
+    "description": property.description,
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": property.location,
+      "addressCountry": "TN"
+    },
+    "price": parseFloat(property.price),
+    "priceCurrency": "TND",
+    "numberOfRooms": property.rooms,
+    "numberOfBathroomsTotal": property.bathrooms,
+    "floorSize": {
+      "@type": "QuantitativeValue",
+      "value": property.sizeM2,
+      "unitCode": "MTK"
+    },
+    "image": primaryImage?.url || "",
+    "availableAtOrFrom": {
+      "@type": "Place",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": property.location,
+        "addressCountry": "Tunisia"
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title={seoTitle}
+        description={seoDescription}
+        keywords={`${property.title}, location appartement ${property.location}, ${property.rooms} chambres, ${property.isFurnished ? 'meublé' : 'non meublé'}, ${parseFloat(property.price).toLocaleString()} TND`}
+        image={primaryImage?.url}
+        type="article"
+      />
+      
+      {/* Structured Data for Google Rich Snippets */}
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
+      </Helmet>
+      
       <Navbar />
 
       {/* Main Content */}

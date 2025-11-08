@@ -3,10 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Building2, Home, MapPin, Users, CheckCircle2 } from "lucide-react";
 import heroImage from "/hero-background.png";
 import Navbar from "@/components/navbar";
+import { SEO } from "@/components/seo";
 
 export default function HomePage() {
   return (
     <div className="min-h-screen">
+      <SEO 
+        title="Khadhra Rentals - Location d'Appartements à Hay Khadhra & Cité Olympique"
+        description="Trouvez votre logement idéal à Hay Khadhra et Cité Olympique, Tunis. Appartements meublés et non meublés vérifiés. Propriétaires, publiez gratuitement vos annonces."
+        keywords="location appartement Hay Khadhra, location Cité Olympique, appartement meublé Tunis, immobilier Tunis, location logement, appartement à louer Tunis"
+      />
       <Navbar variant="transparent" />
 
       {/* Hero Section */}

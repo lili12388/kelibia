@@ -11,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { PropertyWithMedia } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import Navbar from "@/components/navbar";
+import { SEO } from "@/components/seo";
 
 export default function BrowsePropertiesPage() {
   const [minPrice, setMinPrice] = useState<string>("");
@@ -230,8 +231,16 @@ export default function BrowsePropertiesPage() {
     </div>
   );
 
+  // Generate SEO description based on filters
+  const seoDescription = `${filteredProperties.length} ${filteredProperties.length === 1 ? 'propriété disponible' : 'propriétés disponibles'} à Hay Khadhra et Cité Olympique. ${furnishedFilter !== 'all' ? (furnishedFilter === 'furnished' ? 'Appartements meublés' : furnishedFilter === 'semi-furnished' ? 'Appartements semi-meublés' : 'Appartements non meublés') : 'Logements meublés et non meublés'}. Trouvez votre appartement idéal à Tunis.`;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f0f4f0] to-white">
+      <SEO 
+        title={`Propriétés Disponibles - ${filteredProperties.length} Logements | Khadhra Rentals`}
+        description={seoDescription}
+        keywords="location appartement Hay Khadhra, location Cité Olympique, appartement meublé, appartement non meublé, 2 chambres, 3 chambres, location Tunis"
+      />
       <Navbar />
       
       {/* Header */}
