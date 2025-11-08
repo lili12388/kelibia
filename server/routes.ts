@@ -15,14 +15,17 @@ import { eq } from "drizzle-orm";
 const upload = multer({
   storage: multer.memoryStorage(), // Store in memory instead of disk
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit per file
+    fileSize: 50 * 1024 * 1024, // 50MB limit per file
   },
   fileFilter: (req, file, cb) => {
-    const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    const allowedMimes = [
+      'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+      'video/mp4', 'video/quicktime', 'video/x-msvideo'
+    ];
     if (allowedMimes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only images are allowed.'));
+      cb(new Error('Invalid file type. Only images and videos are allowed.'));
     }
   }
 });
@@ -38,6 +41,11 @@ async function optimizeImageToBase64(buffer: Buffer): Promise<string> {
     .toBuffer();
   
   return `data:image/jpeg;base64,${optimizedBuffer.toString('base64')}`;
+}
+
+// Helper function to convert video to base64 (no optimization, just encode)
+async function videoToBase64(buffer: Buffer, mimetype: string): Promise<string> {
+  return `data:${mimetype};base64,${buffer.toString('base64')}`;
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -172,13 +180,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
           
-          // Optimize image and convert to base64
-          const url = await optimizeImageToBase64(file.buffer);
+          let url: string;
+          let finalMimetype: string;
+          
+          // Handle images and videos differently
+          if (file.mimetype.startsWith('image/')) {
+            // Optimize image and convert to base64
+            url = await optimizeImageToBase64(file.buffer);
+            finalMimetype = 'image/jpeg';
+          } else if (file.mimetype.startsWith('video/')) {
+            // Convert video to base64 without optimization
+            url = await videoToBase64(file.buffer, file.mimetype);
+            finalMimetype = file.mimetype;
+          } else {
+            continue; // Skip unsupported file types
+          }
           
           await storage.createSubmissionMedia(
             submission.id,
             file.originalname,
-            'image/jpeg',
+            finalMimetype,
             url,
             i === 0 // First media is primary
           );
@@ -249,13 +270,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
           
-          // Optimize image and convert to base64
-          const url = await optimizeImageToBase64(file.buffer);
+          let url: string;
+          let finalMimetype: string;
+          
+          // Handle images and videos differently
+          if (file.mimetype.startsWith('image/')) {
+            // Optimize image and convert to base64
+            url = await optimizeImageToBase64(file.buffer);
+            finalMimetype = 'image/jpeg';
+          } else if (file.mimetype.startsWith('video/')) {
+            // Convert video to base64 without optimization
+            url = await videoToBase64(file.buffer, file.mimetype);
+            finalMimetype = file.mimetype;
+          } else {
+            continue; // Skip unsupported file types
+          }
           
           await storage.createSubmissionMedia(
             submission.id,
             file.originalname,
-            'image/jpeg',
+            finalMimetype,
             url,
             i === 0 // First media is primary
           );

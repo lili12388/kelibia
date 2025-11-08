@@ -148,19 +148,17 @@ export default function ListPropertyPage() {
       });
 
       if (!response.ok) {
-        // Try to parse JSON error, but handle non-JSON responses (like "Request Entity Too Large")
+        // Get response text first (can only read body once)
+        const responseText = await response.text();
         let errorMessage = 'Failed to submit property';
+        
         try {
-          const error = await response.json();
+          // Try to parse as JSON
+          const error = JSON.parse(responseText);
           errorMessage = error.message || errorMessage;
         } catch {
-          // If response is not JSON (like plain text error), use status text
-          const textError = await response.text();
-          if (textError.toLowerCase().includes('request entity too large')) {
-            errorMessage = 'Images are too large. Please use smaller images (max 2MB each).';
-          } else {
-            errorMessage = textError || response.statusText;
-          }
+          // Not JSON, use the text directly
+          errorMessage = responseText || response.statusText;
         }
         throw new Error(errorMessage);
       }
@@ -211,16 +209,6 @@ export default function ListPropertyPage() {
     const validFiles = selectedFiles.filter(file => {
       const isImage = file.type.startsWith('image/');
       const isVideo = file.type.startsWith('video/');
-      
-      // Check individual file size
-      const fileMB = (file.size / (1024 * 1024)).toFixed(2);
-      if (file.size > 10 * 1024 * 1024) {
-        toast({
-          title: "File Too Large",
-          description: `"${file.name}" (${fileMB}MB) may be too large. Maximum recommended: 10MB per file.`,
-          variant: "destructive",
-        });
-      }
       
       return isImage || isVideo;
     });
