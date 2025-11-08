@@ -57,6 +57,71 @@ export default function ListPropertyPage() {
 
   const submitPropertyMutation = useMutation({
     mutationFn: async (data: InsertPropertySubmission & { files: File[]; isAdmin?: boolean }) => {
+      // Compress images on client side to reduce payload size
+      const compressedFiles = await Promise.all(
+        files.map(async (file) => {
+          if (!file.type.startsWith('image/')) {
+            return file; // Keep non-images as-is
+          }
+
+          return new Promise<File>((resolve, reject) => {
+            const img = new Image();
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+              img.src = e.target?.result as string;
+
+              img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d')!;
+
+                // Compress to max 1280x720 and 70% quality
+                const MAX_WIDTH = 1280;
+                const MAX_HEIGHT = 720;
+
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                  if (width > MAX_WIDTH) {
+                    height = (height * MAX_WIDTH) / width;
+                    width = MAX_WIDTH;
+                  }
+                } else {
+                  if (height > MAX_HEIGHT) {
+                    width = (width * MAX_HEIGHT) / height;
+                    height = MAX_HEIGHT;
+                  }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob(
+                  (blob) => {
+                    if (blob) {
+                      const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
+                        type: 'image/jpeg',
+                        lastModified: Date.now(),
+                      });
+                      resolve(compressedFile);
+                    } else {
+                      reject(new Error('Failed to compress image'));
+                    }
+                  },
+                  'image/jpeg',
+                  0.70
+                );
+              };
+            };
+
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        })
+      );
+
       // Use FormData for file uploads (much more efficient than base64)
       const formData = new FormData();
       
@@ -68,8 +133,8 @@ export default function ListPropertyPage() {
         }
       });
       
-      // Add files directly to FormData (no base64 conversion needed!)
-      files.forEach((file) => {
+      // Add compressed files to FormData
+      compressedFiles.forEach((file) => {
         formData.append('media', file);
       });
 
@@ -83,8 +148,21 @@ export default function ListPropertyPage() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to submit property');
+        // Try to parse JSON error, but handle non-JSON responses (like "Request Entity Too Large")
+        let errorMessage = 'Failed to submit property';
+        try {
+          const error = await response.json();
+          errorMessage = error.message || errorMessage;
+        } catch {
+          // If response is not JSON (like plain text error), use status text
+          const textError = await response.text();
+          if (textError.toLowerCase().includes('request entity too large')) {
+            errorMessage = 'Images are too large. Please use smaller images (max 2MB each).';
+          } else {
+            errorMessage = textError || response.statusText;
+          }
+        }
+        throw new Error(errorMessage);
       }
 
       return response.json();
