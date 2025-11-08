@@ -64,7 +64,7 @@ export default function BrowsePropertiesPage() {
 
   // Filter Sidebar Component
   const FilterSidebar = () => (
-    <div className="bg-white rounded-lg border border-border p-6 space-y-6 sticky top-6">
+    <div className="bg-white rounded-lg border border-border p-6 space-y-6 sticky top-0">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
@@ -255,9 +255,9 @@ export default function BrowsePropertiesPage() {
 
       {/* Main Content with Sidebar */}
       <div className="py-8">
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Sidebar - Desktop - Far Left, Wider */}
-          <aside className="hidden lg:block w-96 flex-shrink-0 pl-1">
+        <div className="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto px-6">
+          {/* Sidebar - Desktop */}
+          <aside className="hidden lg:block w-80 flex-shrink-0">
             <FilterSidebar />
           </aside>
 
@@ -295,7 +295,7 @@ export default function BrowsePropertiesPage() {
           )}
 
           {/* Properties Grid */}
-          <main className="flex-1 min-w-0 pr-6">
+          <main className="flex-1 min-w-0">
             {/* Loading State */}
             {isLoading && (
               <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 sm:gap-6">
