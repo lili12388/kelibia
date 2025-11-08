@@ -527,7 +527,7 @@ export default function BrokerDashboardPage() {
                         data-testid="dialog-img-main"
                       />
                     ) : currentMedia?.mimeType.startsWith('video/') ? (
-                      <video src={currentMedia.url} controls className="w-full h-full" />
+                      <video src={currentMedia.url} controls className="w-full h-full object-contain bg-black" />
                     ) : null}
                   </div>
                   

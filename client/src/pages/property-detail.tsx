@@ -305,7 +305,7 @@ export default function PropertyDetailPage() {
                   <video
                     src={currentMedia.url}
                     controls
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain bg-black"
                     data-testid="video-main"
                   />
                 )}
