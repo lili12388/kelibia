@@ -11,52 +11,33 @@ import { z } from "zod";
 import { db } from "./db.js";
 import { eq } from "drizzle-orm";
 
-// Configure multer for file uploads (temporary storage)
-const uploadsDir = path.join(process.cwd(), "public", "uploads");
-const tempDir = path.join(process.cwd(), "temp");
-
-// Ensure directories exist
-mkdir(uploadsDir, { recursive: true }).catch(console.error);
-mkdir(tempDir, { recursive: true }).catch(console.error);
-
-const multerStorage = multer.diskStorage({
-  destination: async (req, file, cb) => {
-    cb(null, tempDir); // Save to temp first
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
+// Configure multer for file uploads (use memory storage for Vercel)
 const upload = multer({
-  storage: multerStorage,
+  storage: multer.memoryStorage(), // Store in memory instead of disk
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB limit
+    fileSize: 10 * 1024 * 1024, // 10MB limit per file
   },
   fileFilter: (req, file, cb) => {
-    const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/quicktime'];
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (allowedMimes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only images and videos are allowed.'));
+      cb(new Error('Invalid file type. Only images are allowed.'));
     }
   }
 });
 
-// Helper function to optimize images
-async function optimizeImage(inputPath: string, outputFilename: string): Promise<string> {
-  const outputPath = path.join(uploadsDir, outputFilename);
-  
-  await sharp(inputPath)
+// Helper function to optimize and convert image to base64
+async function optimizeImageToBase64(buffer: Buffer): Promise<string> {
+  const optimizedBuffer = await sharp(buffer)
     .resize(1920, 1080, { 
       fit: 'inside',
       withoutEnlargement: true 
     })
     .jpeg({ quality: 85, progressive: true })
-    .toFile(outputPath);
+    .toBuffer();
   
-  return `/uploads/${outputFilename}`;
+  return `data:image/jpeg;base64,${optimizedBuffer.toString('base64')}`;
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -190,27 +171,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (files && files.length > 0) {
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
-          let url: string;
           
-          // Optimize images, keep videos as-is
-          if (file.mimetype.startsWith('image/')) {
-            const optimizedFilename = `opt-${file.filename}.jpg`;
-            url = await optimizeImage(file.path, optimizedFilename);
-            // Clean up temp file after optimization
-            const fs = await import('fs/promises');
-            await fs.unlink(file.path).catch(() => {});
-          } else {
-            // For videos, just move to uploads directory
-            const fs = await import('fs/promises');
-            const videoPath = path.join(uploadsDir, file.filename);
-            await fs.rename(file.path, videoPath);
-            url = `/uploads/${file.filename}`;
-          }
+          // Optimize image and convert to base64
+          const url = await optimizeImageToBase64(file.buffer);
           
           await storage.createSubmissionMedia(
             submission.id,
-            file.filename,
-            file.mimetype,
+            file.originalname,
+            'image/jpeg',
             url,
             i === 0 // First media is primary
           );
@@ -280,27 +248,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (files && files.length > 0) {
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
-          let url: string;
           
-          // Optimize images, keep videos as-is
-          if (file.mimetype.startsWith('image/')) {
-            const optimizedFilename = `opt-${file.filename}.jpg`;
-            url = await optimizeImage(file.path, optimizedFilename);
-            // Clean up temp file after optimization
-            const fs = await import('fs/promises');
-            await fs.unlink(file.path).catch(() => {});
-          } else {
-            // For videos, just move to uploads directory
-            const fs = await import('fs/promises');
-            const videoPath = path.join(uploadsDir, file.filename);
-            await fs.rename(file.path, videoPath);
-            url = `/uploads/${file.filename}`;
-          }
+          // Optimize image and convert to base64
+          const url = await optimizeImageToBase64(file.buffer);
           
           await storage.createSubmissionMedia(
             submission.id,
-            file.filename,
-            file.mimetype,
+            file.originalname,
+            'image/jpeg',
             url,
             i === 0 // First media is primary
           );
@@ -556,11 +511,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Handle neighborhood map upload if provided
       let neighborhoodMapUrl = req.body.neighborhoodMapUrl || null;
       if (req.file) {
-        const optimizedFilename = `neighborhood-${Date.now()}.jpg`;
-        neighborhoodMapUrl = await optimizeImage(req.file.path, optimizedFilename);
-        // Clean up temp file
-        const fs = await import('fs/promises');
-        await fs.unlink(req.file.path).catch(() => {});
+        neighborhoodMapUrl = await optimizeImageToBase64(req.file.buffer);
       }
 
       const updateData = {
