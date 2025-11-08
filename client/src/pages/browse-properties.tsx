@@ -237,7 +237,7 @@ export default function BrowsePropertiesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f0f4f0] to-white">
       <SEO 
-        title={`Propriétés Disponibles - ${filteredProperties.length} Logements | Khadhra Rentals`}
+        title={`Propriétés Disponibles - ${filteredProperties.length} Logements | Edarna`}
         description={seoDescription}
         keywords="location appartement Hay Khadhra, location Cité Olympique, appartement meublé, appartement non meublé, 2 chambres, 3 chambres, location Tunis"
       />

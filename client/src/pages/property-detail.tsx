@@ -233,7 +233,7 @@ export default function PropertyDetailPage() {
   
   // SEO data
   const primaryImage = property.media.find(m => m.isPrimary) || property.media[0];
-  const seoTitle = `${property.title} - ${property.rooms} Ch, ${property.bathrooms} SDB | Khadhra Rentals`;
+  const seoTitle = `${property.title} - ${property.rooms} Ch, ${property.bathrooms} SDB | Edarna`;
   const seoDescription = `${property.isFurnished ? 'Appartement meublé' : 'Appartement'} avec ${property.rooms} chambres et ${property.bathrooms} salles de bain à ${property.location}. Prix: ${parseFloat(property.price).toLocaleString()} TND/mois. ${property.description.substring(0, 100)}...`;
   
   // Structured Data (Schema.org) for Google rich snippets

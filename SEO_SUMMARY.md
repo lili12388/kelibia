@@ -113,7 +113,7 @@ https://yourdomain.com/robots.txt
    - Alt text already included in code ✅
 
 3. **Google My Business**
-   - Create a free listing for Khadhra Rentals
+   - Create a free listing for Edarna
    - Add your VPS location (or broker office)
    - Collect customer reviews
 

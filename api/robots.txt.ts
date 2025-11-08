@@ -22,7 +22,7 @@ export default function handler(req: Request, res: Response) {
     ? `http://${req.headers.host}`
     : `https://${req.headers.host}`;
 
-  const robotsTxt = `# Khadhra Rentals - Robots.txt
+  const robotsTxt = `# Edarna - Robots.txt
 # Allow search engines to index public property listings
 
 User-agent: *

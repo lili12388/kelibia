@@ -32,7 +32,7 @@ interface SEOProps {
 }
 
 export function SEO({
-  title = 'Khadhra Rentals - Location d\'Appartements Vérifiés',
+  title = 'Edarna - Location d\'Appartements Vérifiés',
   description = 'Trouvez votre appartement idéal à Hay Khadhra et Cité Olympique. Logements vérifiés, meublés et non meublés disponibles.',
   keywords = 'location appartement, Hay Khadhra, Cité Olympique, Tunis, appartement meublé, immobilier',
   image = '/og-image.jpg',
@@ -40,7 +40,7 @@ export function SEO({
   type = 'website',
 }: SEOProps) {
   const siteUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
-  const siteName = 'Khadhra Rentals';
+  const siteName = 'Edarna';
   
   return (
     <Helmet>
@@ -73,7 +73,7 @@ export function SEO({
       <meta name="robots" content="index, follow" />
       <meta name="language" content="French" />
       <meta name="revisit-after" content="7 days" />
-      <meta name="author" content="Khadhra Rentals" />
+      <meta name="author" content="Edarna" />
     </Helmet>
   );
 }

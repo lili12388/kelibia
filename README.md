@@ -1,4 +1,6 @@
-# Khadhra Rentals - Property Rental Platform
+# Edarna - Property Rental Platform
+
+A modern real estate platform for Hay Khadhra & Cité Olympique neighborhoods in Tunis.
 
 A modern, full-stack property rental platform connecting property owners with tenants through a broker-mediated workflow.
 

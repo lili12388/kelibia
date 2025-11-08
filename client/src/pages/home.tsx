@@ -9,7 +9,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       <SEO 
-        title="Khadhra Rentals - Location d'Appartements à Hay Khadhra & Cité Olympique"
+        title="Edarna - Location d'Appartements à Hay Khadhra & Cité Olympique"
         description="Trouvez votre logement idéal à Hay Khadhra et Cité Olympique, Tunis. Appartements meublés et non meublés vérifiés. Propriétaires, publiez gratuitement vos annonces."
         keywords="location appartement Hay Khadhra, location Cité Olympique, appartement meublé Tunis, immobilier Tunis, location logement, appartement à louer Tunis"
       />

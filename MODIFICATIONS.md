@@ -35,7 +35,7 @@ This document tracks all changes made to improve search engine optimization (SEO
 ### 4. **Added Meta Tags to Home Page**
 - **File**: `client/src/pages/home.tsx`
 - **SEO Added**:
-  - Title: "Khadhra Rentals - Location d'Appartements à Hay Khadhra & Cité Olympique"
+  - Title: "Edarna - Location d'Appartements à Hay Khadhra & Cité Olympique"
   - Description: Optimized for local search with neighborhood names
   - Keywords: "location appartement, Hay Khadhra, Cité Olympique, Tunis"
   - Open Graph tags for social sharing
@@ -93,6 +93,22 @@ This document tracks all changes made to improve search engine optimization (SEO
   - `/sitemap.xml` → `/api/sitemap.xml.ts`
   - `/robots.txt` → `/api/robots.txt.ts`
 - **Impact**: Sitemap and robots.txt now accessible on Vercel deployment
+
+### 11. **Rebranded to Edarna.com**
+- **Date**: November 8, 2025
+- **Change**: Updated all references from "Khadhra Rentals" to "Edarna"
+- **Files Modified**:
+  - `client/src/pages/home.tsx` - Homepage title
+  - `client/src/pages/browse-properties.tsx` - Browse page title
+  - `client/src/pages/property-detail.tsx` - Property detail title
+  - `client/src/components/seo.tsx` - Default title and site name
+  - `api/robots.txt.ts` - Robots.txt comment
+  - `README.md` - Project title
+  - `MODIFICATIONS.md` - Documentation
+  - `SEO_SUMMARY.md` - Documentation
+- **Brand Name**: "Edarna" (E-home, digital home)
+- **Domain**: Edarna.com
+- **Impact**: Consistent branding across entire platform
 
 ---
 
