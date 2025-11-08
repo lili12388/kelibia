@@ -57,94 +57,29 @@ export default function ListPropertyPage() {
 
   const submitPropertyMutation = useMutation({
     mutationFn: async (data: InsertPropertySubmission & { files: File[]; isAdmin?: boolean }) => {
-      // Convert files to base64
-      const mediaFiles = await Promise.all(
-        files.map((file) => {
-          return new Promise<{ filename: string; mimeType: string; dataUrl: string }>((resolve, reject) => {
-            // For images, compress them before converting to base64
-            if (file.type.startsWith('image/')) {
-              const img = new Image();
-              const reader = new FileReader();
-              
-              reader.onload = (e) => {
-                img.src = e.target?.result as string;
-                
-                img.onload = () => {
-                  // Create canvas to resize/compress image
-                  const canvas = document.createElement('canvas');
-                  const ctx = canvas.getContext('2d')!;
-                  
-                  // Max dimensions to keep file size reasonable
-                  const MAX_WIDTH = 1920;
-                  const MAX_HEIGHT = 1080;
-                  
-                  let width = img.width;
-                  let height = img.height;
-                  
-                  // Calculate new dimensions while maintaining aspect ratio
-                  if (width > height) {
-                    if (width > MAX_WIDTH) {
-                      height = (height * MAX_WIDTH) / width;
-                      width = MAX_WIDTH;
-                    }
-                  } else {
-                    if (height > MAX_HEIGHT) {
-                      width = (width * MAX_HEIGHT) / height;
-                      height = MAX_HEIGHT;
-                    }
-                  }
-                  
-                  canvas.width = width;
-                  canvas.height = height;
-                  ctx.drawImage(img, 0, 0, width, height);
-                  
-                  // Convert to JPEG with 85% quality for good compression
-                  const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-                  
-                  resolve({
-                    filename: file.name.replace(/\.[^/.]+$/, '.jpg'), // Change extension to .jpg
-                    mimeType: 'image/jpeg',
-                    dataUrl: compressedDataUrl,
-                  });
-                };
-              };
-              
-              reader.onerror = reject;
-              reader.readAsDataURL(file);
-            } else {
-              // For videos, use original (no compression)
-              const reader = new FileReader();
-              reader.onloadend = () => {
-                resolve({
-                  filename: file.name,
-                  mimeType: file.type,
-                  dataUrl: reader.result as string,
-                });
-              };
-              reader.onerror = reject;
-              reader.readAsDataURL(file);
-            }
-          });
-        })
-      );
-
-      // Prepare JSON body
+      // Use FormData for file uploads (much more efficient than base64)
+      const formData = new FormData();
+      
+      // Add all property data fields
       const { files: _, isAdmin, ...propertyData } = data;
-      const body = {
-        propertyData,
-        mediaFiles,
-      };
+      Object.entries(propertyData).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          formData.append(key, String(value));
+        }
+      });
+      
+      // Add files directly to FormData (no base64 conversion needed!)
+      files.forEach((file) => {
+        formData.append('media', file);
+      });
 
       // Use admin endpoint if admin is posting
       const endpoint = data.isAdmin ? '/api/broker/properties/submit-admin' : '/api/properties/submit';
       
       const response = await fetch(endpoint, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         credentials: 'include',
-        body: JSON.stringify(body),
+        body: formData, // FormData automatically sets correct Content-Type
       });
 
       if (!response.ok) {

@@ -7,7 +7,7 @@ import { properties, propertyMedia, propertySubmissions, submissionMedia, insert
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: '50mb',
+      sizeLimit: '500mb',
     },
   },
 };

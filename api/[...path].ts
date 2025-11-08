@@ -35,8 +35,8 @@ async function getApp() {
   }));
 
   // IMPORTANT: Parse body for serverless
-  app.use(express.json({ limit: '50mb' }));
-  app.use(express.urlencoded({ extended: false, limit: '50mb' }));
+  app.use(express.json({ limit: '500mb' }));
+  app.use(express.urlencoded({ extended: false, limit: '500mb' }));
 
   // Import and setup routes
   const { registerRoutes } = await import("../server/routes.js");

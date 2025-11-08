@@ -298,7 +298,7 @@ export default function BrowsePropertiesPage() {
           <main className="flex-1 min-w-0 pr-6">
             {/* Loading State */}
             {isLoading && (
-              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {[...Array(6)].map((_, i) => (
                   <Card key={i} className="overflow-hidden">
                     <Skeleton className="aspect-[4/3] w-full" />
@@ -335,9 +335,9 @@ export default function BrowsePropertiesPage() {
               </div>
             )}
 
-            {/* Property Grid */}
+            {/* Properties Grid */}
             {!isLoading && filteredProperties.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {filteredProperties.map((property) => {
                   const primaryMedia = property.media.find(m => m.isPrimary) || property.media[0];
                   const price = parseFloat(property.price);
@@ -360,13 +360,6 @@ export default function BrowsePropertiesPage() {
                             </div>
                           )}
                           
-                          {/* Price Badge */}
-                          <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3">
-                            <Badge className="bg-gradient-to-r from-[#1a5f3f] to-[#2d8659] text-white border-0 font-bold text-sm sm:text-lg px-2 sm:px-4 py-1 sm:py-2 shadow-xl">
-                              {price.toLocaleString()} TND
-                            </Badge>
-                          </div>
-
                           {/* Furnished Badge */}
                           {property.isFurnished && (
                             <div className="absolute top-2 left-2 sm:top-3 sm:left-3">
@@ -389,25 +382,32 @@ export default function BrowsePropertiesPage() {
                           </div>
                           
                           {/* Metadata */}
-                          <div className="flex items-center gap-2 sm:gap-4 mt-auto text-sm sm:text-base flex-wrap">
-                            <div className="flex items-center gap-1 sm:gap-2 text-foreground font-semibold bg-muted px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg">
-                              <BedDouble className="w-4 h-4 sm:w-5 sm:h-5" />
-                              <span>{property.rooms}</span>
-                            </div>
-                            <div className="flex items-center gap-1 sm:gap-2 text-foreground font-semibold bg-muted px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg">
-                              <Bath className="w-4 h-4 sm:w-5 sm:h-5" />
-                              <span>{property.bathrooms}</span>
-                            </div>
-                            {property.hasFridge && (
-                              <div className="flex items-center gap-1 text-muted-foreground">
-                                <Refrigerator className="w-4 h-4 sm:w-5 sm:h-5" />
+                          <div className="flex items-center justify-between gap-2 mt-auto text-sm sm:text-base flex-wrap">
+                            <div className="flex items-center gap-2 sm:gap-3">
+                              <div className="flex items-center gap-1 sm:gap-2 text-foreground font-semibold bg-muted px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg">
+                                <BedDouble className="w-4 h-4 sm:w-5 sm:h-5" />
+                                <span>{property.rooms}</span>
                               </div>
-                            )}
-                            {property.hasGasStove && (
-                              <div className="flex items-center gap-1 text-muted-foreground">
-                                <Flame className="w-4 h-4 sm:w-5 sm:h-5" />
+                              <div className="flex items-center gap-1 sm:gap-2 text-foreground font-semibold bg-muted px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg">
+                                <Bath className="w-4 h-4 sm:w-5 sm:h-5" />
+                                <span>{property.bathrooms}</span>
                               </div>
-                            )}
+                              {property.hasFridge && (
+                                <div className="flex items-center gap-1 text-muted-foreground">
+                                  <Refrigerator className="w-4 h-4 sm:w-5 sm:h-5" />
+                                </div>
+                              )}
+                              {property.hasGasStove && (
+                                <div className="flex items-center gap-1 text-muted-foreground">
+                                  <Flame className="w-4 h-4 sm:w-5 sm:h-5" />
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Price Badge - Bottom Right */}
+                            <Badge className="bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 text-white border-0 font-bold text-sm sm:text-base px-2 sm:px-3 py-1 sm:py-1.5 shadow-lg">
+                              {price.toLocaleString()} TND
+                            </Badge>
                           </div>
                         </CardContent>
                       </Card>
