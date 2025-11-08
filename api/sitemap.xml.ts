@@ -18,7 +18,7 @@
 import type { Request, Response } from "express";
 import { db } from "../server/db";
 import { properties } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { isNotNull } from "drizzle-orm";
 
 export default async function handler(req: Request, res: Response) {
   try {
@@ -26,7 +26,7 @@ export default async function handler(req: Request, res: Response) {
     const publishedProperties = await db
       .select()
       .from(properties)
-      .where(eq(properties.publishedAt, properties.publishedAt)); // Get all with publishedAt set
+      .where(isNotNull(properties.publishedAt));
 
     const baseUrl = req.headers.host?.includes('localhost') 
       ? `http://${req.headers.host}`
