@@ -31,6 +31,14 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/sitemap.xml.ts",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/robots.txt.ts",
+      "use": "@vercel/node"
+    },
+    {
       "src": "api/[...path].ts",
       "use": "@vercel/node",
       "config": {
@@ -43,6 +51,14 @@
     }
   ],
   "routes": [
+    {
+      "src": "/sitemap.xml",
+      "dest": "/api/sitemap.xml.ts"
+    },
+    {
+      "src": "/robots.txt",
+      "dest": "/api/robots.txt.ts"
+    },
     {
       "src": "/api/broker/properties/submit-admin",
       "dest": "/api/broker/properties/submit-admin.ts"

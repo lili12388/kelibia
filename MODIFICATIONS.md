@@ -85,6 +85,15 @@ This document tracks all changes made to improve search engine optimization (SEO
   - Images
   - Availability status
 
+### 10. **Updated Vercel Configuration for Sitemap & Robots.txt**
+- **File**: `vercel.json`
+- **Change**: Added routes and builds for sitemap.xml and robots.txt endpoints
+- **Purpose**: Enable serverless functions to handle .xml and .txt routes on Vercel
+- **Routes Added**:
+  - `/sitemap.xml` → `/api/sitemap.xml.ts`
+  - `/robots.txt` → `/api/robots.txt.ts`
+- **Impact**: Sitemap and robots.txt now accessible on Vercel deployment
+
 ---
 
 ## Files Created:
