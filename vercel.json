@@ -60,14 +60,6 @@
       "dest": "/api/robots.txt.ts"
     },
     {
-      "src": "/api/broker/properties/submit-admin",
-      "dest": "/api/broker/properties/submit-admin.ts"
-    },
-    {
-      "src": "/api/properties/submit",
-      "dest": "/api/properties/submit.ts"
-    },
-    {
       "src": "/api/broker/auth-status",
       "dest": "/api/broker/auth-status.ts"
     },
