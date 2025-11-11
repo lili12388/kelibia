@@ -48,6 +48,26 @@ async function videoToBase64(buffer: Buffer, mimetype: string): Promise<string> 
   return `data:${mimetype};base64,${buffer.toString('base64')}`;
 }
 
+// Helper function to generate a video thumbnail placeholder
+// NOTE: For production, consider using ffmpeg to extract actual video frames
+// For now, we create a simple placeholder with video icon
+async function generateVideoThumbnail(): Promise<string> {
+  // Create a simple 320x240 placeholder image with video icon
+  const svg = `
+    <svg width="320" height="240" xmlns="http://www.w3.org/2000/svg">
+      <rect width="320" height="240" fill="#1a1a2e"/>
+      <circle cx="160" cy="120" r="50" fill="#6366f1" opacity="0.8"/>
+      <path d="M 145 105 L 145 135 L 175 120 Z" fill="white"/>
+    </svg>
+  `;
+  
+  const buffer = await sharp(Buffer.from(svg))
+    .jpeg({ quality: 85 })
+    .toBuffer();
+  
+  return `data:image/jpeg;base64,${buffer.toString('base64')}`;
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Broker login endpoint
   app.post('/api/broker/login', async (req, res) => {
@@ -182,6 +202,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           let url: string;
           let finalMimetype: string;
+          let thumbnailUrl: string | null = null;
           
           // Handle images and videos differently
           if (file.mimetype.startsWith('image/')) {
@@ -192,6 +213,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Convert video to base64 without optimization
             url = await videoToBase64(file.buffer, file.mimetype);
             finalMimetype = file.mimetype;
+            // Generate video thumbnail
+            thumbnailUrl = await generateVideoThumbnail();
           } else {
             continue; // Skip unsupported file types
           }
@@ -201,7 +224,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             file.originalname,
             finalMimetype,
             url,
-            i === 0 // First media is primary
+            i === 0, // First media is primary
+            thumbnailUrl
           );
         }
       }
@@ -272,6 +296,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           let url: string;
           let finalMimetype: string;
+          let thumbnailUrl: string | null = null;
           
           // Handle images and videos differently
           if (file.mimetype.startsWith('image/')) {
@@ -282,6 +307,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Convert video to base64 without optimization
             url = await videoToBase64(file.buffer, file.mimetype);
             finalMimetype = file.mimetype;
+            // Generate video thumbnail
+            thumbnailUrl = await generateVideoThumbnail();
           } else {
             continue; // Skip unsupported file types
           }
@@ -291,7 +318,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             file.originalname,
             finalMimetype,
             url,
-            i === 0 // First media is primary
+            i === 0, // First media is primary
+            thumbnailUrl
           );
         }
       }
@@ -340,7 +368,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           media.filename,
           media.mimeType,
           media.url,
-          media.isPrimary
+          media.isPrimary,
+          media.thumbnailUrl
         );
       }
 
@@ -516,7 +545,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           media.filename,
           media.mimeType,
           media.url,
-          media.isPrimary
+          media.isPrimary,
+          media.thumbnailUrl
         );
       }
 
@@ -603,6 +633,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error updating submission:', error);
       res.status(500).json({ error: 'Failed to update submission' });
+    }
+  });
+
+  // Broker: Set primary media for a submission
+  app.post('/api/broker/submissions/:id/set-primary-media', requireBrokerAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { mediaId } = req.body;
+
+      if (!mediaId) {
+        res.status(400).json({ error: 'mediaId is required' });
+        return;
+      }
+
+      const submission = await storage.getPropertySubmission(id);
+      if (!submission) {
+        res.status(404).json({ error: 'Submission not found' });
+        return;
+      }
+
+      // Update submission media primary status
+      await storage.setPrimarySubmissionMedia(id, mediaId);
+
+      // If submission is approved, also update the published property's media
+      if (submission.status === 'approved') {
+        // Find the published property by submission ID
+        const [publishedProperty] = await db
+          .select()
+          .from(properties)
+          .where(eq(properties.submissionId, id))
+          .limit(1);
+
+        if (publishedProperty) {
+          // Find the corresponding property media by matching the submission media
+          const submissionMedia = submission.media.find(m => m.id === mediaId);
+          if (submissionMedia) {
+            // Find property media with matching url (since they're copied)
+            const [correspondingPropertyMedia] = await db
+              .select()
+              .from(propertyMedia)
+              .where(eq(propertyMedia.propertyId, publishedProperty.id))
+              .limit(100); // Get all property media
+            
+            // Find the one with matching URL
+            const matchingMedia = (await db
+              .select()
+              .from(propertyMedia)
+              .where(eq(propertyMedia.propertyId, publishedProperty.id)))
+              .find(pm => pm.url === submissionMedia.url);
+            
+            if (matchingMedia) {
+              await storage.setPrimaryPropertyMedia(publishedProperty.id, matchingMedia.id);
+            }
+          }
+        }
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error setting primary media:', error);
+      res.status(500).json({ error: 'Failed to set primary media' });
     }
   });
 

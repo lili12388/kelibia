@@ -83,6 +83,7 @@ export const submissionMedia = pgTable("submission_media", {
   filename: text("filename").notNull(),
   mimeType: text("mime_type").notNull(),
   url: text("url").notNull(),
+  thumbnailUrl: text("thumbnail_url"), // for videos, stores generated thumbnail
   isPrimary: boolean("is_primary").notNull().default(false), // primary image for card display
   uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
 });
@@ -94,6 +95,7 @@ export const propertyMedia = pgTable("property_media", {
   filename: text("filename").notNull(),
   mimeType: text("mime_type").notNull(),
   url: text("url").notNull(),
+  thumbnailUrl: text("thumbnail_url"), // for videos, stores generated thumbnail
   isPrimary: boolean("is_primary").notNull().default(false),
   uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
 });

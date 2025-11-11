@@ -23,8 +23,9 @@ export interface IStorage {
   updatePropertySubmissionStatus(id: string, status: string, approvedAt?: Date): Promise<PropertySubmission>;
   
   // Submission Media
-  createSubmissionMedia(submissionId: string, filename: string, mimeType: string, url: string, isPrimary: boolean): Promise<SubmissionMedia>;
+  createSubmissionMedia(submissionId: string, filename: string, mimeType: string, url: string, isPrimary: boolean, thumbnailUrl?: string | null): Promise<SubmissionMedia>;
   getSubmissionMedia(submissionId: string): Promise<SubmissionMedia[]>;
+  setPrimarySubmissionMedia(submissionId: string, mediaId: string): Promise<void>;
   
   // Published Properties
   createProperty(data: Omit<Property, 'id' | 'publishedAt'>): Promise<Property>;
@@ -32,8 +33,9 @@ export interface IStorage {
   getAllProperties(): Promise<PropertyWithMedia[]>;
   
   // Property Media
-  createPropertyMedia(propertyId: string, filename: string, mimeType: string, url: string, isPrimary: boolean): Promise<PropertyMedia>;
+  createPropertyMedia(propertyId: string, filename: string, mimeType: string, url: string, isPrimary: boolean, thumbnailUrl?: string | null): Promise<PropertyMedia>;
   getPropertyMedia(propertyId: string): Promise<PropertyMedia[]>;
+  setPrimaryPropertyMedia(propertyId: string, mediaId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -85,7 +87,8 @@ export class DatabaseStorage implements IStorage {
     filename: string, 
     mimeType: string, 
     url: string, 
-    isPrimary: boolean
+    isPrimary: boolean,
+    thumbnailUrl?: string | null
   ): Promise<SubmissionMedia> {
     const [media] = await db
       .insert(submissionMedia)
@@ -94,6 +97,7 @@ export class DatabaseStorage implements IStorage {
         filename,
         mimeType,
         url,
+        thumbnailUrl,
         isPrimary,
       })
       .returning();
@@ -105,6 +109,23 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(submissionMedia)
       .where(eq(submissionMedia.submissionId, submissionId));
+  }
+
+  async setPrimarySubmissionMedia(submissionId: string, mediaId: string): Promise<void> {
+    // First, set all media for this submission to non-primary
+    await db
+      .update(submissionMedia)
+      .set({ isPrimary: false })
+      .where(eq(submissionMedia.submissionId, submissionId));
+    
+    // Then set the selected media as primary
+    await db
+      .update(submissionMedia)
+      .set({ isPrimary: true })
+      .where(and(
+        eq(submissionMedia.submissionId, submissionId),
+        eq(submissionMedia.id, mediaId)
+      ));
   }
 
   // Published Properties
@@ -142,7 +163,8 @@ export class DatabaseStorage implements IStorage {
     filename: string, 
     mimeType: string, 
     url: string, 
-    isPrimary: boolean
+    isPrimary: boolean,
+    thumbnailUrl?: string | null
   ): Promise<PropertyMedia> {
     const [media] = await db
       .insert(propertyMedia)
@@ -151,6 +173,7 @@ export class DatabaseStorage implements IStorage {
         filename,
         mimeType,
         url,
+        thumbnailUrl,
         isPrimary,
       })
       .returning();
@@ -162,6 +185,23 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(propertyMedia)
       .where(eq(propertyMedia.propertyId, propertyId));
+  }
+
+  async setPrimaryPropertyMedia(propertyId: string, mediaId: string): Promise<void> {
+    // First, set all media for this property to non-primary
+    await db
+      .update(propertyMedia)
+      .set({ isPrimary: false })
+      .where(eq(propertyMedia.propertyId, propertyId));
+    
+    // Then set the selected media as primary
+    await db
+      .update(propertyMedia)
+      .set({ isPrimary: true })
+      .where(and(
+        eq(propertyMedia.propertyId, propertyId),
+        eq(propertyMedia.id, mediaId)
+      ));
   }
 }
 

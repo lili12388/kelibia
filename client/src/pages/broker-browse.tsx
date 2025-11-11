@@ -176,10 +176,40 @@ export default function BrokerBrowsePage() {
     },
   });
 
+  const setPrimaryMediaMutation = useMutation({
+    mutationFn: async ({ submissionId, mediaId }: { submissionId: string; mediaId: string }) => {
+      return apiRequest('POST', `/api/broker/submissions/${submissionId}/set-primary-media`, { mediaId });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/broker/submissions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/properties'] });
+      toast({
+        title: "Thumbnail Updated",
+        description: "Primary thumbnail has been changed successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update thumbnail.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleDeleteProperty = (propertyId: string, propertyTitle: string) => {
     if (window.confirm(`Are you sure you want to delete "${propertyTitle}"? This action cannot be undone.`)) {
       deleteMutation.mutate(propertyId);
     }
+  };
+
+  const handleSetPrimaryMedia = (mediaId: string) => {
+    if (!selectedSubmission) return;
+    
+    setPrimaryMediaMutation.mutate({
+      submissionId: selectedSubmission.id,
+      mediaId,
+    });
   };
 
   const handleEditSubmission = (submission: PropertySubmissionWithMedia) => {
@@ -340,12 +370,43 @@ export default function BrokerBrowsePage() {
                   <Link href={`/property/${property.id}`}>
                     <div className="relative aspect-[4/3] overflow-hidden bg-muted cursor-pointer group">
                       {primaryMedia ? (
-                        <img
-                          src={primaryMedia.url}
-                          alt={property.title}
-                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                          loading="lazy"
-                        />
+                        primaryMedia.mimeType.startsWith('video/') ? (
+                          // Show video thumbnail if available, otherwise show placeholder
+                          primaryMedia.thumbnailUrl ? (
+                            <div className="relative w-full h-full">
+                              <img
+                                src={primaryMedia.thumbnailUrl}
+                                alt={property.title}
+                                className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                                loading="lazy"
+                              />
+                              {/* Video play icon overlay */}
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
+                                <div className="bg-white/90 rounded-full p-4 shadow-xl">
+                                  <svg className="w-8 h-8 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                                  </svg>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            // Fallback for videos without thumbnails
+                            <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                              <div className="text-center text-white">
+                                <div className="text-6xl mb-2">🎥</div>
+                                <div className="text-sm font-medium">Video Property</div>
+                              </div>
+                            </div>
+                          )
+                        ) : (
+                          // Regular image
+                          <img
+                            src={primaryMedia.url}
+                            alt={property.title}
+                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                            loading="lazy"
+                          />
+                        )
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <MapPin className="w-12 h-12 text-muted-foreground" />
@@ -711,6 +772,68 @@ export default function BrokerBrowsePage() {
                 )}
               </div>
             </div>
+
+            {/* Thumbnail Selector - Choose Primary Media */}
+            {selectedSubmission && selectedSubmission.media.length > 1 && (
+              <div className="space-y-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-2 bg-purple-600 rounded-lg">
+                    <Eye className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-purple-900">Choose Primary Thumbnail</h4>
+                    <p className="text-xs text-purple-700">Select which image/video shows in the property card</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-4 gap-3">
+                  {selectedSubmission.media.map((media) => (
+                    <button
+                      key={media.id}
+                      type="button"
+                      onClick={() => handleSetPrimaryMedia(media.id)}
+                      className={`relative aspect-square rounded-lg overflow-hidden border-4 transition-all hover:scale-105 ${
+                        media.isPrimary 
+                          ? 'border-purple-600 shadow-xl ring-4 ring-purple-300' 
+                          : 'border-gray-300 hover:border-purple-400'
+                      }`}
+                    >
+                      {media.mimeType.startsWith('video/') ? (
+                        media.thumbnailUrl ? (
+                          <img
+                            src={media.thumbnailUrl}
+                            alt="Video thumbnail"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                            <div className="text-center text-white">
+                              <div className="text-2xl mb-1">🎥</div>
+                              <div className="text-[8px] font-bold">VIDEO</div>
+                            </div>
+                          </div>
+                        )
+                      ) : (
+                        <img
+                          src={media.url}
+                          alt="Property media"
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                      
+                      {media.isPrimary && (
+                        <div className="absolute inset-0 bg-purple-600/20 flex items-center justify-center">
+                          <div className="bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
+                            <Eye className="h-3 w-3" />
+                            PRIMARY
+                          </div>
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <DialogFooter>
