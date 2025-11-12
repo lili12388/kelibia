@@ -1,7 +1,7 @@
 // Load environment variables first
 import "./env.js";
 
-// Use standard PostgreSQL for Railway (not Neon serverless)
+// Use standard PostgreSQL connection
 import { Pool } from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from "../shared/schema.js";

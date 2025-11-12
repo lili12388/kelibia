@@ -11,9 +11,9 @@ import { z } from "zod";
 import { db } from "./db.js";
 import { eq } from "drizzle-orm";
 
-// Configure multer for file uploads (use memory storage for Vercel)
+// Configure multer for file uploads
 const upload = multer({
-  storage: multer.memoryStorage(), // Store in memory instead of disk
+  storage: multer.memoryStorage(), // Store in memory before writing to disk
   limits: {
     fileSize: 50 * 1024 * 1024, // 50MB limit per file
   },
