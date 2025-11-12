@@ -1141,7 +1141,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const sessionId = req.session.visitorId;
-      console.log('💓 Heartbeat from session:', sessionId.substring(0, 8));
       const { desc } = await import("drizzle-orm");
       
       // Find the most recent log entry for this session
