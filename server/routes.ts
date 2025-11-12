@@ -94,9 +94,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Set HTTP-only cookie
         res.cookie('broker_token', token, {
           httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
+          secure: false, // Set to false to work with HTTP (no HTTPS)
           sameSite: 'lax',
-          maxAge: 24 * 60 * 60 * 1000 // 24 hours
+          maxAge: 24 * 60 * 60 * 1000, // 24 hours
+          path: '/' // Ensure cookie is available for all paths
         });
         
         // Also set session for backward compatibility
