@@ -1116,11 +1116,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Heartbeat endpoint to track active users
   app.post('/api/analytics/heartbeat', async (req, res) => {
     try {
-      console.log('💓 HEARTBEAT RECEIVED');
-      
-      // Skip if user is authenticated admin/broker
+      // Skip if user is authenticated admin/broker (no logging to reduce spam)
       if (req.session?.isAuthenticated) {
-        console.log('⏭️ Heartbeat: Skipping authenticated user');
         res.json({ success: true, tracked: false });
         return;
       }
@@ -1156,13 +1153,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .limit(1);
       
       if (mostRecentLog.length > 0) {
-        // Update the most recent log entry timestamp
+        // Update the most recent log entry timestamp (silently)
         const now = new Date();
         await db
           .update(visitorLogs)
           .set({ timestamp: now })
           .where(eq(visitorLogs.id, mostRecentLog[0].id));
-        console.log('✅ Updated timestamp for log:', mostRecentLog[0].id.substring(0, 8), 'to', now.toISOString());
       } else {
         // No existing log found, create a basic one
         const userAgent = req.headers['user-agent'] || 'Unknown';
@@ -1176,12 +1172,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           referrer: null,
           timestamp: new Date(),
         });
-        console.log('✅ Created new heartbeat log for session:', sessionId.substring(0, 8));
       }
       
       res.json({ success: true, tracked: true });
     } catch (error) {
-      console.error('❌ Error processing heartbeat:', error);
+      // Silently handle errors for heartbeat to reduce log spam
       res.status(500).json({ error: 'Failed to process heartbeat' });
     }
   });
