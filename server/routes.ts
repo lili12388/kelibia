@@ -479,7 +479,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/broker/submissions/:status', requireBrokerAuth, async (req, res) => {
     try {
       const { status } = req.params;
+      console.log(`[FETCH] Fetching submissions with status: ${status}`);
+      const startTime = Date.now();
+      
       const submissions = await storage.getPropertySubmissionsByStatus(status);
+      
+      const duration = Date.now() - startTime;
+      console.log(`[FETCH] Found ${submissions.length} submissions in ${duration}ms`);
+      
       res.json(submissions);
     } catch (error) {
       console.error('Error fetching submissions:', error);

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, decimal, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, decimal, timestamp, boolean, index } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -40,7 +40,10 @@ export const propertySubmissions = pgTable("property_submissions", {
   status: text("status").notNull().default("pending"), // pending, approved, rejected
   createdAt: timestamp("created_at").notNull().defaultNow(),
   approvedAt: timestamp("approved_at"),
-});
+}, (table) => ({
+  // Index on status column for faster queries
+  statusIdx: index("property_submissions_status_idx").on(table.status),
+}));
 
 // Public properties table (approved listings visible to tenants)
 export const properties = pgTable("properties", {
