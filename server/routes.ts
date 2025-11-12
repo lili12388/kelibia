@@ -1124,7 +1124,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { v4: uuidv4 } = await import("uuid");
       const { visitorLogs } = await import("../shared/schema.js");
-      const { eq, sql } = await import("drizzle-orm");
+      const { eq, sql, lt } = await import("drizzle-orm");
       
       // Get or create session ID
       if (!req.session.visitorId) {
@@ -1142,6 +1142,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const sessionId = req.session.visitorId;
       const { desc } = await import("drizzle-orm");
+      
+      // Clean up old logs (older than 24 hours) every 100 requests to prevent DB bloat
+      if (Math.random() < 0.01) {
+        const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        await db.delete(visitorLogs).where(lt(visitorLogs.timestamp, yesterday)).execute();
+      }
       
       // Find the most recent log entry for this session
       const mostRecentLog = await db
