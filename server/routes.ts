@@ -797,13 +797,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { visitorLogs, propertyAnalytics, siteAnalytics } = await import("../shared/schema.js");
       const { sql, desc } = await import("drizzle-orm");
       
+      console.log('📊 ANALYTICS SUMMARY REQUEST');
+      
       // Get today's date
       const today = new Date().toISOString().split('T')[0];
+      console.log('📅 Today date:', today);
+      
+      // Check if we have any data in the tables
+      const visitorCount = await db.select({ count: sql<number>`COUNT(*)::int` }).from(visitorLogs);
+      const siteAnalyticsCount = await db.select({ count: sql<number>`COUNT(*)::int` }).from(siteAnalytics);
+      const propertyAnalyticsCount = await db.select({ count: sql<number>`COUNT(*)::int` }).from(propertyAnalytics);
+      
+      console.log('📋 Database counts:');
+      console.log('  - Visitor logs:', visitorCount[0]?.count || 0);
+      console.log('  - Site analytics:', siteAnalyticsCount[0]?.count || 0);
+      console.log('  - Property analytics:', propertyAnalyticsCount[0]?.count || 0);
       
       // Get today's site analytics
       const todayStats = await db.query.siteAnalytics.findFirst({
         where: eq(siteAnalytics.date, today),
       });
+      
+      console.log('📈 Today stats:', todayStats);
       
       // Get total visitors (sum of all days)
       const totalStats = await db
@@ -812,6 +827,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           totalPageViews: sql<number>`SUM(${siteAnalytics.totalPageViews})::int`,
         })
         .from(siteAnalytics);
+        
+      console.log('📊 Total stats:', totalStats[0]);
       
       // Count unique properties viewed (distinct properties in property_analytics)
       const uniquePropertiesViewed = await db
