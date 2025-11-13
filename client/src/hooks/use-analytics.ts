@@ -9,7 +9,10 @@ export function usePageView() {
     // Send page view to server
     const trackPageView = async () => {
       try {
-        console.log('🔵 CLIENT: Tracking page view:', location);
+        console.log('🔵 CLIENT: Tracking page view for:', location);
+        console.log('🔵 CLIENT: Current URL:', window.location.href);
+        console.log('🔵 CLIENT: Referrer:', document.referrer);
+        
         const response = await fetch('/api/analytics/pageview', {
           method: 'POST',
           headers: {
@@ -22,11 +25,23 @@ export function usePageView() {
           }),
         });
         
+        console.log('📡 CLIENT: Response status:', response.status);
+        console.log('📡 CLIENT: Response ok:', response.ok);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('❌ CLIENT: Server error:', response.status, errorText);
+          return;
+        }
+        
         const result = await response.json();
-        console.log('✅ CLIENT: Tracking response:', result);
+        console.log('✅ CLIENT: Tracking successful:', result);
       } catch (error) {
-        // Silently fail - don't disrupt user experience
         console.error('❌ CLIENT: Analytics tracking failed:', error);
+        console.error('❌ CLIENT: Error details:', {
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : 'No stack trace'
+        });
       }
     };
 

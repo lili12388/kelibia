@@ -1284,6 +1284,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // MANUAL TEST ENDPOINT - Force insert analytics data
+  app.post('/api/admin/analytics/force-test-data', requireBrokerAuth, async (req, res) => {
+    try {
+      console.log('🧪 FORCE INSERTING TEST ANALYTICS DATA');
+      
+      const { visitorLogs, siteAnalytics, propertyAnalytics } = await import("../shared/schema.js");
+      const { sql } = await import("drizzle-orm");
+      
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Force insert visitor logs
+      await db.insert(visitorLogs).values([
+        {
+          sessionId: 'force-test-1',
+          pageUrl: '/',
+          deviceType: 'mobile',
+          userAgent: 'Test Mobile Browser',
+          referrer: null,
+        },
+        {
+          sessionId: 'force-test-2',
+          pageUrl: '/browse-properties',
+          deviceType: 'desktop',
+          userAgent: 'Test Desktop Browser',
+          referrer: '/',
+        }
+      ]);
+      
+      // Force insert site analytics
+      await db.execute(sql`
+        INSERT INTO site_analytics (date, total_visitors, total_page_views, unique_sessions, desktop_visitors, mobile_visitors, city_breakdown)
+        VALUES (
+          ${today},
+          50,
+          75,
+          45,
+          20,
+          30,
+          '{"Tunis": 25, "Ariana": 15, "Sfax": 10}'
+        )
+        ON CONFLICT (date) 
+        DO UPDATE SET
+          total_visitors = 50,
+          total_page_views = 75,
+          unique_sessions = 45,
+          desktop_visitors = 20,
+          mobile_visitors = 30,
+          city_breakdown = '{"Tunis": 25, "Ariana": 15, "Sfax": 10}'
+      `);
+      
+      console.log('✅ FORCE TEST DATA INSERTED');
+      
+      res.json({ 
+        success: true, 
+        message: 'Test analytics data inserted successfully',
+        date: today
+      });
+    } catch (error) {
+      console.error('❌ Error inserting test data:', error);
+      res.status(500).json({ error: 'Failed to insert test data', details: error instanceof Error ? error.message : 'Unknown' });
+    }
+  });
+
   // Delete all visitor logs (clear activity history only, keep statistics)
   app.delete('/api/admin/analytics/visitors', requireBrokerAuth, async (req, res) => {
     try {
