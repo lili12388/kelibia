@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrokerAuthGuard } from "@/components/broker-auth-guard";
 import { useActiveUserHeartbeat } from "@/hooks/use-analytics";
+import ScrollToTop from "@/components/scroll-to-top";
 import HomePage from "@/pages/home";
 import ListPropertyPage from "@/pages/list-property";
 import SubmissionConfirmedPage from "@/pages/submission-confirmed";
@@ -21,7 +22,9 @@ function Router() {
   useActiveUserHeartbeat();
   
   return (
-    <Switch>
+    <>
+      <ScrollToTop />
+      <Switch>
       <Route path="/" component={HomePage} />
       <Route path="/list-property" component={ListPropertyPage} />
       <Route path="/submission-confirmed" component={SubmissionConfirmedPage} />
@@ -56,6 +59,7 @@ function Router() {
       </Route>
       <Route component={NotFound} />
     </Switch>
+    </>
   );
 }
 
