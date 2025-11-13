@@ -23,18 +23,21 @@ export default function BrokerLoginPage() {
       console.log('Login response:', data);
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log('Login successful, data:', data);
       // Invalidate auth status to refresh the navbar
-      queryClient.invalidateQueries({ queryKey: ['/api/broker/auth-status'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/broker/auth-status'] });
+      
+      // Wait for the auth status to be refetched and updated
+      await queryClient.refetchQueries({ queryKey: ['/api/broker/auth-status'] });
+      
       toast({
         title: "Login Successful",
         description: "Welcome back, admin!",
       });
-      // Use setTimeout to ensure state updates before navigation
-      setTimeout(() => {
-        setLocation('/admin/browse');
-      }, 100);
+      
+      // Navigate to admin browse page
+      setLocation('/admin/browse');
     },
     onError: (error: any) => {
       console.error('Login error:', error);
