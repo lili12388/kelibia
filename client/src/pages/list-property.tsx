@@ -25,6 +25,40 @@ export default function ListPropertyPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   
+  // Upload statistics
+  const [uploadStats, setUploadStats] = useState({
+    uploadedBytes: 0,
+    totalBytes: 0,
+    uploadSpeed: 0,
+    estimatedTimeRemaining: 0,
+    startTime: 0
+  });
+
+  // Helper functions for formatting
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
+
+  const formatSpeed = (bytesPerSecond: number): string => {
+    if (bytesPerSecond === 0) return '0 B/s';
+    const k = 1024;
+    const sizes = ['B/s', 'KB/s', 'MB/s', 'GB/s'];
+    const i = Math.floor(Math.log(bytesPerSecond) / Math.log(k));
+    return parseFloat((bytesPerSecond / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
+
+  const formatTime = (seconds: number): string => {
+    if (seconds === 0 || !isFinite(seconds)) return '--';
+    if (seconds < 60) return `${Math.round(seconds)}s`;
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.round(seconds % 60);
+    return `${minutes}m ${remainingSeconds}s`;
+  };
+  
   // Check if user is admin and if they're on admin route
   const { data: authStatus } = useQuery<{ isAuthenticated: boolean }>({
     queryKey: ['/api/broker/auth-status'],
@@ -156,6 +190,19 @@ export default function ListPropertyPage() {
       // Use admin endpoint if admin is posting
       const endpoint = data.isAdmin ? '/api/broker/properties/submit-admin' : '/api/properties/submit';
       
+      // Calculate total file size for statistics
+      const totalBytes = compressedFiles.reduce((sum, file) => sum + file.size, 0);
+      const startTime = Date.now();
+      
+      // Initialize upload stats
+      setUploadStats({
+        uploadedBytes: 0,
+        totalBytes,
+        uploadSpeed: 0,
+        estimatedTimeRemaining: 0,
+        startTime
+      });
+
       // Use XMLHttpRequest for real-time upload progress tracking
       const response = await new Promise<Response>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -163,6 +210,22 @@ export default function ListPropertyPage() {
         // Track upload progress
         xhr.upload.addEventListener('progress', (event) => {
           if (event.lengthComputable) {
+            const currentTime = Date.now();
+            const elapsedTime = (currentTime - startTime) / 1000; // in seconds
+            const uploadedBytes = event.loaded;
+            const speed = elapsedTime > 0 ? uploadedBytes / elapsedTime : 0;
+            const remainingBytes = event.total - uploadedBytes;
+            const estimatedTimeRemaining = speed > 0 ? remainingBytes / speed : 0;
+            
+            // Update upload statistics
+            setUploadStats({
+              uploadedBytes,
+              totalBytes: event.total,
+              uploadSpeed: speed,
+              estimatedTimeRemaining,
+              startTime
+            });
+            
             // Calculate progress: 50% (prep) + 45% (upload) = 95% max
             const uploadPercent = (event.loaded / event.total) * 45;
             setUploadProgress(50 + uploadPercent);
@@ -230,6 +293,13 @@ export default function ListPropertyPage() {
       setTimeout(() => {
         setIsUploading(false);
         setUploadProgress(0);
+        setUploadStats({
+          uploadedBytes: 0,
+          totalBytes: 0,
+          uploadSpeed: 0,
+          estimatedTimeRemaining: 0,
+          startTime: 0
+        });
       }, 1000);
       
       return result;
@@ -250,6 +320,13 @@ export default function ListPropertyPage() {
     onError: (error: any) => {
       setIsUploading(false);
       setUploadProgress(0);
+      setUploadStats({
+        uploadedBytes: 0,
+        totalBytes: 0,
+        uploadSpeed: 0,
+        estimatedTimeRemaining: 0,
+        startTime: 0
+      });
       toast({
         title: "Submission Failed",
         description: error.message || "Failed to submit property. Please try again.",
@@ -786,7 +863,7 @@ export default function ListPropertyPage() {
               {isUploading && (
                 <Card>
                   <CardContent className="pt-6">
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <p className="text-sm sm:text-base font-medium text-foreground">
                           {uploadProgress < 30 ? "Preparing files..." : 
@@ -797,7 +874,38 @@ export default function ListPropertyPage() {
                           {Math.round(uploadProgress)}%
                         </p>
                       </div>
+                      
                       <Progress value={uploadProgress} className="h-4 sm:h-3" />
+                      
+                      {/* Upload Statistics - Only show during actual upload phase */}
+                      {uploadProgress >= 30 && uploadProgress < 95 && uploadStats.totalBytes > 0 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs sm:text-sm">
+                          {/* Upload Speed */}
+                          <div className="bg-muted/50 rounded-lg p-3 text-center">
+                            <div className="font-semibold text-primary">
+                              {formatSpeed(uploadStats.uploadSpeed)}
+                            </div>
+                            <div className="text-muted-foreground">Speed</div>
+                          </div>
+                          
+                          {/* File Size Progress */}
+                          <div className="bg-muted/50 rounded-lg p-3 text-center">
+                            <div className="font-semibold text-primary">
+                              {formatFileSize(uploadStats.uploadedBytes)} / {formatFileSize(uploadStats.totalBytes)}
+                            </div>
+                            <div className="text-muted-foreground">Uploaded</div>
+                          </div>
+                          
+                          {/* Time Remaining */}
+                          <div className="bg-muted/50 rounded-lg p-3 text-center">
+                            <div className="font-semibold text-primary">
+                              {formatTime(uploadStats.estimatedTimeRemaining)}
+                            </div>
+                            <div className="text-muted-foreground">Remaining</div>
+                          </div>
+                        </div>
+                      )}
+                      
                       <p className="text-xs sm:text-sm text-muted-foreground text-center">
                         {uploadProgress < 30 ? "Compressing images for faster upload" :
                          uploadProgress < 95 ? "Uploading files to server" :
