@@ -177,16 +177,65 @@ export default function TestAnalyticsPage() {
 
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle>Instructions</CardTitle>
+            <CardTitle>📋 Testing Instructions</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <p><strong>1. Test Client Tracking:</strong> Tests if page view tracking works</p>
-            <p><strong>2. Force Test Data:</strong> Manually inserts test analytics data (admin only)</p>
-            <p><strong>3. Get Analytics:</strong> Fetches current analytics summary</p>
-            <p><strong>4. Test Heartbeat:</strong> Tests active user tracking</p>
-            <p className="text-sm text-muted-foreground mt-4">
-              Check browser console (F12) for detailed logs. Server logs available via: pm2 logs darna
-            </p>
+          <CardContent className="space-y-4">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h4 className="font-semibold mb-2">🎯 What to Test & Report:</h4>
+              <ol className="space-y-2 text-sm">
+                <li><strong>1. Test Client Tracking</strong> - Should return status 200 with "success: true"</li>
+                <li><strong>2. Force Test Data (as admin)</strong> - Should insert test analytics data</li>
+                <li><strong>3. Get Analytics</strong> - Should show numbers greater than 0 instead of all zeros</li>
+                <li><strong>4. Test Heartbeat</strong> - Should return "success: true"</li>
+              </ol>
+            </div>
+            
+            <div className="bg-yellow-50 p-4 rounded-lg">
+              <h4 className="font-semibold mb-2">🔍 What to Check:</h4>
+              <ul className="space-y-1 text-sm">
+                <li>• <strong>Browser Console (F12):</strong> Look for messages starting with 🔵 CLIENT</li>
+                <li>• <strong>Test Results:</strong> Copy any error messages from the results above</li>
+                <li>• <strong>Analytics Page:</strong> Check if numbers change from 0 to actual values</li>
+              </ul>
+            </div>
+            
+            <div className="bg-green-50 p-4 rounded-lg">
+              <h4 className="font-semibold mb-2">📤 What to Report Back:</h4>
+              <ul className="space-y-1 text-sm">
+                <li>• Screenshot of test results (especially any errors)</li>
+                <li>• Copy-paste any error messages</li>
+                <li>• Whether analytics page still shows all zeros</li>
+                <li>• Any console error messages (F12 → Console tab)</li>
+              </ul>
+            </div>
+            
+            <div className="bg-red-50 p-4 rounded-lg">
+              <h4 className="font-semibold mb-2">🚨 Common Issues to Check:</h4>
+              <ul className="space-y-1 text-sm">
+                <li>• <strong>Network errors:</strong> "Failed to fetch" = server connection issue</li>
+                <li>• <strong>404 errors:</strong> API endpoints not found</li>
+                <li>• <strong>500 errors:</strong> Server/database issues</li>
+                <li>• <strong>No console logs:</strong> Client tracking not running</li>
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>🔧 Server Commands (if needed)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-gray-100 p-4 rounded font-mono text-sm space-y-2">
+              <p># Check server logs:</p>
+              <p>pm2 logs darna</p>
+              <p></p>
+              <p># Restart server:</p>
+              <p>pm2 restart darna</p>
+              <p></p>
+              <p># Check if server is running:</p>
+              <p>pm2 status</p>
+            </div>
           </CardContent>
         </Card>
       </div>
