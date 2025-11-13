@@ -34,6 +34,9 @@ export default function ListPropertyPage() {
     startTime: 0
   });
 
+  // Upload cancellation
+  const [uploadAbortController, setUploadAbortController] = useState<AbortController | null>(null);
+
   // Helper functions for formatting
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 B';
@@ -57,6 +60,30 @@ export default function ListPropertyPage() {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = Math.round(seconds % 60);
     return `${minutes}m ${remainingSeconds}s`;
+  };
+
+  // Cancel upload function
+  const cancelUpload = () => {
+    if (uploadAbortController) {
+      uploadAbortController.abort();
+      setUploadAbortController(null);
+    }
+    
+    // Reset upload state but keep form data
+    setIsUploading(false);
+    setUploadProgress(0);
+    setUploadStats({
+      uploadedBytes: 0,
+      totalBytes: 0,
+      uploadSpeed: 0,
+      estimatedTimeRemaining: 0,
+      startTime: 0
+    });
+    
+    toast({
+      title: "Upload Cancelled",
+      description: "Your upload has been cancelled. Your form data is preserved.",
+    });
   };
   
   // Check if user is admin and if they're on admin route
@@ -203,9 +230,19 @@ export default function ListPropertyPage() {
         startTime
       });
 
+      // Create AbortController for cancellation
+      const abortController = new AbortController();
+      setUploadAbortController(abortController);
+
       // Use XMLHttpRequest for real-time upload progress tracking
       const response = await new Promise<Response>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
+        
+        // Handle abort signal
+        abortController.signal.addEventListener('abort', () => {
+          xhr.abort();
+          reject(new Error('Upload cancelled by user'));
+        });
         
         // Track upload progress
         xhr.upload.addEventListener('progress', (event) => {
@@ -320,6 +357,7 @@ export default function ListPropertyPage() {
     onError: (error: any) => {
       setIsUploading(false);
       setUploadProgress(0);
+      setUploadAbortController(null);
       setUploadStats({
         uploadedBytes: 0,
         totalBytes: 0,
@@ -327,11 +365,15 @@ export default function ListPropertyPage() {
         estimatedTimeRemaining: 0,
         startTime: 0
       });
-      toast({
-        title: "Submission Failed",
-        description: error.message || "Failed to submit property. Please try again.",
-        variant: "destructive",
-      });
+      
+      // Don't show error toast if upload was cancelled by user
+      if (error.message !== 'Upload cancelled by user') {
+        toast({
+          title: "Submission Failed",
+          description: error.message || "Failed to submit property. Please try again.",
+          variant: "destructive",
+        });
+      }
     },
   });
 
@@ -917,17 +959,28 @@ export default function ListPropertyPage() {
               )}
               
               <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
-                <Link href="/" className="order-2 sm:order-1">
+                {isUploading ? (
                   <Button 
                     type="button" 
                     variant="outline" 
                     data-testid="button-cancel" 
-                    disabled={isUploading}
-                    className="w-full sm:w-auto"
+                    onClick={cancelUpload}
+                    className="w-full sm:w-auto order-2 sm:order-1"
                   >
-                    Cancel
+                    Cancel Upload
                   </Button>
-                </Link>
+                ) : (
+                  <Link href="/" className="order-2 sm:order-1">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      data-testid="button-cancel" 
+                      className="w-full sm:w-auto"
+                    >
+                      Cancel
+                    </Button>
+                  </Link>
+                )}
                 <Button 
                   type="submit" 
                   size="lg"
