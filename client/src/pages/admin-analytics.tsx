@@ -115,7 +115,7 @@ export default function AdminAnalytics() {
           description: "Les statistiques de cette propriété ont été supprimées.",
         });
         
-        queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics?endpoint=summary"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics/summary"] });
       } else {
         throw new Error("Failed to delete property analytics");
       }
@@ -177,7 +177,7 @@ export default function AdminAnalytics() {
           description: "Toutes les données analytiques ont été supprimées avec succès.",
         });
         
-        queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics?endpoint=summary"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics/summary"] });
         setDeleteAllDialogOpen(false);
       } else {
         const error = await response.text();
@@ -198,9 +198,9 @@ export default function AdminAnalytics() {
 
   // Fetch analytics summary
   const { data: summary, isLoading: summaryLoading } = useQuery<AnalyticsSummary>({
-    queryKey: ["/api/admin/analytics?endpoint=summary"],
+    queryKey: ["/api/admin/analytics/summary"],
     queryFn: async () => {
-      const response = await apiRequest("/api/admin/analytics?endpoint=summary");
+      const response = await apiRequest("/api/admin/analytics/summary");
       return await response.json();
     },
   });
@@ -209,7 +209,7 @@ export default function AdminAnalytics() {
   useEffect(() => {
     const fetchRealTime = async () => {
       try {
-        const response = await apiRequest("/api/admin/analytics?endpoint=real-time");
+        const response = await apiRequest("/api/admin/analytics/real-time");
         const data = await response.json();
         setRealTimeData(data);
       } catch (error) {
@@ -259,7 +259,7 @@ export default function AdminAnalytics() {
               </Select>
               <Button 
                 onClick={() => {
-                  queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics?endpoint=summary"] });
+                  queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics/summary"] });
                   toast({ title: "Données actualisées", description: "Les statistiques ont été mises à jour" });
                 }}
                 variant="outline" 
