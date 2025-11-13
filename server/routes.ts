@@ -1347,6 +1347,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Reset all analytics (set all counts to 0)
+  app.post('/api/admin/analytics/reset', requireBrokerAuth, async (req, res) => {
+    try {
+      console.log('🗑️ RESETTING ALL ANALYTICS DATA');
+      
+      const { visitorLogs, siteAnalytics, propertyAnalytics } = await import("../shared/schema.js");
+      
+      // Delete all visitor logs
+      await db.delete(visitorLogs).execute();
+      console.log('✅ Deleted all visitor logs');
+      
+      // Delete all site analytics
+      await db.delete(siteAnalytics).execute();
+      console.log('✅ Deleted all site analytics');
+      
+      // Delete all property analytics
+      await db.delete(propertyAnalytics).execute();
+      console.log('✅ Deleted all property analytics');
+      
+      res.json({ 
+        success: true, 
+        message: 'All analytics data has been reset to zero' 
+      });
+    } catch (error) {
+      console.error('❌ Error resetting analytics:', error);
+      res.status(500).json({ error: 'Failed to reset analytics data' });
+    }
+  });
+
   // Delete all visitor logs (clear activity history only, keep statistics)
   app.delete('/api/admin/analytics/visitors', requireBrokerAuth, async (req, res) => {
     try {

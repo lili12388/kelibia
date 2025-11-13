@@ -134,7 +134,7 @@ export default function AdminAnalytics() {
   const handleResetAllStatistics = async () => {
     setIsDeleting(true);
     try {
-      const response = await apiRequest("/api/admin/analytics?endpoint=reset", {
+      const response = await apiRequest("/api/admin/analytics/reset", {
         method: "POST",
       });
       
@@ -166,7 +166,7 @@ export default function AdminAnalytics() {
     }
     setIsDeleting(true);
     try {
-      const response = await apiRequest("/api/admin/analytics?endpoint=visitors", {
+      const response = await apiRequest("/api/admin/analytics/visitors", {
         method: "DELETE",
         credentials: "include",
       });

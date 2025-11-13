@@ -63,24 +63,33 @@ async function updateSiteAnalytics(sessionId: string, deviceType: "desktop" | "m
   const today = getTodayDate();
   
   try {
+    // Check if this session has already been counted today
+    const existingLog = await db.query.visitorLogs.findFirst({
+      where: sql`${visitorLogs.sessionId} = ${sessionId} AND DATE(${visitorLogs.timestamp}) = ${today}`,
+    });
+    
+    const isNewVisitor = !existingLog;
+    
     // Use raw SQL to handle UPSERT properly with proper city breakdown update
     await db.execute(sql`
       INSERT INTO site_analytics (date, total_visitors, total_page_views, unique_sessions, desktop_visitors, mobile_visitors, city_breakdown)
       VALUES (
         ${today},
+        ${isNewVisitor ? 1 : 0},
         1,
-        1,
-        1,
-        ${deviceType === 'desktop' ? 1 : 0},
-        ${deviceType === 'mobile' ? 1 : 0},
-        ${JSON.stringify(city ? { [city]: 1 } : {})}
+        ${isNewVisitor ? 1 : 0},
+        ${deviceType === 'desktop' && isNewVisitor ? 1 : 0},
+        ${deviceType === 'mobile' && isNewVisitor ? 1 : 0},
+        ${JSON.stringify(city && isNewVisitor ? { [city]: 1 } : {})}
       )
       ON CONFLICT (date) 
       DO UPDATE SET
+        total_visitors = site_analytics.total_visitors + ${isNewVisitor ? 1 : 0},
         total_page_views = site_analytics.total_page_views + 1,
-        desktop_visitors = site_analytics.desktop_visitors + ${deviceType === 'desktop' ? 1 : 0},
-        mobile_visitors = site_analytics.mobile_visitors + ${deviceType === 'mobile' ? 1 : 0},
-        city_breakdown = ${city ? sql`
+        unique_sessions = site_analytics.unique_sessions + ${isNewVisitor ? 1 : 0},
+        desktop_visitors = site_analytics.desktop_visitors + ${deviceType === 'desktop' && isNewVisitor ? 1 : 0},
+        mobile_visitors = site_analytics.mobile_visitors + ${deviceType === 'mobile' && isNewVisitor ? 1 : 0},
+        city_breakdown = ${city && isNewVisitor ? sql`
           jsonb_set(
             COALESCE(site_analytics.city_breakdown::jsonb, '{}'::jsonb),
             ${`{${city}}`},
@@ -89,8 +98,7 @@ async function updateSiteAnalytics(sessionId: string, deviceType: "desktop" | "m
         ` : sql`site_analytics.city_breakdown`}
     `);
   } catch (error) {
-    // Silently ignore errors to avoid spam
-    // console.error("Error updating site analytics:", error);
+    console.error("Error updating site analytics:", error);
   }
 }
 
@@ -181,7 +189,7 @@ export async function analyticsMiddleware(req: Request, res: Response, next: Nex
   }
 
   // Skip analytics if user is logged in as admin/broker
-  if (req.session && req.session.isAuthenticated) {
+  if (req.session && (req.session.isAuthenticated || req.session.isBroker)) {
     return next();
   }
 
