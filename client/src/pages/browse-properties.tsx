@@ -245,24 +245,24 @@ export default function BrowsePropertiesPage() {
       
       {/* Header */}
       <div className="bg-white border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">Propriétés Disponibles</h1>
-          <p className="text-muted-foreground text-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
+          <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2">Propriétés Disponibles</h1>
+          <p className="text-muted-foreground text-sm sm:text-lg">
             Parcourez les logements vérifiés à Hay Khadhra & Cité Olympique
           </p>
         </div>
       </div>
 
       {/* Main Content with Sidebar */}
-      <div className="py-8">
-        <div className="flex flex-col lg:flex-row gap-6 pl-8">
+      <div className="py-4 sm:py-8">
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 px-2 sm:px-4 lg:pl-8">
           {/* Sidebar - Desktop */}
           <aside className="hidden lg:block w-80 flex-shrink-0">
             <FilterSidebar />
           </aside>
 
           {/* Mobile Filter Button */}
-          <div className="lg:hidden mb-4 px-6">
+          <div className="lg:hidden mb-4 px-2 sm:px-4">
             <Button
               variant="outline"
               size="lg"
@@ -295,17 +295,17 @@ export default function BrowsePropertiesPage() {
           )}
 
           {/* Properties Grid */}
-          <main className="flex-1 min-w-0 pr-6">
+          <main className="flex-1 min-w-0 pr-2 sm:pr-4 lg:pr-6">
             {/* Loading State */}
             {isLoading && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 md:gap-6">
                 {[...Array(6)].map((_, i) => (
                   <Card key={i} className="overflow-hidden">
                     <Skeleton className="aspect-[4/3] w-full" />
-                    <CardContent className="p-4 space-y-3">
-                      <Skeleton className="h-6 w-3/4" />
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-1/2" />
+                    <CardContent className="p-2 sm:p-4 space-y-2 sm:space-y-3">
+                      <Skeleton className="h-4 sm:h-6 w-3/4" />
+                      <Skeleton className="h-3 sm:h-4 w-full" />
+                      <Skeleton className="h-3 sm:h-4 w-1/2" />
                     </CardContent>
                   </Card>
                 ))}
@@ -337,16 +337,16 @@ export default function BrowsePropertiesPage() {
 
             {/* Properties Grid */}
             {!isLoading && filteredProperties.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 md:gap-6">
                 {filteredProperties.map((property) => {
                   const primaryMedia = property.media.find(m => m.isPrimary) || property.media[0];
                   const price = parseFloat(property.price);
                   
                   return (
                     <Link key={property.id} href={`/property/${property.id}`}>
-                      <Card className="overflow-hidden hover-elevate transition-all h-full flex flex-col group">
+                      <Card className="overflow-hidden hover-elevate transition-all h-full flex flex-col group shadow-sm hover:shadow-md">
                         {/* Property Image */}
-                        <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+                        <div className="relative aspect-square sm:aspect-[4/3] overflow-hidden bg-muted">
                           {primaryMedia ? (
                             primaryMedia.mimeType.startsWith('video/') ? (
                               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500">
@@ -371,8 +371,8 @@ export default function BrowsePropertiesPage() {
                           
                           {/* Furnished Badge */}
                           {property.isFurnished && (
-                            <div className="absolute top-2 left-2 sm:top-3 sm:left-3">
-                              <Badge className="bg-blue-600 text-white border-0 font-semibold text-xs sm:text-sm px-2 sm:px-3 py-0.5 sm:py-1">
+                            <div className="absolute top-1 left-1 sm:top-2 sm:left-2">
+                              <Badge className="bg-blue-600 text-white border-0 font-semibold text-xs px-1.5 sm:px-2 py-0.5">
                                 Meublé
                               </Badge>
                             </div>
@@ -380,41 +380,42 @@ export default function BrowsePropertiesPage() {
                         </div>
 
                         {/* Property Info */}
-                        <CardContent className="p-3 sm:p-5 flex-1 flex flex-col">
-                          <h3 className="font-bold text-foreground text-base sm:text-xl mb-2 sm:mb-3 line-clamp-2 group-hover:text-primary transition-colors">
+                        <CardContent className="p-2 sm:p-3 md:p-4 flex-1 flex flex-col">
+                          <h3 className="font-bold text-foreground text-xs sm:text-sm md:text-base lg:text-lg mb-1 sm:mb-2 line-clamp-2 group-hover:text-primary transition-colors leading-tight">
                             {property.title}
                           </h3>
                           
-                          <div className="flex items-center gap-1 sm:gap-2 text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
-                            <MapPin className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                            <span className="line-clamp-1">{property.location}</span>
+                          <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
+                            <MapPin className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                            <span className="line-clamp-1 truncate">{property.location}</span>
                           </div>
                           
                           {/* Metadata */}
-                          <div className="flex items-center justify-between gap-2 mt-auto text-sm sm:text-base flex-wrap">
-                            <div className="flex items-center gap-2 sm:gap-3">
-                              <div className="flex items-center gap-1 sm:gap-2 text-foreground font-semibold bg-muted px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg">
-                                <BedDouble className="w-4 h-4 sm:w-5 sm:h-5" />
+                          <div className="space-y-2 mt-auto">
+                            {/* Room and Bath Info */}
+                            <div className="flex items-center gap-1 sm:gap-2">
+                              <div className="flex items-center gap-0.5 sm:gap-1 text-foreground font-semibold bg-muted px-1.5 sm:px-2 py-1 rounded text-xs sm:text-sm">
+                                <BedDouble className="w-3 h-3 sm:w-4 sm:h-4" />
                                 <span>{property.rooms}</span>
                               </div>
-                              <div className="flex items-center gap-1 sm:gap-2 text-foreground font-semibold bg-muted px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg">
-                                <Bath className="w-4 h-4 sm:w-5 sm:h-5" />
+                              <div className="flex items-center gap-0.5 sm:gap-1 text-foreground font-semibold bg-muted px-1.5 sm:px-2 py-1 rounded text-xs sm:text-sm">
+                                <Bath className="w-3 h-3 sm:w-4 sm:h-4" />
                                 <span>{property.bathrooms}</span>
                               </div>
                               {property.hasFridge && (
-                                <div className="flex items-center gap-1 text-muted-foreground">
-                                  <Refrigerator className="w-4 h-4 sm:w-5 sm:h-5" />
+                                <div className="flex items-center text-muted-foreground">
+                                  <Refrigerator className="w-3 h-3 sm:w-4 sm:h-4" />
                                 </div>
                               )}
                               {property.hasGasStove && (
-                                <div className="flex items-center gap-1 text-muted-foreground">
-                                  <Flame className="w-4 h-4 sm:w-5 sm:h-5" />
+                                <div className="flex items-center text-muted-foreground">
+                                  <Flame className="w-3 h-3 sm:w-4 sm:h-4" />
                                 </div>
                               )}
                             </div>
                             
-                            {/* Price Badge - Bottom Right */}
-                            <Badge className="bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 text-white border-0 font-bold text-sm sm:text-base px-2 sm:px-3 py-1 sm:py-1.5 shadow-lg">
+                            {/* Price Badge - Full Width on Mobile */}
+                            <Badge className="bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 text-white border-0 font-bold text-xs sm:text-sm md:text-base px-2 py-1 shadow-lg w-full justify-center">
                               {price.toLocaleString()} TND
                             </Badge>
                           </div>
