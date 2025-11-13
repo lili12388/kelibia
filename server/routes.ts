@@ -1064,10 +1064,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/analytics/pageview', async (req, res) => {
     try {
       console.log('🔵 RECEIVED PAGEVIEW REQUEST:', req.body);
+      console.log('🔵 Session data:', req.session);
       
       // Skip if user is authenticated admin/broker
-      if (req.session?.isAuthenticated) {
-        console.log('⏭️ Skipping: User is authenticated');
+      if (req.session?.isAuthenticated || req.session?.isBroker) {
+        console.log('⏭️ Skipping: User is authenticated admin/broker');
         res.json({ success: true, tracked: false });
         return;
       }
@@ -1117,24 +1118,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('✅ Visitor log inserted');
       
-      // Update site analytics
+      // Update site analytics - simplified
       const today = new Date().toISOString().split('T')[0];
+      
+      // Check if this session visited today
+      const existingVisit = await db.query.visitorLogs.findFirst({
+        where: sql`${visitorLogs.sessionId} = ${sessionId} AND DATE(${visitorLogs.timestamp}) = ${today}`,
+      });
+      
+      const isNewVisitor = !existingVisit;
+      
       await db.execute(sql`
         INSERT INTO site_analytics (date, total_visitors, total_page_views, unique_sessions, desktop_visitors, mobile_visitors, city_breakdown)
         VALUES (
           ${today},
+          ${isNewVisitor ? 1 : 0},
           1,
-          1,
-          1,
-          ${deviceType === 'desktop' ? 1 : 0},
-          ${deviceType === 'mobile' ? 1 : 0},
+          ${isNewVisitor ? 1 : 0},
+          ${deviceType === 'desktop' && isNewVisitor ? 1 : 0},
+          ${deviceType === 'mobile' && isNewVisitor ? 1 : 0},
           '{}'
         )
         ON CONFLICT (date) 
         DO UPDATE SET
+          total_visitors = site_analytics.total_visitors + ${isNewVisitor ? 1 : 0},
           total_page_views = site_analytics.total_page_views + 1,
-          desktop_visitors = site_analytics.desktop_visitors + ${deviceType === 'desktop' ? 1 : 0},
-          mobile_visitors = site_analytics.mobile_visitors + ${deviceType === 'mobile' ? 1 : 0}
+          unique_sessions = site_analytics.unique_sessions + ${isNewVisitor ? 1 : 0},
+          desktop_visitors = site_analytics.desktop_visitors + ${deviceType === 'desktop' && isNewVisitor ? 1 : 0},
+          mobile_visitors = site_analytics.mobile_visitors + ${deviceType === 'mobile' && isNewVisitor ? 1 : 0}
       `);
       
       console.log('✅ Site analytics updated');
