@@ -820,6 +820,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('📈 Today stats:', todayStats);
       
+      // Get total unique visitors (count distinct session IDs from all time)
+      const totalVisitorsResult = await db.select({
+        total: sql<number>`COUNT(DISTINCT session_id)::int`
+      }).from(visitorLogs);
+      
+      const totalVisitors = totalVisitorsResult[0]?.total || 0;
+      console.log('👥 Total unique visitors (all-time):', totalVisitors);
+      
       // Get total visitors (sum of all days)
       const totalStats = await db
         .select({
@@ -870,8 +878,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       
       res.json({
-        totalVisitors: totalStats[0]?.totalVisitors || 0,
-        totalPageViews: uniquePropertiesViewed[0]?.count || 0, // Changed to unique properties count
+        totalVisitors: totalVisitors, // All-time unique visitors
+        totalPageViews: totalStats[0]?.totalPageViews || 0, // Total page views
         todayVisitors: todayStats?.totalVisitors || 0,
         todayPageViews: todayStats?.totalPageViews || 0,
         activeVisitors: activeVisitors[0]?.count || 0,

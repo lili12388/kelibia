@@ -258,8 +258,9 @@ export default function AdminAnalytics() {
                 </SelectContent>
               </Select>
               <Button 
-                onClick={() => {
-                  queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics/summary"] });
+                onClick={async () => {
+                  await queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics/summary"] });
+                  await queryClient.refetchQueries({ queryKey: ["/api/admin/analytics/summary"] });
                   toast({ title: "Données actualisées", description: "Les statistiques ont été mises à jour" });
                 }}
                 variant="outline" 
