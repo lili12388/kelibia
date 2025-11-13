@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
 import { Upload, X, Image as ImageIcon, Video } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,6 +22,8 @@ export default function ListPropertyPage() {
   const { toast } = useToast();
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
   
   // Check if user is admin and if they're on admin route
   const { data: authStatus } = useQuery<{ isAuthenticated: boolean }>({
@@ -57,6 +60,12 @@ export default function ListPropertyPage() {
 
   const submitPropertyMutation = useMutation({
     mutationFn: async (data: InsertPropertySubmission & { files: File[]; isAdmin?: boolean }) => {
+      setIsUploading(true);
+      setUploadProgress(0);
+      
+      // Simulate progress for compression phase
+      setUploadProgress(10);
+      
       // Compress images on client side to reduce payload size
       const compressedFiles = await Promise.all(
         files.map(async (file) => {
@@ -121,6 +130,9 @@ export default function ListPropertyPage() {
           });
         })
       );
+      
+      // Progress after compression
+      setUploadProgress(30);
 
       // Use FormData for file uploads (much more efficient than base64)
       const formData = new FormData();
@@ -137,15 +149,32 @@ export default function ListPropertyPage() {
       compressedFiles.forEach((file) => {
         formData.append('media', file);
       });
+      
+      // Progress after FormData preparation
+      setUploadProgress(50);
 
       // Use admin endpoint if admin is posting
       const endpoint = data.isAdmin ? '/api/broker/properties/submit-admin' : '/api/properties/submit';
+      
+      // Simulate upload progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 5;
+        });
+      }, 200);
       
       const response = await fetch(endpoint, {
         method: 'POST',
         credentials: 'include',
         body: formData, // FormData automatically sets correct Content-Type
       });
+      
+      clearInterval(progressInterval);
+      setUploadProgress(100);
 
       if (!response.ok) {
         // Get response text first (can only read body once)
@@ -163,7 +192,15 @@ export default function ListPropertyPage() {
         throw new Error(errorMessage);
       }
 
-      return response.json();
+      const result = await response.json();
+      
+      // Keep progress at 100% for a moment before resetting
+      setTimeout(() => {
+        setIsUploading(false);
+        setUploadProgress(0);
+      }, 1000);
+      
+      return result;
     },
     onSuccess: (data, variables) => {
       if (variables.isAdmin) {
@@ -179,6 +216,8 @@ export default function ListPropertyPage() {
       }
     },
     onError: (error: any) => {
+      setIsUploading(false);
+      setUploadProgress(0);
       toast({
         title: "Submission Failed",
         description: error.message || "Failed to submit property. Please try again.",
@@ -189,22 +228,6 @@ export default function ListPropertyPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
-    
-    // Check total file size
-    let totalSize = 0;
-    files.forEach(f => totalSize += f.size);
-    selectedFiles.forEach(f => totalSize += f.size);
-    
-    const totalMB = (totalSize / (1024 * 1024)).toFixed(2);
-    
-    // Warn if total size exceeds 15MB (compressed images + videos)
-    if (totalSize > 15 * 1024 * 1024) {
-      toast({
-        title: "⚠️ Large File Size Warning",
-        description: `Total file size: ${totalMB}MB. Large uploads may fail. Consider using fewer/smaller images or compress videos.`,
-        variant: "destructive",
-      });
-    }
     
     const validFiles = selectedFiles.filter(file => {
       const isImage = file.type.startsWith('image/');
@@ -728,20 +751,44 @@ export default function ListPropertyPage() {
             </Card>
 
             {/* Submit Button */}
-            <div className="flex justify-end gap-4">
-              <Link href="/">
-                <Button type="button" variant="outline" data-testid="button-cancel">
-                  Cancel
+            <div className="space-y-4">
+              {/* Upload Progress Bar */}
+              {isUploading && (
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium text-foreground">
+                          Uploading your property...
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {uploadProgress}%
+                        </p>
+                      </div>
+                      <Progress value={uploadProgress} className="h-3" />
+                      <p className="text-xs text-muted-foreground text-center">
+                        Please wait while we process your submission
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              
+              <div className="flex justify-end gap-4">
+                <Link href="/">
+                  <Button type="button" variant="outline" data-testid="button-cancel" disabled={isUploading}>
+                    Cancel
+                  </Button>
+                </Link>
+                <Button 
+                  type="submit" 
+                  size="lg"
+                  disabled={submitPropertyMutation.isPending || isUploading}
+                  data-testid="button-submit"
+                >
+                  {isUploading ? "Uploading..." : submitPropertyMutation.isPending ? "Submitting..." : "Submit Property"}
                 </Button>
-              </Link>
-              <Button 
-                type="submit" 
-                size="lg"
-                disabled={submitPropertyMutation.isPending}
-                data-testid="button-submit"
-              >
-                {submitPropertyMutation.isPending ? "Submitting..." : "Submit Property"}
-              </Button>
+              </div>
             </div>
           </form>
         </Form>
