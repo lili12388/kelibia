@@ -26,9 +26,11 @@ export default function Navbar({ variant = "solid" }: NavbarProps) {
       const response = await apiRequest('POST', '/api/broker/logout', {});
       return await response.json();
     },
-    onSuccess: () => {
-      // Invalidate auth status query to refresh the UI
-      queryClient.invalidateQueries({ queryKey: ['/api/broker/auth-status'] });
+    onSuccess: async () => {
+      // Invalidate and refetch auth status query to refresh the UI
+      await queryClient.invalidateQueries({ queryKey: ['/api/broker/auth-status'] });
+      await queryClient.refetchQueries({ queryKey: ['/api/broker/auth-status'] });
+      
       toast({
         title: "Logged Out",
         description: "You have been successfully logged out.",
