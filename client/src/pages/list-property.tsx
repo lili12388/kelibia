@@ -156,24 +156,56 @@ export default function ListPropertyPage() {
       // Use admin endpoint if admin is posting
       const endpoint = data.isAdmin ? '/api/broker/properties/submit-admin' : '/api/properties/submit';
       
-      // Simulate upload progress
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
+      // Use XMLHttpRequest for real-time upload progress tracking
+      const response = await new Promise<Response>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        
+        // Track upload progress
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable) {
+            // Calculate progress: 50% (prep) + 45% (upload) = 95% max
+            const uploadPercent = (event.loaded / event.total) * 45;
+            setUploadProgress(50 + uploadPercent);
           }
-          return prev + 5;
         });
-      }, 200);
-      
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        credentials: 'include',
-        body: formData, // FormData automatically sets correct Content-Type
+        
+        // Handle completion
+        xhr.addEventListener('load', () => {
+          setUploadProgress(95); // Leave 5% for server processing
+          if (xhr.status >= 200 && xhr.status < 300) {
+            // Create a Response-like object for compatibility
+            const response = new Response(xhr.responseText, {
+              status: xhr.status,
+              statusText: xhr.statusText,
+              headers: new Headers(xhr.getAllResponseHeaders().split('\r\n').reduce((headers, line) => {
+                const [key, value] = line.split(': ');
+                if (key && value) headers[key] = value;
+                return headers;
+              }, {} as Record<string, string>))
+            });
+            resolve(response);
+          } else {
+            reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
+          }
+        });
+        
+        // Handle errors
+        xhr.addEventListener('error', () => {
+          reject(new Error('Network error occurred'));
+        });
+        
+        xhr.addEventListener('timeout', () => {
+          reject(new Error('Upload timeout'));
+        });
+        
+        // Configure and send request
+        xhr.open('POST', endpoint);
+        xhr.withCredentials = true; // Include cookies for authentication
+        xhr.timeout = 300000; // 5 minute timeout
+        xhr.send(formData);
       });
       
-      clearInterval(progressInterval);
+      // Final progress update
       setUploadProgress(100);
 
       if (!response.ok) {
@@ -759,15 +791,19 @@ export default function ListPropertyPage() {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-medium text-foreground">
-                          Uploading your property...
+                          {uploadProgress < 30 ? "Preparing files..." : 
+                           uploadProgress < 95 ? "Uploading your property..." : 
+                           "Processing submission..."}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          {uploadProgress}%
+                          {Math.round(uploadProgress)}%
                         </p>
                       </div>
                       <Progress value={uploadProgress} className="h-3" />
                       <p className="text-xs text-muted-foreground text-center">
-                        Please wait while we process your submission
+                        {uploadProgress < 30 ? "Compressing images for faster upload" :
+                         uploadProgress < 95 ? "Uploading files to server" :
+                         "Almost done! Finalizing your property listing"}
                       </p>
                     </div>
                   </CardContent>
