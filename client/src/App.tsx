@@ -15,6 +15,7 @@ import BrokerLoginPage from "@/pages/broker-login";
 import BrokerDashboardPage from "@/pages/broker-dashboard";
 import BrokerBrowsePage from "@/pages/broker-browse";
 import AdminAnalyticsPage from "@/pages/admin-analytics";
+import TestAnalyticsPage from "@/pages/test-analytics";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -60,6 +61,7 @@ function Router() {
           <AdminAnalyticsPage />
         </BrokerAuthGuard>
       </Route>
+      <Route path="/test-analytics" component={TestAnalyticsPage} />
       <Route component={NotFound} />
     </Switch>
     </>
