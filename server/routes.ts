@@ -217,36 +217,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
           let finalMimetype: string;
           let thumbnailUrl: string | null = null;
           
-          // Handle images and videos differently
+          // Handle images and videos differently with robust error handling
           if (file.mimetype.startsWith('image/')) {
             console.log('[SUBMIT] Optimizing image...');
-            // Optimize image and convert to base64
-            url = await optimizeImageToBase64(file.buffer);
-            finalMimetype = 'image/jpeg';
-            console.log('[SUBMIT] Image optimized successfully');
+            try {
+              // Try to optimize image
+              url = await optimizeImageToBase64(file.buffer);
+              finalMimetype = 'image/jpeg';
+              console.log('[SUBMIT] Image optimized successfully');
+            } catch (imageError) {
+              console.error('[SUBMIT] Image optimization failed, using fallback:', imageError);
+              // Fallback: just convert to base64 without optimization
+              url = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+              finalMimetype = file.mimetype;
+              console.log('[SUBMIT] Using fallback image processing');
+            }
           } else if (file.mimetype.startsWith('video/')) {
             console.log('[SUBMIT] Processing video...');
-            // Convert video to base64 without optimization
-            url = await videoToBase64(file.buffer, file.mimetype);
-            finalMimetype = file.mimetype;
-            // Generate video thumbnail
-            thumbnailUrl = await generateVideoThumbnail();
-            console.log('[SUBMIT] Video processed successfully');
+            try {
+              // Convert video to base64 without optimization
+              url = await videoToBase64(file.buffer, file.mimetype);
+              finalMimetype = file.mimetype;
+              // Generate video thumbnail with fallback
+              try {
+                thumbnailUrl = await generateVideoThumbnail();
+              } catch (thumbError) {
+                console.error('[SUBMIT] Video thumbnail generation failed:', thumbError);
+                thumbnailUrl = null; // No thumbnail is better than crashing
+              }
+              console.log('[SUBMIT] Video processed successfully');
+            } catch (videoError) {
+              console.error('[SUBMIT] Video processing failed, using fallback:', videoError);
+              // Fallback: just convert to base64
+              url = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+              finalMimetype = file.mimetype;
+              thumbnailUrl = null;
+              console.log('[SUBMIT] Using fallback video processing');
+            }
           } else {
             console.log('[SUBMIT] Skipping unsupported file type:', file.mimetype);
             continue; // Skip unsupported file types
           }
           
           console.log('[SUBMIT] Saving media to database...');
-          await storage.createSubmissionMedia(
-            submission.id,
-            file.originalname,
-            finalMimetype,
-            url,
-            i === 0, // First media is primary
-            thumbnailUrl
-          );
-          console.log('[SUBMIT] Media saved successfully');
+          try {
+            await storage.createSubmissionMedia(
+              submission.id,
+              file.originalname,
+              finalMimetype,
+              url,
+              i === 0, // First media is primary
+              thumbnailUrl
+            );
+            console.log('[SUBMIT] Media saved successfully');
+          } catch (dbError) {
+            console.error('[SUBMIT] Database save failed for media:', dbError);
+            // Don't throw - continue with other files
+            // The submission will still succeed even if some media fails
+            console.log('[SUBMIT] Continuing with next file despite media save failure');
+          }
         }
       }
       
