@@ -192,9 +192,6 @@ export default function ListPropertyPage() {
         })
       );
       
-      // Progress after compression
-      setUploadProgress(30);
-
       // Use FormData for file uploads (much more efficient than base64)
       const formData = new FormData();
       
@@ -211,8 +208,8 @@ export default function ListPropertyPage() {
         formData.append('media', file);
       });
       
-      // Progress after FormData preparation
-      setUploadProgress(50);
+      // Start upload progress tracking from 0%
+      setUploadProgress(0);
 
       // Use admin endpoint if admin is posting
       const endpoint = data.isAdmin ? '/api/broker/properties/submit-admin' : '/api/properties/submit';
@@ -263,9 +260,9 @@ export default function ListPropertyPage() {
               startTime
             });
             
-            // Calculate progress: 50% (prep) + 45% (upload) = 95% max
-            const uploadPercent = (event.loaded / event.total) * 45;
-            setUploadProgress(50 + uploadPercent);
+            // Calculate real upload progress percentage
+            const realUploadPercent = (event.loaded / event.total) * 100;
+            setUploadProgress(realUploadPercent);
           }
         });
         
@@ -908,8 +905,7 @@ export default function ListPropertyPage() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <p className="text-sm sm:text-base font-medium text-foreground">
-                          {uploadProgress < 30 ? "Preparing files..." : 
-                           uploadProgress < 95 ? "Uploading your property..." : 
+                          {uploadProgress < 95 ? "Uploading your property..." : 
                            "Processing submission..."}
                         </p>
                         <p className="text-lg sm:text-xl font-bold text-primary">
@@ -919,8 +915,8 @@ export default function ListPropertyPage() {
                       
                       <Progress value={uploadProgress} className="h-4 sm:h-3" />
                       
-                      {/* Upload Statistics - Only show during actual upload phase */}
-                      {uploadProgress >= 30 && uploadProgress < 95 && uploadStats.totalBytes > 0 && (
+                      {/* Upload Statistics - Show during upload phase */}
+                      {uploadProgress > 0 && uploadProgress < 95 && uploadStats.totalBytes > 0 && (
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs sm:text-sm">
                           {/* Upload Speed */}
                           <div className="bg-muted/50 rounded-lg p-3 text-center">
@@ -949,8 +945,7 @@ export default function ListPropertyPage() {
                       )}
                       
                       <p className="text-xs sm:text-sm text-muted-foreground text-center">
-                        {uploadProgress < 30 ? "Compressing images for faster upload" :
-                         uploadProgress < 95 ? "Uploading files to server" :
+                        {uploadProgress < 95 ? "Uploading files to server" :
                          "Almost done! Finalizing your property listing"}
                       </p>
                     </div>
