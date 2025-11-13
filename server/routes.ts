@@ -200,13 +200,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Create property submission
+      console.log('[SUBMIT] Creating property submission...');
       const submission = await storage.createPropertySubmission(propertyData);
+      console.log('[SUBMIT] Property submission created with ID:', submission.id);
 
       // Save and optimize uploaded media files
       const files = req.files as Express.Multer.File[];
+      console.log('[SUBMIT] Processing', files?.length || 0, 'files');
+      
       if (files && files.length > 0) {
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
+          console.log(`[SUBMIT] Processing file ${i + 1}/${files.length}: ${file.originalname} (${file.mimetype})`);
           
           let url: string;
           let finalMimetype: string;
@@ -214,19 +219,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Handle images and videos differently
           if (file.mimetype.startsWith('image/')) {
+            console.log('[SUBMIT] Optimizing image...');
             // Optimize image and convert to base64
             url = await optimizeImageToBase64(file.buffer);
             finalMimetype = 'image/jpeg';
+            console.log('[SUBMIT] Image optimized successfully');
           } else if (file.mimetype.startsWith('video/')) {
+            console.log('[SUBMIT] Processing video...');
             // Convert video to base64 without optimization
             url = await videoToBase64(file.buffer, file.mimetype);
             finalMimetype = file.mimetype;
             // Generate video thumbnail
             thumbnailUrl = await generateVideoThumbnail();
+            console.log('[SUBMIT] Video processed successfully');
           } else {
+            console.log('[SUBMIT] Skipping unsupported file type:', file.mimetype);
             continue; // Skip unsupported file types
           }
           
+          console.log('[SUBMIT] Saving media to database...');
           await storage.createSubmissionMedia(
             submission.id,
             file.originalname,
@@ -235,8 +246,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             i === 0, // First media is primary
             thumbnailUrl
           );
+          console.log('[SUBMIT] Media saved successfully');
         }
       }
+      
+      console.log('[SUBMIT] All processing complete, sending response');
 
       res.json({ 
         success: true, 
@@ -244,6 +258,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('[SUBMIT] Error submitting property:', error);
+      console.error('[SUBMIT] Error type:', typeof error);
+      console.error('[SUBMIT] Error constructor:', error?.constructor?.name);
+      
       if (error instanceof z.ZodError) {
         console.error('[SUBMIT] Validation errors:', JSON.stringify(error.errors, null, 2));
         res.status(400).json({ 
@@ -254,9 +271,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Log the full error stack for debugging
         console.error('[SUBMIT] Full error details:', error);
         console.error('[SUBMIT] Error stack:', error instanceof Error ? error.stack : 'No stack');
+        console.error('[SUBMIT] Error message:', error instanceof Error ? error.message : String(error));
+        
+        // Check if it's a database error
+        if (error && typeof error === 'object' && 'code' in error) {
+          console.error('[SUBMIT] Database error code:', (error as any).code);
+          console.error('[SUBMIT] Database error detail:', (error as any).detail);
+        }
+        
         res.status(500).json({ 
           error: 'Failed to submit property',
-          message: error instanceof Error ? error.message : 'Unknown error'
+          message: error instanceof Error ? error.message : 'Unknown error',
+          type: error?.constructor?.name || 'Unknown'
         });
       }
     }
