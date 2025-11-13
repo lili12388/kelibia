@@ -1,6 +1,6 @@
-module.exports = {
+export default {
   apps: [{
-    name: 'edarna',
+    name: 'darna',
     script: 'dist/index.js',
     instances: 1,
     autorestart: true,
