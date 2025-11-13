@@ -311,12 +311,12 @@ export default function ListPropertyPage() {
       <Navbar />
 
       {/* Form Section */}
-      <div className="max-w-3xl mx-auto px-6 py-12">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-3">
+          <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-3">
             {isAdminRoute ? "Post Property as Admin" : "List Your Property"}
           </h1>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-base sm:text-lg">
             {isAdmin 
               ? "Your property will be published immediately and appear on the browse page." 
               : "All information is private and will be reviewed by our broker before publication."}
@@ -648,7 +648,7 @@ export default function ListPropertyPage() {
                 <CardDescription>Upload images and videos of your property</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="border-2 border-dashed border-border rounded-lg p-12 text-center hover-elevate">
+                <div className="border-2 border-dashed border-border rounded-lg p-8 sm:p-12 text-center hover-elevate touch-manipulation">
                   <input
                     type="file"
                     multiple
@@ -658,19 +658,19 @@ export default function ListPropertyPage() {
                     id="file-upload"
                     data-testid="input-media"
                   />
-                  <label htmlFor="file-upload" className="cursor-pointer">
-                    <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-foreground font-medium mb-1">Click to upload images or videos</p>
-                    <p className="text-sm text-muted-foreground">PNG, JPG, MP4 up to 50MB each</p>
+                  <label htmlFor="file-upload" className="cursor-pointer block">
+                    <Upload className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 text-muted-foreground" />
+                    <p className="text-sm sm:text-base text-foreground font-medium mb-1">Tap to upload images or videos</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">PNG, JPG, MP4 up to 50MB each</p>
                   </label>
                 </div>
 
                 {/* Preview Grid */}
                 {previews.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
                     {previews.map((preview, index) => (
                       <div key={index} className="relative group" data-testid={`media-preview-${index}`}>
-                        <div className="aspect-square rounded-lg overflow-hidden bg-muted">
+                        <div className="aspect-square rounded-lg overflow-hidden bg-muted touch-manipulation">
                           {files[index].type.startsWith('image/') ? (
                             <img 
                               src={preview} 
@@ -683,16 +683,14 @@ export default function ListPropertyPage() {
                             </div>
                           )}
                         </div>
-                        <Button
+                        <button
                           type="button"
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={() => removeFile(index)}
-                          data-testid={`button-remove-media-${index}`}
+                          className="absolute top-1 right-1 sm:top-2 sm:right-2 bg-destructive text-destructive-foreground rounded-full p-1.5 sm:p-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity touch-manipulation"
+                          data-testid={`remove-media-${index}`}
                         >
-                          <X className="h-4 w-4" />
-                        </Button>
+                          <X className="h-3 w-3 sm:h-4 sm:w-4" />
+                        </button>
                         {index === 0 && (
                           <div className="absolute bottom-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
                             Primary
@@ -790,17 +788,17 @@ export default function ListPropertyPage() {
                   <CardContent className="pt-6">
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-foreground">
+                        <p className="text-sm sm:text-base font-medium text-foreground">
                           {uploadProgress < 30 ? "Preparing files..." : 
                            uploadProgress < 95 ? "Uploading your property..." : 
                            "Processing submission..."}
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-lg sm:text-xl font-bold text-primary">
                           {Math.round(uploadProgress)}%
                         </p>
                       </div>
-                      <Progress value={uploadProgress} className="h-3" />
-                      <p className="text-xs text-muted-foreground text-center">
+                      <Progress value={uploadProgress} className="h-4 sm:h-3" />
+                      <p className="text-xs sm:text-sm text-muted-foreground text-center">
                         {uploadProgress < 30 ? "Compressing images for faster upload" :
                          uploadProgress < 95 ? "Uploading files to server" :
                          "Almost done! Finalizing your property listing"}
@@ -810,9 +808,15 @@ export default function ListPropertyPage() {
                 </Card>
               )}
               
-              <div className="flex justify-end gap-4">
-                <Link href="/">
-                  <Button type="button" variant="outline" data-testid="button-cancel" disabled={isUploading}>
+              <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
+                <Link href="/" className="order-2 sm:order-1">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    data-testid="button-cancel" 
+                    disabled={isUploading}
+                    className="w-full sm:w-auto"
+                  >
                     Cancel
                   </Button>
                 </Link>
@@ -821,6 +825,7 @@ export default function ListPropertyPage() {
                   size="lg"
                   disabled={submitPropertyMutation.isPending || isUploading}
                   data-testid="button-submit"
+                  className="w-full sm:w-auto order-1 sm:order-2 h-12 text-base font-semibold"
                 >
                   {isUploading ? "Uploading..." : submitPropertyMutation.isPending ? "Submitting..." : "Submit Property"}
                 </Button>
