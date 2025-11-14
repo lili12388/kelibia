@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "wouter";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -83,21 +83,24 @@ export default function BrokerBrowsePage() {
     queryKey: ['/api/broker/submissions', 'approved'],
   });
 
-  // Fetch analytics summary to get view counts for all properties
-  const { data: analyticsSummary } = useQuery<{
-    topProperties: Array<{
-      propertyId: string;
-      totalViews: number;
-      totalClicks: number;
-    }>;
-  }>({
-    queryKey: ['/api/admin/analytics?endpoint=summary'],
+  // Fetch per-property view counts (same as public listing)
+  const { data: propertyViews } = useQuery<{
+    propertyId: string;
+    totalViews: number;
+  }[]>({
+    queryKey: ['/api/properties/views'],
   });
 
-  // Create a map of property IDs to their analytics
-  const analyticsMap = new Map(
-    analyticsSummary?.topProperties?.map(a => [a.propertyId, a]) || []
-  );
+  // Map of propertyId -> totalViews
+  const viewsMap = useMemo(() => {
+    const map = new Map<string, number>();
+    if (propertyViews) {
+      for (const v of propertyViews) {
+        map.set(v.propertyId, v.totalViews ?? 0);
+      }
+    }
+    return map;
+  }, [propertyViews]);
 
   // Fetch property analytics for selected property (for detailed view in dialog)
   const { data: propertyAnalytics, isLoading: analyticsLoading } = useQuery<PropertyAnalytics>({
@@ -362,7 +365,7 @@ export default function BrokerBrowsePage() {
             {properties.map((property) => {
               const primaryMedia = property.media.find(m => m.isPrimary) || property.media[0];
               const submission = submissionsMap.get(property.submissionId);
-              const analytics = analyticsMap.get(property.id);
+              const views = viewsMap.get(property.id) ?? 0;
               
               return (
                 <Card key={property.id} className="overflow-hidden hover-elevate transition-all h-full flex flex-col">
@@ -413,15 +416,13 @@ export default function BrokerBrowsePage() {
                         </div>
                       )}
                       
-                      {/* View Count Badge - Top Left */}
-                      {analytics && analytics.totalViews > 0 && (
-                        <div className="absolute top-3 left-3">
-                          <Badge className="bg-black/70 backdrop-blur-sm text-white border-0 font-medium text-sm px-2.5 py-1 shadow-lg">
-                            <Eye className="w-3.5 h-3.5 mr-1.5" />
-                            {analytics.totalViews}
-                          </Badge>
-                        </div>
-                      )}
+                      {/* View Count Badge - Top Right */}
+                      <div className="absolute top-3 right-3">
+                        <Badge className="bg-black/70 backdrop-blur-sm text-white border-0 font-medium text-sm px-2.5 py-1 shadow-lg flex items-center gap-1">
+                          <span>👁</span>
+                          <span>{views.toLocaleString()}</span>
+                        </Badge>
+                      </div>
                       
                       {/* Price Badge - Bottom Right with semi-transparent background */}
                       <div className="absolute bottom-3 right-3">

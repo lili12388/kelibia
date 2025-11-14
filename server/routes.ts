@@ -812,7 +812,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/admin/analytics/summary', requireBrokerAuth, async (req, res) => {
     try {
       const { visitorLogs, propertyAnalytics, siteAnalytics } = await import("../shared/schema.js");
-      const { sql, desc, gte, and } = await import("drizzle-orm");
+      const { sql, desc, gte, and, lte } = await import("drizzle-orm");
       
       // Get time period from query params (default: day)
       const period = (req.query.period as string) || 'day';
@@ -855,7 +855,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         total: sql<number>`COUNT(DISTINCT session_id)::int`
       })
       .from(visitorLogs)
-      .where(sql`DATE(${visitorLogs.timestamp}) >= ${startDateStr}`);
+      .where(and(
+        gte(visitorLogs.timestamp, startDate),
+        lte(visitorLogs.timestamp, now),
+      ));
       
       const periodVisitors = periodVisitorsResult[0]?.total || 0;
       console.log(`👥 Unique visitors (${period}):`, periodVisitors);
@@ -867,7 +870,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           totalPageViews: sql<number>`SUM(${siteAnalytics.totalPageViews})::int`,
         })
         .from(siteAnalytics)
-        .where(gte(siteAnalytics.date, startDateStr));
+        .where(and(
+          gte(siteAnalytics.date, startDateStr),
+          lte(siteAnalytics.date, today),
+        ));
         
       console.log(`📊 Period stats (${period}):`, periodStats[0]);
 
@@ -877,7 +883,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           total: sql<number>`COUNT(*)::int`,
         })
         .from(visitorLogs)
-        .where(sql`DATE(${visitorLogs.timestamp}) >= ${startDateStr} AND ${visitorLogs.propertyId} IS NOT NULL`);
+        .where(and(
+          gte(visitorLogs.timestamp, startDate),
+          lte(visitorLogs.timestamp, now),
+          sql`${visitorLogs.propertyId} IS NOT NULL`,
+        ));
 
       const periodPropertyViews = periodPropertyViewsResult[0]?.total || 0;
       console.log(`👁️ Property page views (${period}):`, periodPropertyViews);
