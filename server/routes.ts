@@ -469,6 +469,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get view counts for all properties (public endpoint)
+  app.get('/api/properties/views', async (req, res) => {
+    try {
+      const views = await db
+        .select({
+          propertyId: propertyAnalytics.propertyId,
+          totalViews: propertyAnalytics.totalViews,
+        })
+        .from(propertyAnalytics);
+
+      res.json(views);
+    } catch (error) {
+      console.error('Error fetching property views:', error);
+      res.status(500).json({ error: 'Failed to fetch property views' });
+    }
+  });
+
   // Get a specific property by ID (public endpoint)
   app.get('/api/properties/:id', async (req, res) => {
     try {

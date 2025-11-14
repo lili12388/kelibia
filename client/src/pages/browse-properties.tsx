@@ -25,6 +25,25 @@ export default function BrowsePropertiesPage() {
     queryKey: ['/api/properties'],
   });
 
+  // Fetch per-property view counts for public listing
+  const { data: propertyViews } = useQuery<{
+    propertyId: string;
+    totalViews: number;
+  }[]>({
+    queryKey: ['/api/properties/views'],
+  });
+
+  // Map of propertyId -> totalViews
+  const viewsMap = useMemo(() => {
+    const map = new Map<string, number>();
+    if (propertyViews) {
+      for (const v of propertyViews) {
+        map.set(v.propertyId, v.totalViews ?? 0);
+      }
+    }
+    return map;
+  }, [propertyViews]);
+
   // Filter properties based on criteria
   const filteredProperties = useMemo(() => {
     if (!properties) return [];
@@ -341,6 +360,7 @@ export default function BrowsePropertiesPage() {
                 {filteredProperties.map((property) => {
                   const primaryMedia = property.media.find(m => m.isPrimary) || property.media[0];
                   const price = parseFloat(property.price);
+                  const views = viewsMap.get(property.id) ?? 0;
                   
                   return (
                     <Link key={property.id} href={`/property/${property.id}`}>
@@ -377,6 +397,14 @@ export default function BrowsePropertiesPage() {
                               </Badge>
                             </div>
                           )}
+
+                          {/* View Count Badge */}
+                          <div className="absolute top-1 right-1 sm:top-2 sm:right-2">
+                            <Badge className="bg-black/70 text-white border-0 font-semibold text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 flex items-center gap-1">
+                              <span>👁</span>
+                              <span>{views.toLocaleString()}</span>
+                            </Badge>
+                          </div>
                         </div>
 
                         {/* Property Info */}
