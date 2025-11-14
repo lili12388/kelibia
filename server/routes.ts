@@ -823,22 +823,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const now = new Date();
       const today = now.toISOString().split('T')[0];
       let startDate: Date;
-      
+      const endDate = now; // always "now" (do NOT mutate this)
+
       switch (period) {
         case 'week':
+          // 7 days ago from now
           startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
           break;
         case 'month':
+          // 30 days ago from now
           startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
           break;
         case 'day':
         default:
-          startDate = new Date(now.setHours(0, 0, 0, 0));
+          // Start of today (00:00) in server time, end at current time
+          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
           break;
       }
-      
+
       const startDateStr = startDate.toISOString().split('T')[0];
-      console.log('📅 Date range:', startDateStr, 'to', today);
+      console.log('📅 Date range:', startDateStr, 'to', today, ' (endDate:', endDate.toISOString(), ')');
       
       // Check if we have any data in the tables
       const visitorCount = await db.select({ count: sql<number>`COUNT(*)::int` }).from(visitorLogs);
@@ -857,7 +861,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       .from(visitorLogs)
       .where(and(
         gte(visitorLogs.timestamp, startDate),
-        lte(visitorLogs.timestamp, now),
+        lte(visitorLogs.timestamp, endDate),
       ));
       
       const periodVisitors = periodVisitorsResult[0]?.total || 0;
@@ -885,7 +889,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from(visitorLogs)
         .where(and(
           gte(visitorLogs.timestamp, startDate),
-          lte(visitorLogs.timestamp, now),
+          lte(visitorLogs.timestamp, endDate),
           sql`${visitorLogs.propertyId} IS NOT NULL`,
         ));
 
