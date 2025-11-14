@@ -116,6 +116,7 @@ export default function AdminAnalytics() {
         });
         
         queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics/summary"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics/summary", timePeriod] });
       } else {
         throw new Error("Failed to delete property analytics");
       }
@@ -145,6 +146,7 @@ export default function AdminAnalytics() {
         });
         
         queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics/summary"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics/summary", timePeriod] });
       } else {
         throw new Error("Failed to reset statistics");
       }
@@ -178,6 +180,7 @@ export default function AdminAnalytics() {
         });
         
         queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics/summary"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics/summary", timePeriod] });
         setDeleteAllDialogOpen(false);
       } else {
         const error = await response.text();
@@ -198,9 +201,9 @@ export default function AdminAnalytics() {
 
   // Fetch analytics summary
   const { data: summary, isLoading: summaryLoading } = useQuery<AnalyticsSummary>({
-    queryKey: ["/api/admin/analytics/summary"],
+    queryKey: ["/api/admin/analytics/summary", timePeriod],
     queryFn: async () => {
-      const response = await apiRequest("/api/admin/analytics/summary");
+      const response = await apiRequest(`/api/admin/analytics/summary?period=${timePeriod}`);
       return await response.json();
     },
   });
@@ -259,8 +262,8 @@ export default function AdminAnalytics() {
               </Select>
               <Button 
                 onClick={async () => {
-                  await queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics/summary"] });
-                  await queryClient.refetchQueries({ queryKey: ["/api/admin/analytics/summary"] });
+                  await queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics/summary", timePeriod] });
+                  await queryClient.refetchQueries({ queryKey: ["/api/admin/analytics/summary", timePeriod] });
                   toast({ title: "Données actualisées", description: "Les statistiques ont été mises à jour" });
                 }}
                 variant="outline" 

@@ -795,13 +795,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/admin/analytics/summary', requireBrokerAuth, async (req, res) => {
     try {
       const { visitorLogs, propertyAnalytics, siteAnalytics } = await import("../shared/schema.js");
-      const { sql, desc } = await import("drizzle-orm");
+      const { sql, desc, gte, and } = await import("drizzle-orm");
       
-      console.log('📊 ANALYTICS SUMMARY REQUEST');
+      // Get time period from query params (default: day)
+      const period = (req.query.period as string) || 'day';
       
-      // Get today's date
-      const today = new Date().toISOString().split('T')[0];
-      console.log('📅 Today date:', today);
+      console.log('📊 ANALYTICS SUMMARY REQUEST - Period:', period);
+      
+      // Calculate date range based on period
+      const now = new Date();
+      const today = now.toISOString().split('T')[0];
+      let startDate: Date;
+      
+      switch (period) {
+        case 'week':
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case 'month':
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        case 'day':
+        default:
+          startDate = new Date(now.setHours(0, 0, 0, 0));
+          break;
+      }
+      
+      const startDateStr = startDate.toISOString().split('T')[0];
+      console.log('📅 Date range:', startDateStr, 'to', today);
       
       // Check if we have any data in the tables
       const visitorCount = await db.select({ count: sql<number>`COUNT(*)::int` }).from(visitorLogs);
@@ -813,30 +833,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('  - Site analytics:', siteAnalyticsCount[0]?.count || 0);
       console.log('  - Property analytics:', propertyAnalyticsCount[0]?.count || 0);
       
-      // Get today's site analytics
-      const todayStats = await db.query.siteAnalytics.findFirst({
-        where: eq(siteAnalytics.date, today),
-      });
-      
-      console.log('📈 Today stats:', todayStats);
-      
-      // Get total unique visitors (count distinct session IDs from all time)
-      const totalVisitorsResult = await db.select({
+      // Get unique visitors for the selected period (count distinct session IDs)
+      const periodVisitorsResult = await db.select({
         total: sql<number>`COUNT(DISTINCT session_id)::int`
-      }).from(visitorLogs);
+      })
+      .from(visitorLogs)
+      .where(sql`DATE(${visitorLogs.timestamp}) >= ${startDateStr}`);
       
-      const totalVisitors = totalVisitorsResult[0]?.total || 0;
-      console.log('👥 Total unique visitors (all-time):', totalVisitors);
+      const periodVisitors = periodVisitorsResult[0]?.total || 0;
+      console.log(`👥 Unique visitors (${period}):`, periodVisitors);
       
-      // Get total visitors (sum of all days)
-      const totalStats = await db
+      // Get stats for the selected period (sum from site_analytics)
+      const periodStats = await db
         .select({
           totalVisitors: sql<number>`SUM(${siteAnalytics.totalVisitors})::int`,
           totalPageViews: sql<number>`SUM(${siteAnalytics.totalPageViews})::int`,
         })
-        .from(siteAnalytics);
+        .from(siteAnalytics)
+        .where(gte(siteAnalytics.date, startDateStr));
         
-      console.log('📊 Total stats:', totalStats[0]);
+      console.log(`📊 Period stats (${period}):`, periodStats[0]);
       
       // Count unique properties viewed (distinct properties in property_analytics)
       const uniquePropertiesViewed = await db
@@ -878,10 +894,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       
       res.json({
-        totalVisitors: totalVisitors, // All-time unique visitors
-        totalPageViews: totalStats[0]?.totalPageViews || 0, // Total page views
-        todayVisitors: todayStats?.totalVisitors || 0,
-        todayPageViews: todayStats?.totalPageViews || 0,
+        totalVisitors: periodVisitors, // Unique visitors for selected period
+        totalPageViews: periodStats[0]?.totalPageViews || 0, // Page views for selected period
+        todayVisitors: periodStats[0]?.totalVisitors || 0, // Visitors for selected period
+        todayPageViews: periodStats[0]?.totalPageViews || 0, // Page views for selected period
         activeVisitors: activeVisitors[0]?.count || 0,
         topProperties: topPropertiesWithDetails,
       });
