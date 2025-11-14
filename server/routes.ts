@@ -853,6 +853,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .where(gte(siteAnalytics.date, startDateStr));
         
       console.log(`📊 Period stats (${period}):`, periodStats[0]);
+
+      // Get property page views for the selected period (only visits to published posts)
+      const periodPropertyViewsResult = await db
+        .select({
+          total: sql<number>`COUNT(*)::int`,
+        })
+        .from(visitorLogs)
+        .where(sql`DATE(${visitorLogs.timestamp}) >= ${startDateStr} AND ${visitorLogs.propertyId} IS NOT NULL`);
+
+      const periodPropertyViews = periodPropertyViewsResult[0]?.total || 0;
+      console.log(`👁️ Property page views (${period}):`, periodPropertyViews);
       
       // Count unique properties viewed (distinct properties in property_analytics)
       const uniquePropertiesViewed = await db
@@ -895,9 +906,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({
         totalVisitors: periodVisitors, // Unique visitors for selected period
-        totalPageViews: periodStats[0]?.totalPageViews || 0, // Page views for selected period
+        totalPageViews: periodPropertyViews, // Property page views for selected period
         todayVisitors: periodStats[0]?.totalVisitors || 0, // Visitors for selected period
-        todayPageViews: periodStats[0]?.totalPageViews || 0, // Page views for selected period
+        todayPageViews: periodPropertyViews, // Property page views for selected period
         activeVisitors: activeVisitors[0]?.count || 0,
         topProperties: topPropertiesWithDetails,
       });
