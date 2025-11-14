@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Users, Eye, MousePointer, Activity, Monitor, Smartphone, ArrowLeft, Building2, Trash2, Calendar } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 
@@ -98,8 +98,20 @@ export default function AdminAnalytics() {
   const [deletingPropertyId, setDeletingPropertyId] = useState<string | null>(null);
   const [deleteAllDialogOpen, setDeleteAllDialogOpen] = useState(false);
   const [timePeriod, setTimePeriod] = useState<"day" | "week" | "month">("day");
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  // Function to fetch real-time data
+  const fetchRealTimeData = useCallback(async () => {
+    try {
+      const response = await apiRequest("/api/admin/analytics/real-time");
+      const data = await response.json();
+      setRealTimeData(data);
+    } catch (error) {
+      console.error("Error fetching real-time data:", error);
+    }
+  }, []);
 
   // Delete property analytics
   const handleDeletePropertyAnalytics = async (propertyId: string) => {
@@ -210,21 +222,11 @@ export default function AdminAnalytics() {
 
   // Fetch real-time data with polling
   useEffect(() => {
-    const fetchRealTime = async () => {
-      try {
-        const response = await apiRequest("/api/admin/analytics/real-time");
-        const data = await response.json();
-        setRealTimeData(data);
-      } catch (error) {
-        console.error("Error fetching real-time data:", error);
-      }
-    };
-
-    fetchRealTime();
-    const interval = setInterval(fetchRealTime, 5000); // Poll every 5 seconds
+    fetchRealTimeData();
+    const interval = setInterval(fetchRealTimeData, 5000); // Poll every 5 seconds
 
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchRealTimeData]);
 
   if (summaryLoading) {
     return (
@@ -262,15 +264,36 @@ export default function AdminAnalytics() {
               </Select>
               <Button 
                 onClick={async () => {
-                  await queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics/summary", timePeriod] });
-                  await queryClient.refetchQueries({ queryKey: ["/api/admin/analytics/summary", timePeriod] });
-                  toast({ title: "Données actualisées", description: "Les statistiques ont été mises à jour" });
+                  setIsRefreshing(true);
+                  try {
+                    // Refresh analytics summary (includes "Propriétés les Plus Vues")
+                    await queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics/summary", timePeriod] });
+                    await queryClient.refetchQueries({ queryKey: ["/api/admin/analytics/summary", timePeriod] });
+                    
+                    // Refresh real-time data immediately
+                    await fetchRealTimeData();
+                    
+                    toast({ 
+                      title: "Données actualisées", 
+                      description: "Toutes les statistiques ont été mises à jour" 
+                    });
+                  } catch (error) {
+                    console.error("Error refreshing data:", error);
+                    toast({ 
+                      title: "Erreur", 
+                      description: "Impossible de rafraîchir les données",
+                      variant: "destructive"
+                    });
+                  } finally {
+                    setIsRefreshing(false);
+                  }
                 }}
                 variant="outline" 
                 className="flex items-center gap-2"
+                disabled={isRefreshing}
               >
-                <Activity className="h-4 w-4" />
-                Actualiser
+                <Activity className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                {isRefreshing ? "Actualisation..." : "Actualiser"}
               </Button>
               <Link href="/broker/dashboard">
                 <Button variant="outline" className="flex items-center gap-2">
