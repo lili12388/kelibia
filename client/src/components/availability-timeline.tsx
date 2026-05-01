@@ -256,16 +256,13 @@ export default function AvailabilityTimeline({ propertyId, isAdmin = false }: Ti
               {lanedItems.map((item) => {
                 const { reservation: r, lane, startIdx, endIdx } = item;
                 const isConfirmed = r.status === "confirmed";
-                const left = startIdx * DAY_W + 2;
-                const width = (endIdx - startIdx + 1) * DAY_W - 4;
+                const left = startIdx * DAY_W + Math.floor(DAY_W / 2);
+                const width = Math.max((endIdx - startIdx) * DAY_W, DAY_W / 2);
                 const top = lane * (BRACKET_H + BRACKET_GAP) + 4;
 
                 // Build display name
-                const nameParts = r.clientName.split(' ');
-                const displayName = nameParts.length > 1
-                  ? nameParts[0] + ' ' + nameParts[1].substring(0, 4) + '..'
-                  : r.clientName;
-                const phoneShort = r.clientPhone ? r.clientPhone.substring(0, 5) + '..' : '';
+                const displayName = r.clientName;
+                const phoneShort = r.clientPhone ? r.clientPhone : '';
 
                 return (
                   <div
@@ -279,8 +276,6 @@ export default function AvailabilityTimeline({ propertyId, isAdmin = false }: Ti
                         ? 'border-[#ef4444] bg-[#ef4444]/8'
                         : 'border-[#f97316] bg-[#f97316]/8'
                     }`}>
-                      {/* Left bracket cap */}
-                      <div className={`w-[3px] h-[14px] rounded-sm flex-shrink-0 ${isConfirmed ? 'bg-[#ef4444]' : 'bg-[#f97316]'}`} />
                       {/* Label */}
                       <span className={`text-[8px] sm:text-[9px] font-bold truncate ${
                         isConfirmed ? 'text-[#ef4444]' : 'text-[#f97316]'
@@ -288,8 +283,6 @@ export default function AvailabilityTimeline({ propertyId, isAdmin = false }: Ti
                         {displayName}
                         {phoneShort && <span className="opacity-60 ml-0.5">· {phoneShort}</span>}
                       </span>
-                      {/* Right bracket cap */}
-                      <div className={`w-[3px] h-[14px] rounded-sm flex-shrink-0 ${isConfirmed ? 'bg-[#ef4444]' : 'bg-[#f97316]'}`} />
                     </div>
                   </div>
                 );
