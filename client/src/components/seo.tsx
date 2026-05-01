@@ -1,23 +1,5 @@
 /**
- * SEO Component
- * 
- * Purpose: Manage HTML head meta tags for search engine optimization
- * Usage: Import and wrap any page with <SEO title="..." description="..." />
- * 
- * Features:
- * - Dynamic page titles
- * - Meta descriptions for Google snippets
- * - Open Graph tags for social media (Facebook, Twitter)
- * - Canonical URLs to prevent duplicate content
- * - Keywords meta tag
- * 
- * Example:
- * <SEO 
- *   title="Appartement 2 Chambres - Hay Khadhra"
- *   description="Bel appartement meublé avec 2 chambres à louer"
- *   keywords="appartement, location, Hay Khadhra"
- *   image="https://example.com/image.jpg"
- * />
+ * SEO Component for laith-kelibia
  */
 
 import { Helmet } from 'react-helmet-async';
@@ -32,15 +14,15 @@ interface SEOProps {
 }
 
 export function SEO({
-  title = 'Edarna - Location d\'Appartements Vérifiés',
-  description = 'Trouvez votre appartement idéal à Hay Khadhra et Cité Olympique. Logements vérifiés, meublés et non meublés disponibles.',
-  keywords = 'location appartement, Hay Khadhra, Cité Olympique, Tunis, appartement meublé, immobilier',
+  title = 'laith-kelibia — Location d\'Appartements',
+  description = 'Trouvez votre logement idéal à Kelibia. Appartements vérifiés, meublés et non meublés disponibles à la location.',
+  keywords = 'location appartement, Kelibia, appartement meublé, immobilier Kelibia, location Tunisie',
   image = '/darna_logo-removebg-preview.png',
   url,
   type = 'website',
 }: SEOProps) {
   const siteUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
-  const siteName = 'Edarna';
+  const siteName = 'laith-kelibia';
   
   return (
     <Helmet>
@@ -73,7 +55,7 @@ export function SEO({
       <meta name="robots" content="index, follow" />
       <meta name="language" content="French" />
       <meta name="revisit-after" content="7 days" />
-      <meta name="author" content="Edarna" />
+      <meta name="author" content="laith-kelibia" />
     </Helmet>
   );
 }

@@ -5,6 +5,7 @@
 
 $VPS = "root@31.22.10.133"
 $PROJECT_DIR = "/root/KhadhraRentals"
+$REPO = "https://github.com/lili12388/kelibia.git"
 
 Write-Host "`n🚀 Deploying Edarna to production...`n" -ForegroundColor Cyan
 
@@ -14,7 +15,7 @@ git add -A
 $commitMsg = Read-Host "Commit message (or press Enter for 'update')"
 if ([string]::IsNullOrWhiteSpace($commitMsg)) { $commitMsg = "update" }
 git commit -m $commitMsg
-git push origin main
+git push kelibia main
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ Git push failed. Fix any errors above." -ForegroundColor Red
