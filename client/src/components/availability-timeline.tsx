@@ -9,210 +9,156 @@ import { Check, Clock, Trash2, Plus, X, CalendarDays, ChevronLeft, ChevronRight 
 import type { Reservation } from "@shared/schema";
 
 // ─── Constants ───
-const MONTH_NAMES = ["Mai", "Juin", "Juillet", "Août", "Septembre"];
+const MONTH_NAMES_FR = ["Mai", "Juin", "Juillet", "Août", "Septembre"];
 const MONTH_INDICES = [4, 5, 6, 7, 8];
-const DAY_WIDTH = 32;
+const DAY_W = 28; // width per day in px
+const BRACKET_H = 24; // height of each bracket row
+const BRACKET_GAP = 4; // vertical gap between stacked brackets
 
 function generateDays(year: number) {
   const days: Date[] = [];
-  for (let month = 4; month <= 8; month++) {
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    for (let day = 1; day <= daysInMonth; day++) {
-      days.push(new Date(year, month, day));
-    }
+  for (let m = 4; m <= 8; m++) {
+    const count = new Date(year, m + 1, 0).getDate();
+    for (let d = 1; d <= count; d++) days.push(new Date(year, m, d));
   }
   return days;
 }
 
-function dateStr(d: Date) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+function ds(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-function fmtDate(ds: string) {
-  const d = new Date(ds + 'T00:00:00');
+function fmtShort(s: string) {
+  const d = new Date(s + 'T00:00:00');
   return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 }
 
-// ─── Types ───
+// ─── Lane assignment algorithm (confirmed on top, then stack by overlap) ───
+interface LanedReservation {
+  reservation: Reservation;
+  lane: number;
+  startIdx: number;
+  endIdx: number;
+}
+
+function assignLanes(reservations: Reservation[], days: Date[]): LanedReservation[] {
+  // Sort: confirmed first, then by start date
+  const sorted = [...reservations].sort((a, b) => {
+    if (a.status === "confirmed" && b.status !== "confirmed") return -1;
+    if (a.status !== "confirmed" && b.status === "confirmed") return 1;
+    return a.startDate.localeCompare(b.startDate);
+  });
+
+  const result: LanedReservation[] = [];
+  const laneEnds: number[] = []; // tracks the endIdx of the last item in each lane
+
+  for (const r of sorted) {
+    const startIdx = days.findIndex(d => ds(d) === r.startDate);
+    const endIdx = days.findIndex(d => ds(d) === r.endDate);
+    if (startIdx < 0 || endIdx < 0) continue;
+
+    // Find first lane where this reservation fits (no overlap)
+    let lane = -1;
+    for (let l = 0; l < laneEnds.length; l++) {
+      if (laneEnds[l] < startIdx) {
+        lane = l;
+        break;
+      }
+    }
+    if (lane === -1) {
+      lane = laneEnds.length;
+      laneEnds.push(-1);
+    }
+    laneEnds[lane] = endIdx;
+    result.push({ reservation: r, lane, startIdx, endIdx });
+  }
+
+  return result;
+}
+
+// ─── Props ───
 interface TimelineProps {
   propertyId: string;
   isAdmin?: boolean;
 }
 
-// ─── Main Component ───
+// ─── Component ───
 export default function AvailabilityTimeline({ propertyId, isAdmin = false }: TimelineProps) {
   const year = new Date().getFullYear();
   const days = useMemo(() => generateDays(year), [year]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
 
-  // Admin selection state
-  const [selectStart, setSelectStart] = useState<string | null>(null);
-  const [selectEnd, setSelectEnd] = useState<string | null>(null);
+  // Admin date-range selection
+  const [selStart, setSelStart] = useState<string | null>(null);
+  const [selEnd, setSelEnd] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({
-    clientName: "",
-    clientPhone: "",
-    status: "pending" as "confirmed" | "pending",
-  });
+  const [form, setForm] = useState({ clientName: "", clientPhone: "", status: "pending" as "confirmed" | "pending" });
 
-  // Fetch reservations
-  const publicQuery = useQuery<Reservation[]>({
-    queryKey: [`/api/properties/${propertyId}/reservations`],
-    enabled: !isAdmin,
-  });
-
-  const adminQuery = useQuery<Reservation[]>({
-    queryKey: [`/api/broker/properties/${propertyId}/reservations`],
-    enabled: !!isAdmin,
-  });
-
-  const reservations = (isAdmin ? adminQuery.data : publicQuery.data) ?? [];
+  // Fetch
+  const pubQ = useQuery<Reservation[]>({ queryKey: [`/api/properties/${propertyId}/reservations`], enabled: !isAdmin });
+  const admQ = useQuery<Reservation[]>({ queryKey: [`/api/broker/properties/${propertyId}/reservations`], enabled: !!isAdmin });
+  const reservations = (isAdmin ? admQ.data : pubQ.data) ?? [];
 
   // Mutations
-  const createMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await apiRequest('POST', `/api/broker/properties/${propertyId}/reservations`, data);
-      return await response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/broker/properties/${propertyId}/reservations`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/properties/${propertyId}/reservations`] });
-      toast({ title: "✓ Réservation ajoutée" });
-      resetSelection();
-    },
-    onError: () => {
-      toast({ title: "Erreur", description: "Échec de l'ajout.", variant: "destructive" });
-    },
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: [`/api/broker/properties/${propertyId}/reservations`] });
+    qc.invalidateQueries({ queryKey: [`/api/properties/${propertyId}/reservations`] });
+  };
+  const createM = useMutation({
+    mutationFn: async (d: any) => { const r = await apiRequest('POST', `/api/broker/properties/${propertyId}/reservations`, d); return r.json(); },
+    onSuccess: () => { invalidate(); toast({ title: "✓ Réservation ajoutée" }); resetSel(); },
+    onError: () => { toast({ title: "Erreur", variant: "destructive" }); },
   });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const response = await apiRequest('DELETE', `/api/broker/reservations/${id}`, {});
-      return await response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/broker/properties/${propertyId}/reservations`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/properties/${propertyId}/reservations`] });
-      toast({ title: "Supprimée" });
-    },
+  const deleteM = useMutation({
+    mutationFn: async (id: string) => { const r = await apiRequest('DELETE', `/api/broker/reservations/${id}`, {}); return r.json(); },
+    onSuccess: () => { invalidate(); toast({ title: "Supprimée" }); },
   });
-
-  const toggleStatusMutation = useMutation({
+  const toggleM = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const newStatus = status === "confirmed" ? "pending" : "confirmed";
-      const response = await apiRequest('PATCH', `/api/broker/reservations/${id}`, { status: newStatus });
-      return await response.json();
+      const r = await apiRequest('PATCH', `/api/broker/reservations/${id}`, { status: status === "confirmed" ? "pending" : "confirmed" });
+      return r.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/broker/properties/${propertyId}/reservations`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/properties/${propertyId}/reservations`] });
-    },
+    onSuccess: () => invalidate(),
   });
 
-  // Scroll to today on mount
-  useEffect(() => {
-    scrollToToday();
-  }, []);
-
+  // Scroll to today
+  useEffect(() => { scrollToToday(); }, []);
   const scrollToToday = useCallback(() => {
-    if (scrollRef.current) {
-      const today = new Date();
-      const startDate = new Date(year, 4, 1);
-      const diffDays = Math.floor((today.getTime() - startDate.getTime()) / (86400000));
-      const scrollTo = Math.max(0, (diffDays - 4) * DAY_WIDTH);
-      scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
-    }
+    if (!scrollRef.current) return;
+    const diff = Math.floor((Date.now() - new Date(year, 4, 1).getTime()) / 86400000);
+    scrollRef.current.scrollTo({ left: Math.max(0, (diff - 4) * DAY_W), behavior: 'smooth' });
   }, [year]);
 
-  const scrollLeft = () => {
-    scrollRef.current?.scrollBy({ left: -DAY_WIDTH * 7, behavior: 'smooth' });
-  };
-  const scrollRight = () => {
-    scrollRef.current?.scrollBy({ left: DAY_WIDTH * 7, behavior: 'smooth' });
-  };
+  // Lane layout
+  const lanedItems = useMemo(() => assignLanes(reservations, days), [reservations, days]);
+  const maxLane = lanedItems.length > 0 ? Math.max(...lanedItems.map(l => l.lane)) : -1;
+  const bracketAreaH = (maxLane + 1) * (BRACKET_H + BRACKET_GAP) + 8;
 
-  // Build lookup: date -> array of reservations (supports overlapping)
-  const dateMap = useMemo(() => {
-    const map = new Map<string, Reservation[]>();
-    for (const r of reservations) {
-      const start = new Date(r.startDate + 'T00:00:00');
-      const end = new Date(r.endDate + 'T00:00:00');
-      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-        const ds = dateStr(d);
-        if (!map.has(ds)) map.set(ds, []);
-        map.get(ds)!.push(r);
-      }
-    }
-    return map;
-  }, [reservations]);
+  const today = ds(new Date());
 
-  // Find "label" positions - show client name bubble at the start of each reservation
-  const labelPositions = useMemo(() => {
-    const labels: { dayIndex: number; reservation: Reservation; spanDays: number }[] = [];
-    for (const r of reservations) {
-      const start = new Date(r.startDate + 'T00:00:00');
-      const startIdx = days.findIndex(d => dateStr(d) === dateStr(start));
-      const end = new Date(r.endDate + 'T00:00:00');
-      const endIdx = days.findIndex(d => dateStr(d) === dateStr(end));
-      if (startIdx >= 0) {
-        labels.push({ dayIndex: startIdx, reservation: r, spanDays: (endIdx >= 0 ? endIdx - startIdx + 1 : 1) });
-      }
-    }
-    return labels;
-  }, [reservations, days]);
-
-  const today = dateStr(new Date());
-
-  // Admin click handler for date range selection
+  // Admin click
   const handleDayClick = (day: Date) => {
     if (!isAdmin) return;
-    const ds = dateStr(day);
-
-    if (!selectStart || (selectStart && selectEnd)) {
-      // Starting new selection
-      setSelectStart(ds);
-      setSelectEnd(null);
-      setShowForm(false);
+    const d = ds(day);
+    if (!selStart || (selStart && selEnd)) {
+      setSelStart(d); setSelEnd(null); setShowForm(false);
     } else {
-      // Completing selection
-      if (ds >= selectStart) {
-        setSelectEnd(ds);
-        setShowForm(true);
-      } else {
-        // Clicked before start, reset
-        setSelectStart(ds);
-        setSelectEnd(null);
-      }
+      if (d >= selStart) { setSelEnd(d); setShowForm(true); }
+      else { setSelStart(d); setSelEnd(null); }
     }
   };
 
-  const resetSelection = () => {
-    setSelectStart(null);
-    setSelectEnd(null);
-    setShowForm(false);
-    setFormData({ clientName: "", clientPhone: "", status: "pending" });
+  const resetSel = () => { setSelStart(null); setSelEnd(null); setShowForm(false); setForm({ clientName: "", clientPhone: "", status: "pending" }); };
+
+  const isInSel = (d: string) => {
+    if (!selStart) return false;
+    if (!selEnd) return d === selStart;
+    return d >= selStart && d <= selEnd;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectStart || !selectEnd) return;
-    createMutation.mutate({
-      ...formData,
-      startDate: selectStart,
-      endDate: selectEnd,
-    });
-  };
-
-  const isInSelection = (ds: string) => {
-    if (!selectStart) return false;
-    if (!selectEnd) return ds === selectStart;
-    return ds >= selectStart && ds <= selectEnd;
-  };
+  const totalW = days.length * DAY_W;
 
   return (
     <div className="w-full space-y-3">
@@ -223,158 +169,127 @@ export default function AvailabilityTimeline({ propertyId, isAdmin = false }: Ti
           Disponibilité
         </span>
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="flex items-center gap-1">
-            <div className="w-2.5 h-2.5 rounded-sm bg-[#3b82f6]" />
-            <span className="text-[9px] sm:text-[10px] text-muted-foreground">Libre</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-2.5 h-2.5 rounded-sm bg-[#ef4444]" />
-            <span className="text-[9px] sm:text-[10px] text-muted-foreground">Confirmé</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-2.5 h-2.5 rounded-sm bg-[#f97316]" />
-            <span className="text-[9px] sm:text-[10px] text-muted-foreground">En attente</span>
-          </div>
+          <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-sm bg-[#3b82f6]" /><span className="text-[9px] sm:text-[10px] text-muted-foreground">Libre</span></div>
+          <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-sm bg-[#ef4444]" /><span className="text-[9px] sm:text-[10px] text-muted-foreground">Confirmé</span></div>
+          <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-sm bg-[#f97316]" /><span className="text-[9px] sm:text-[10px] text-muted-foreground">En attente</span></div>
         </div>
       </div>
 
       {/* Timeline Card */}
       <div className="relative bg-card border border-border/40 rounded-2xl overflow-hidden shadow-sm">
-        {/* Nav arrows */}
-        <button
-          onClick={scrollLeft}
-          className="absolute left-0 top-0 bottom-0 z-10 w-8 flex items-center justify-center bg-gradient-to-r from-card via-card/80 to-transparent hover:from-muted transition-all"
-        >
+        {/* Left/Right scroll arrows */}
+        <button onClick={() => scrollRef.current?.scrollBy({ left: -DAY_W * 7, behavior: 'smooth' })} className="absolute left-0 top-0 bottom-0 z-20 w-8 flex items-center justify-center bg-gradient-to-r from-card to-transparent hover:from-muted/80 transition-all">
           <ChevronLeft className="w-4 h-4 text-muted-foreground" />
         </button>
-        <button
-          onClick={scrollRight}
-          className="absolute right-0 top-0 bottom-0 z-10 w-8 flex items-center justify-center bg-gradient-to-l from-card via-card/80 to-transparent hover:from-muted transition-all"
-        >
+        <button onClick={() => scrollRef.current?.scrollBy({ left: DAY_W * 7, behavior: 'smooth' })} className="absolute right-0 top-0 bottom-0 z-20 w-8 flex items-center justify-center bg-gradient-to-l from-card to-transparent hover:from-muted/80 transition-all">
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
         </button>
 
-        {/* Scrollable area */}
-        <div
-          ref={scrollRef}
-          className="overflow-x-auto pb-2 pt-0 mx-8"
-          style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'thin' }}
-        >
-          <div style={{ width: `${days.length * DAY_WIDTH}px` }}>
+        <div ref={scrollRef} className="overflow-x-auto mx-8 pb-1" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'thin' }}>
+          <div style={{ width: `${totalW}px` }}>
+
             {/* Month headers */}
-            <div className="flex border-b border-border/20">
-              {MONTH_INDICES.map((monthIdx, i) => {
-                const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
-                return (
-                  <div
-                    key={monthIdx}
-                    className="flex-shrink-0 text-center border-r border-border/15 last:border-r-0"
-                    style={{ width: `${daysInMonth * DAY_WIDTH}px` }}
-                  >
-                    <span className="text-[10px] sm:text-xs font-bold text-foreground/70 py-1 block tracking-wide">
-                      {MONTH_NAMES[i]}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Day numbers row */}
             <div className="flex">
-              {days.map((day, idx) => {
-                const ds = dateStr(day);
-                const isT = ds === today;
-                const dayNum = day.getDate();
+              {MONTH_INDICES.map((mIdx, i) => {
+                const cnt = new Date(year, mIdx + 1, 0).getDate();
                 return (
-                  <div
-                    key={`num-${idx}`}
-                    className="flex-shrink-0 text-center"
-                    style={{ width: `${DAY_WIDTH}px` }}
-                  >
-                    <span className={`text-[8px] sm:text-[9px] leading-tight block py-0.5 font-medium ${
-                      isT ? "text-primary font-extrabold text-[10px]" : "text-muted-foreground/60"
-                    }`}>
-                      {dayNum}
-                    </span>
+                  <div key={mIdx} className="flex-shrink-0 text-center border-r border-border/15 last:border-r-0" style={{ width: `${cnt * DAY_W}px` }}>
+                    <span className="text-[10px] sm:text-xs font-bold text-foreground/70 py-1 block tracking-wide">{MONTH_NAMES_FR[i]}</span>
                   </div>
                 );
               })}
             </div>
 
-            {/* Color bars */}
-            <div className="flex relative">
-              {days.map((day, idx) => {
-                const ds = dateStr(day);
-                const dayReservations = dateMap.get(ds) || [];
-                const isT = ds === today;
-                const selected = isInSelection(ds);
-                const isFirstOfMonth = day.getDate() === 1;
+            {/* Day numbers */}
+            <div className="flex">
+              {days.map((day, i) => (
+                <div key={i} className={`flex-shrink-0 text-center ${isAdmin ? 'cursor-pointer' : ''}`} style={{ width: `${DAY_W}px` }} onClick={() => handleDayClick(day)}>
+                  <span className={`text-[8px] sm:text-[9px] block py-0.5 font-semibold ${
+                    ds(day) === today ? 'text-primary font-extrabold text-[10px]' :
+                    isInSel(ds(day)) ? 'text-primary font-bold' :
+                    'text-foreground/50'
+                  }`}>{day.getDate()}</span>
+                </div>
+              ))}
+            </div>
 
-                // Determine bar color: priority = confirmed > pending > free
-                let barColor = "bg-[#3b82f6]";
-                let bgColor = "bg-[#3b82f6]/10";
-                if (dayReservations.length > 0) {
-                  const hasConfirmed = dayReservations.some(r => r.status === "confirmed");
-                  if (hasConfirmed) {
-                    barColor = "bg-[#ef4444]";
-                    bgColor = "bg-[#ef4444]/12";
-                  } else {
-                    barColor = "bg-[#f97316]";
-                    bgColor = "bg-[#f97316]/12";
-                  }
-                }
-
+            {/* The BLUE LINE with tick marks */}
+            <div className="relative" style={{ height: '20px' }}>
+              {/* Main blue line */}
+              <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[3px] bg-[#3b82f6] rounded-full" />
+              {/* Day tick marks */}
+              {days.map((day, i) => {
+                const isMonth1 = day.getDate() === 1;
                 return (
                   <div
-                    key={idx}
-                    className={`flex-shrink-0 relative px-[1px] ${
-                      isAdmin ? "cursor-pointer" : ""
-                    } ${isFirstOfMonth ? "border-l border-border/30" : ""}`}
-                    style={{ width: `${DAY_WIDTH}px` }}
-                    onClick={() => handleDayClick(day)}
+                    key={i}
+                    className="absolute top-1/2 -translate-y-1/2"
+                    style={{ left: `${i * DAY_W + DAY_W / 2}px` }}
                   >
-                    <div className={`h-7 sm:h-8 rounded-[4px] relative overflow-hidden transition-all ${bgColor} ${
-                      selected ? "ring-2 ring-primary ring-offset-1" : ""
-                    } ${isAdmin ? "hover:brightness-90" : ""}`}>
-                      <div className={`absolute bottom-0 left-0 right-0 h-2 ${barColor} rounded-b-[4px]`} />
-                    </div>
-                    {/* Today marker */}
-                    {isT && (
-                      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
-                        <div className="w-1.5 h-1.5 bg-primary rounded-full shadow-sm" />
-                      </div>
-                    )}
+                    <div className={`w-[2px] ${isMonth1 ? 'h-[14px] bg-foreground/50' : 'h-[8px] bg-foreground/25'} rounded-full -translate-y-1/2`} style={{ marginTop: '1px' }} />
                   </div>
                 );
               })}
+              {/* Today red dot */}
+              {(() => {
+                const tIdx = days.findIndex(d => ds(d) === today);
+                if (tIdx < 0) return null;
+                return (
+                  <div className="absolute top-1/2 -translate-y-1/2 z-10" style={{ left: `${tIdx * DAY_W + DAY_W / 2 - 4}px` }}>
+                    <div className="w-[9px] h-[9px] bg-primary rounded-full border-2 border-white shadow-sm" />
+                  </div>
+                );
+              })()}
+              {/* Selection highlight */}
+              {selStart && (() => {
+                const sIdx = days.findIndex(d => ds(d) === selStart);
+                const eIdx = selEnd ? days.findIndex(d => ds(d) === selEnd) : sIdx;
+                if (sIdx < 0) return null;
+                const left = sIdx * DAY_W;
+                const width = (eIdx - sIdx + 1) * DAY_W;
+                return <div className="absolute top-0 bottom-0 bg-primary/10 border border-primary/30 rounded" style={{ left: `${left}px`, width: `${width}px` }} />;
+              })()}
+            </div>
 
-              {/* Floating reservation labels on the bars */}
-              {labelPositions.map((lp, i) => {
-                const r = lp.reservation;
+            {/* Bracket area — reservations stack below the line */}
+            <div className="relative" style={{ height: `${Math.max(bracketAreaH, 8)}px` }}>
+              {lanedItems.map((item) => {
+                const { reservation: r, lane, startIdx, endIdx } = item;
                 const isConfirmed = r.status === "confirmed";
-                const leftPx = lp.dayIndex * DAY_WIDTH + 2;
-                const widthPx = Math.max(lp.spanDays * DAY_WIDTH - 4, DAY_WIDTH - 4);
+                const left = startIdx * DAY_W + 2;
+                const width = (endIdx - startIdx + 1) * DAY_W - 4;
+                const top = lane * (BRACKET_H + BRACKET_GAP) + 4;
+
+                // Build display name
                 const nameParts = r.clientName.split(' ');
-                const shortName = nameParts.length > 1 ? nameParts[0] + ' ' + nameParts[1].substring(0, 4) + '..' : r.clientName;
+                const displayName = nameParts.length > 1
+                  ? nameParts[0] + ' ' + nameParts[1].substring(0, 4) + '..'
+                  : r.clientName;
+                const phoneShort = r.clientPhone ? r.clientPhone.substring(0, 5) + '..' : '';
 
                 return (
                   <div
-                    key={`label-${r.id}-${i}`}
-                    className="absolute pointer-events-none"
-                    style={{
-                      left: `${leftPx}px`,
-                      top: '-2px',
-                      width: `${widthPx}px`,
-                      height: '100%',
-                      zIndex: 5,
-                    }}
+                    key={r.id}
+                    className="absolute flex items-center transition-all"
+                    style={{ left: `${left}px`, width: `${width}px`, top: `${top}px`, height: `${BRACKET_H}px` }}
                   >
-                    {/* Bubble */}
-                    <div className={`absolute -top-[26px] left-0 max-w-[120px] px-1.5 py-0.5 rounded-md text-white text-[7px] sm:text-[8px] font-semibold whitespace-nowrap overflow-hidden shadow-sm ${
-                      isConfirmed ? "bg-red-600/90" : "bg-orange-500/90"
+                    {/* The bracket shape */}
+                    <div className={`w-full h-full rounded-md border-2 flex items-center justify-center gap-1 px-1.5 overflow-hidden ${
+                      isConfirmed
+                        ? 'border-[#ef4444] bg-[#ef4444]/8'
+                        : 'border-[#f97316] bg-[#f97316]/8'
                     }`}>
-                      {shortName}
-                      {r.clientPhone && <span className="opacity-70 ml-0.5">· {r.clientPhone.substring(0, 5)}..</span>}
+                      {/* Left bracket cap */}
+                      <div className={`w-[3px] h-[14px] rounded-sm flex-shrink-0 ${isConfirmed ? 'bg-[#ef4444]' : 'bg-[#f97316]'}`} />
+                      {/* Label */}
+                      <span className={`text-[8px] sm:text-[9px] font-bold truncate ${
+                        isConfirmed ? 'text-[#ef4444]' : 'text-[#f97316]'
+                      }`}>
+                        {displayName}
+                        {phoneShort && <span className="opacity-60 ml-0.5">· {phoneShort}</span>}
+                      </span>
+                      {/* Right bracket cap */}
+                      <div className={`w-[3px] h-[14px] rounded-sm flex-shrink-0 ${isConfirmed ? 'bg-[#ef4444]' : 'bg-[#f97316]'}`} />
                     </div>
                   </div>
                 );
@@ -384,90 +299,54 @@ export default function AvailabilityTimeline({ propertyId, isAdmin = false }: Ti
         </div>
 
         {/* Aujourd'hui button */}
-        <div className="flex justify-center py-1.5 border-t border-border/20">
-          <button
-            onClick={scrollToToday}
-            className="flex items-center gap-1 px-3 py-1 rounded-full bg-primary/10 hover:bg-primary/20 text-primary text-[10px] sm:text-xs font-semibold transition-all"
-          >
-            <CalendarDays className="w-3 h-3" />
+        <div className="flex justify-center py-2 border-t border-border/15">
+          <button onClick={scrollToToday} className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary text-[10px] sm:text-xs font-bold transition-all active:scale-95">
+            <CalendarDays className="w-3.5 h-3.5" />
             Aujourd'hui
           </button>
         </div>
       </div>
 
-      {/* Admin: Inline selection form */}
-      {isAdmin && showForm && selectStart && selectEnd && (
+      {/* Admin: Inline form after click-to-select */}
+      {isAdmin && showForm && selStart && selEnd && (
         <div className="bg-card border border-primary/30 rounded-xl p-4 shadow-sm animate-fade-in-up">
           <div className="flex items-center justify-between mb-3">
             <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
               <Plus className="w-3.5 h-3.5 text-primary" />
-              Nouvelle réservation: <span className="text-primary">{fmtDate(selectStart)} → {fmtDate(selectEnd)}</span>
+              Nouvelle réservation: <span className="text-primary">{fmtShort(selStart)} → {fmtShort(selEnd)}</span>
             </div>
-            <button onClick={resetSelection} className="w-6 h-6 flex items-center justify-center rounded-full bg-muted/60 hover:bg-muted">
-              <X className="w-3 h-3" />
-            </button>
+            <button onClick={resetSel} className="w-6 h-6 flex items-center justify-center rounded-full bg-muted/60 hover:bg-muted"><X className="w-3 h-3" /></button>
           </div>
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={(e) => { e.preventDefault(); createM.mutate({ ...form, startDate: selStart, endDate: selEnd }); }} className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label className="text-[10px] font-medium">Nom du client *</Label>
-                <Input
-                  value={formData.clientName}
-                  onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
-                  placeholder="Nom complet"
-                  className="h-9 text-sm rounded-lg mt-0.5"
-                  required
-                />
+                <Input value={form.clientName} onChange={(e) => setForm({ ...form, clientName: e.target.value })} placeholder="Nom complet" className="h-9 text-sm rounded-lg mt-0.5" required />
               </div>
               <div>
                 <Label className="text-[10px] font-medium">Téléphone</Label>
-                <Input
-                  value={formData.clientPhone}
-                  onChange={(e) => setFormData({ ...formData, clientPhone: e.target.value })}
-                  placeholder="50344..."
-                  className="h-9 text-sm rounded-lg mt-0.5"
-                />
+                <Input value={form.clientPhone} onChange={(e) => setForm({ ...form, clientPhone: e.target.value })} placeholder="50344..." className="h-9 text-sm rounded-lg mt-0.5" />
               </div>
             </div>
             <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setFormData({ ...formData, status: "confirmed" })}
-                className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1 ${
-                  formData.status === "confirmed"
-                    ? "bg-red-500 text-white shadow-sm"
-                    : "bg-muted/40 text-muted-foreground"
-                }`}
-              >
-                <Check className="w-3 h-3" />
-                Confirmé
+              <button type="button" onClick={() => setForm({ ...form, status: "confirmed" })} className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1 ${form.status === "confirmed" ? "bg-red-500 text-white shadow-sm" : "bg-muted/40 text-muted-foreground"}`}>
+                <Check className="w-3 h-3" /> Confirmé
               </button>
-              <button
-                type="button"
-                onClick={() => setFormData({ ...formData, status: "pending" })}
-                className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1 ${
-                  formData.status === "pending"
-                    ? "bg-orange-500 text-white shadow-sm"
-                    : "bg-muted/40 text-muted-foreground"
-                }`}
-              >
-                <Clock className="w-3 h-3" />
-                Non confirmé
+              <button type="button" onClick={() => setForm({ ...form, status: "pending" })} className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1 ${form.status === "pending" ? "bg-orange-500 text-white shadow-sm" : "bg-muted/40 text-muted-foreground"}`}>
+                <Clock className="w-3 h-3" /> Non confirmé
               </button>
             </div>
-            <Button type="submit" className="w-full h-9 text-xs rounded-lg" disabled={createMutation.isPending}>
-              {createMutation.isPending ? "Ajout..." : "Ajouter la réservation"}
+            <Button type="submit" className="w-full h-9 text-xs rounded-lg" disabled={createM.isPending}>
+              {createM.isPending ? "Ajout..." : "Ajouter la réservation"}
             </Button>
           </form>
         </div>
       )}
 
-      {/* Admin: Selection hint */}
+      {/* Admin hint */}
       {isAdmin && !showForm && (
         <p className="text-[10px] text-muted-foreground text-center italic">
-          {selectStart && !selectEnd
-            ? `📌 Début: ${fmtDate(selectStart)} — cliquez sur la date de fin`
-            : "Cliquez sur une date de début sur la timeline pour ajouter une réservation"}
+          {selStart && !selEnd ? `📌 Début: ${fmtShort(selStart)} — cliquez sur la date de fin` : "Cliquez sur une date pour commencer une réservation"}
         </p>
       )}
 
@@ -475,68 +354,32 @@ export default function AvailabilityTimeline({ propertyId, isAdmin = false }: Ti
       {reservations.length > 0 && (
         <div className="bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm">
           <div className="px-4 py-2.5 border-b border-border/20 bg-muted/20">
-            <span className="text-xs font-bold text-foreground uppercase tracking-wider">
-              Réservations ({reservations.length})
-            </span>
+            <span className="text-xs font-bold text-foreground uppercase tracking-wider">Réservations ({reservations.length})</span>
           </div>
-          <div className="divide-y divide-border/20 max-h-[300px] overflow-y-auto">
+          <div className="divide-y divide-border/15 max-h-[280px] overflow-y-auto">
             {reservations.map((r) => (
-              <div
-                key={r.id}
-                className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/20 transition-colors"
-              >
-                {/* Status dot */}
-                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                  r.status === "confirmed" ? "bg-red-500" : "bg-orange-500"
-                }`} />
-
-                {/* Client info */}
+              <div key={r.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/15 transition-colors">
+                <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${r.status === "confirmed" ? "bg-red-500" : "bg-orange-500"}`} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-xs font-bold text-foreground truncate">
-                      {r.clientName}
-                    </span>
-                    {r.clientPhone && (
-                      <span className="text-[10px] text-muted-foreground font-medium">
-                        · {r.clientPhone}
-                      </span>
-                    )}
+                    <span className="text-xs font-bold text-foreground truncate">{r.clientName}</span>
+                    {r.clientPhone && <span className="text-[10px] text-muted-foreground font-medium">· {r.clientPhone}</span>}
                   </div>
                   <div className="text-[10px] text-muted-foreground mt-0.5">
-                    de <span className="font-semibold text-foreground/80">{fmtDate(r.startDate)}</span>
-                    {' '}à{' '}
-                    <span className="font-semibold text-foreground/80">{fmtDate(r.endDate)}</span>
+                    de <span className="font-semibold text-foreground/80">{fmtShort(r.startDate)}</span> à <span className="font-semibold text-foreground/80">{fmtShort(r.endDate)}</span>
                   </div>
                 </div>
-
-                {/* Status badge */}
                 <div className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
-                  r.status === "confirmed"
-                    ? "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400"
-                    : "bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400"
+                  r.status === "confirmed" ? "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400" : "bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400"
                 }`}>
                   {r.status === "confirmed" ? "Réservé" : "Non confirmé"}
                 </div>
-
-                {/* Admin actions */}
                 {isAdmin && (
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    <button
-                      onClick={() => toggleStatusMutation.mutate({ id: r.id, status: r.status })}
-                      className={`h-6 w-6 flex items-center justify-center rounded-md transition-all text-xs ${
-                        r.status === "confirmed"
-                          ? "bg-red-100 text-red-600 hover:bg-red-200"
-                          : "bg-orange-100 text-orange-600 hover:bg-orange-200"
-                      }`}
-                      title={r.status === "confirmed" ? "→ Non confirmé" : "→ Confirmé"}
-                    >
+                    <button onClick={() => toggleM.mutate({ id: r.id, status: r.status })} className={`h-6 w-6 flex items-center justify-center rounded-md transition-all ${r.status === "confirmed" ? "bg-red-100 text-red-600 hover:bg-red-200" : "bg-orange-100 text-orange-600 hover:bg-orange-200"}`} title={r.status === "confirmed" ? "→ Non confirmé" : "→ Confirmé"}>
                       {r.status === "confirmed" ? <Check className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
                     </button>
-                    <button
-                      onClick={() => deleteMutation.mutate(r.id)}
-                      className="h-6 w-6 flex items-center justify-center rounded-md bg-muted/40 text-muted-foreground hover:bg-red-100 hover:text-red-600 transition-all"
-                      title="Supprimer"
-                    >
+                    <button onClick={() => deleteM.mutate(r.id)} className="h-6 w-6 flex items-center justify-center rounded-md bg-muted/40 text-muted-foreground hover:bg-red-100 hover:text-red-600 transition-all" title="Supprimer">
                       <Trash2 className="w-3 h-3" />
                     </button>
                   </div>
