@@ -117,7 +117,7 @@ export default function AdminAnalytics() {
   const handleDeletePropertyAnalytics = async (propertyId: string) => {
     setDeletingPropertyId(propertyId);
     try {
-      const response = await apiRequest(`/api/admin/analytics?endpoint=property&id=${propertyId}`, {
+      const response = await apiRequest(`/api/admin/analytics/property/${propertyId}`, {
         method: "DELETE",
       });
       

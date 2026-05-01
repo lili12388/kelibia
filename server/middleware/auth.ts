@@ -5,9 +5,9 @@ import jwt from "jsonwebtoken";
 export function requireBrokerAuth(req: Request, res: Response, next: NextFunction) {
   // Check JWT token first (for serverless compatibility)
   const token = req.cookies?.broker_token;
-  const secret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+  const secret = process.env.JWT_SECRET;
   
-  if (token) {
+  if (token && secret) {
     try {
       const decoded = jwt.verify(token, secret) as { isBroker: boolean };
       if (decoded.isBroker) {

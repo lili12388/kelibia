@@ -30,29 +30,46 @@ const upload = multer({
   }
 });
 
-// Helper function to optimize and convert image to base64
-async function optimizeImageToBase64(buffer: Buffer): Promise<string> {
-  const optimizedBuffer = await sharp(buffer)
+import fsSync from "fs";
+import crypto from "crypto";
+
+// Ensure uploads directory exists
+const UPLOADS_DIR = path.join(process.cwd(), "public", "uploads");
+if (!fsSync.existsSync(UPLOADS_DIR)) {
+  fsSync.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+
+// Helper function to optimize image and save to disk
+async function saveOptimizedImageToFile(buffer: Buffer, originalName: string): Promise<string> {
+  const filename = `${crypto.randomUUID()}-${originalName.replace(/[^a-zA-Z0-9.-]/g, '_').replace(/\.[^/.]+$/, "")}.webp`;
+  const filepath = path.join(UPLOADS_DIR, filename);
+  
+  await sharp(buffer)
     .resize(1920, 1080, { 
       fit: 'inside',
       withoutEnlargement: true 
     })
-    .jpeg({ quality: 85, progressive: true })
-    .toBuffer();
+    .webp({ quality: 85 })
+    .toFile(filepath);
   
-  return `data:image/jpeg;base64,${optimizedBuffer.toString('base64')}`;
+  return `/uploads/${filename}`;
 }
 
-// Helper function to convert video to base64 (no optimization, just encode)
-async function videoToBase64(buffer: Buffer, mimetype: string): Promise<string> {
-  return `data:${mimetype};base64,${buffer.toString('base64')}`;
+// Helper function to save video to disk
+async function saveVideoToFile(buffer: Buffer, originalName: string): Promise<string> {
+  const extension = path.extname(originalName) || '.mp4';
+  const filename = `${crypto.randomUUID()}-${originalName.replace(/[^a-zA-Z0-9.-]/g, '_').replace(/\.[^/.]+$/, "")}${extension}`;
+  const filepath = path.join(UPLOADS_DIR, filename);
+  
+  await fsSync.promises.writeFile(filepath, buffer);
+  return `/uploads/${filename}`;
 }
 
 // Helper function to generate a video thumbnail placeholder
-// NOTE: For production, consider using ffmpeg to extract actual video frames
-// For now, we create a simple placeholder with video icon
-async function generateVideoThumbnail(): Promise<string> {
-  // Create a simple 320x240 placeholder image with video icon
+async function generateVideoThumbnailFile(): Promise<string> {
+  const filename = `${crypto.randomUUID()}-video-thumb.webp`;
+  const filepath = path.join(UPLOADS_DIR, filename);
+  
   const svg = `
     <svg width="320" height="240" xmlns="http://www.w3.org/2000/svg">
       <rect width="320" height="240" fill="#1a1a2e"/>
@@ -61,43 +78,49 @@ async function generateVideoThumbnail(): Promise<string> {
     </svg>
   `;
   
-  const buffer = await sharp(Buffer.from(svg))
-    .jpeg({ quality: 85 })
-    .toBuffer();
+  await sharp(Buffer.from(svg))
+    .webp({ quality: 85 })
+    .toFile(filepath);
   
-  return `data:image/jpeg;base64,${buffer.toString('base64')}`;
+  return `/uploads/${filename}`;
 }
+
+const isProduction = process.env.NODE_ENV === 'production';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Broker login endpoint
   app.post('/api/broker/login', async (req, res) => {
-    console.log('[LOGIN] Request received:', { body: req.body, hasPassword: !!req.body?.password });
     try {
       const { password } = req.body;
       
-      // Simple password check - in production, use proper authentication
-      const BROKER_PASSWORD = process.env.BROKER_PASSWORD || 'broker123';
-      console.log('[LOGIN] Password check:', { provided: password, expected: BROKER_PASSWORD, match: password === BROKER_PASSWORD });
+      const BROKER_PASSWORD = process.env.BROKER_PASSWORD;
+      if (!BROKER_PASSWORD) {
+        console.error('[LOGIN] BROKER_PASSWORD environment variable is not set');
+        res.status(500).json({ error: 'Server configuration error' });
+        return;
+      }
       
       if (password === BROKER_PASSWORD) {
-        // Use JWT for serverless compatibility
         const jwt = await import('jsonwebtoken');
-        const secret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
-        console.log('[LOGIN] JWT module:', Object.keys(jwt));
+        const secret = process.env.JWT_SECRET;
+        if (!secret) {
+          console.error('[LOGIN] JWT_SECRET environment variable is not set');
+          res.status(500).json({ error: 'Server configuration error' });
+          return;
+        }
         const token = jwt.default.sign(
           { isBroker: true, isAuthenticated: true },
           secret,
           { expiresIn: '24h' }
         );
-        console.log('[LOGIN] Token generated successfully');
         
-        // Set HTTP-only cookie
+        // Set HTTP-only cookie (secure: false until HTTPS/SSL is configured)
         res.cookie('broker_token', token, {
           httpOnly: true,
-          secure: false, // Set to false to work with HTTP (no HTTPS)
+          secure: false,
           sameSite: 'lax',
           maxAge: 24 * 60 * 60 * 1000, // 24 hours
-          path: '/' // Ensure cookie is available for all paths
+          path: '/'
         });
         
         // Also set session for backward compatibility
@@ -111,9 +134,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(401).json({ error: 'Invalid password' });
       }
     } catch (error) {
-      console.error('[LOGIN] Error during broker login:', error);
-      console.error('[LOGIN] Error stack:', error instanceof Error ? error.stack : 'No stack');
-      res.status(500).json({ error: 'Login failed', details: error instanceof Error ? error.message : String(error) });
+      console.error('[LOGIN] Error during broker login:', error instanceof Error ? error.message : error);
+      res.status(500).json({ error: 'Login failed' });
     }
   });
 
@@ -122,9 +144,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Clear JWT cookie with exact same options as when it was set
     res.clearCookie('broker_token', {
       httpOnly: true,
-      secure: false, // Match the login cookie settings
+      secure: isProduction,
       sameSite: 'lax',
-      path: '/' // Ensure path matches
+      path: '/'
     });
     
     // Also destroy session
@@ -134,7 +156,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error('[LOGOUT] Session destroy error:', err);
           res.status(500).json({ error: 'Logout failed' });
         } else {
-          console.log('[LOGOUT] Session destroyed successfully');
           res.json({ success: true });
         }
       });
@@ -147,9 +168,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/broker/auth-status', async (req, res) => {
     // Check JWT token first
     const token = req.cookies?.broker_token;
-    const secret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+    const secret = process.env.JWT_SECRET;
     
-    if (token) {
+    if (token && secret) {
       try {
         const jwt = await import('jsonwebtoken');
         const decoded = jwt.default.verify(token, secret) as { isBroker: boolean };
@@ -158,8 +179,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return;
         }
       } catch (error) {
-        console.error('[AUTH-STATUS] JWT verification error:', error);
-        // Token invalid or expired
+        // Token invalid or expired - fall through to session check
       }
     }
     
@@ -171,9 +191,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Submit a new property
   app.post('/api/properties/submit', upload.array('media', 10), async (req, res) => {
-    console.log('[SUBMIT] User property submission received');
-    console.log('[SUBMIT] Body keys:', Object.keys(req.body));
-    console.log('[SUBMIT] Files:', req.files ? (req.files as any[]).length : 0);
     try {
       // Parse and validate property data
       const propertyData = insertPropertySubmissionSchema.parse({
@@ -185,9 +202,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         hasFridge: req.body.hasFridge === 'true',
         hasGasStove: req.body.hasGasStove === 'true',
         description: req.body.description,
-        rooms: parseInt(req.body.rooms),
-        bathrooms: parseInt(req.body.bathrooms),
-        sizeM2: parseInt(req.body.sizeM2),
+        rooms: parseInt(req.body.rooms) || 0,
+        bathrooms: parseInt(req.body.bathrooms) || 1,
+        sizeM2: parseInt(req.body.sizeM2) || 0,
         location: req.body.location,
         price: req.body.price,
         ownerName: req.body.ownerName,
@@ -200,18 +217,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Create property submission
-      console.log('[SUBMIT] Creating property submission...');
       const submission = await storage.createPropertySubmission(propertyData);
-      console.log('[SUBMIT] Property submission created with ID:', submission.id);
 
       // Save and optimize uploaded media files
       const files = req.files as Express.Multer.File[];
-      console.log('[SUBMIT] Processing', files?.length || 0, 'files');
       
       if (files && files.length > 0) {
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
-          console.log(`[SUBMIT] Processing file ${i + 1}/${files.length}: ${file.originalname} (${file.mimetype})`);
           
           let url: string;
           let finalMimetype: string;
@@ -219,47 +232,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Handle images and videos differently with robust error handling
           if (file.mimetype.startsWith('image/')) {
-            console.log('[SUBMIT] Optimizing image...');
             try {
-              // Try to optimize image
-              url = await optimizeImageToBase64(file.buffer);
-              finalMimetype = 'image/jpeg';
-              console.log('[SUBMIT] Image optimized successfully');
+              url = await saveOptimizedImageToFile(file.buffer, file.originalname);
+              finalMimetype = 'image/webp';
             } catch (imageError) {
               console.error('[SUBMIT] Image optimization failed, using fallback:', imageError);
-              // Fallback: just convert to base64 without optimization
-              url = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+              // Fallback to direct file save
+              url = await saveVideoToFile(file.buffer, file.originalname);
               finalMimetype = file.mimetype;
-              console.log('[SUBMIT] Using fallback image processing');
             }
           } else if (file.mimetype.startsWith('video/')) {
-            console.log('[SUBMIT] Processing video...');
             try {
-              // Convert video to base64 without optimization
-              url = await videoToBase64(file.buffer, file.mimetype);
+              url = await saveVideoToFile(file.buffer, file.originalname);
               finalMimetype = file.mimetype;
-              // Generate video thumbnail with fallback
               try {
-                thumbnailUrl = await generateVideoThumbnail();
+                thumbnailUrl = await generateVideoThumbnailFile();
               } catch (thumbError) {
                 console.error('[SUBMIT] Video thumbnail generation failed:', thumbError);
-                thumbnailUrl = null; // No thumbnail is better than crashing
+                thumbnailUrl = null;
               }
-              console.log('[SUBMIT] Video processed successfully');
             } catch (videoError) {
               console.error('[SUBMIT] Video processing failed, using fallback:', videoError);
-              // Fallback: just convert to base64
-              url = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+              url = await saveVideoToFile(file.buffer, file.originalname);
               finalMimetype = file.mimetype;
               thumbnailUrl = null;
-              console.log('[SUBMIT] Using fallback video processing');
             }
           } else {
-            console.log('[SUBMIT] Skipping unsupported file type:', file.mimetype);
             continue; // Skip unsupported file types
           }
           
-          console.log('[SUBMIT] Saving media to database...');
           try {
             await storage.createSubmissionMedia(
               submission.id,
@@ -269,49 +270,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
               i === 0, // First media is primary
               thumbnailUrl
             );
-            console.log('[SUBMIT] Media saved successfully');
           } catch (dbError) {
             console.error('[SUBMIT] Database save failed for media:', dbError);
             // Don't throw - continue with other files
-            // The submission will still succeed even if some media fails
-            console.log('[SUBMIT] Continuing with next file despite media save failure');
           }
         }
       }
-      
-      console.log('[SUBMIT] All processing complete, sending response');
+
 
       res.json({ 
         success: true, 
         submissionId: submission.id 
       });
     } catch (error) {
-      console.error('[SUBMIT] Error submitting property:', error);
-      console.error('[SUBMIT] Error type:', typeof error);
-      console.error('[SUBMIT] Error constructor:', error?.constructor?.name);
+      console.error('[SUBMIT] Error submitting property:', error instanceof Error ? error.message : error);
       
       if (error instanceof z.ZodError) {
-        console.error('[SUBMIT] Validation errors:', JSON.stringify(error.errors, null, 2));
         res.status(400).json({ 
           error: 'Validation error', 
           details: error.errors 
         });
       } else {
-        // Log the full error stack for debugging
-        console.error('[SUBMIT] Full error details:', error);
-        console.error('[SUBMIT] Error stack:', error instanceof Error ? error.stack : 'No stack');
-        console.error('[SUBMIT] Error message:', error instanceof Error ? error.message : String(error));
-        
-        // Check if it's a database error
-        if (error && typeof error === 'object' && 'code' in error) {
-          console.error('[SUBMIT] Database error code:', (error as any).code);
-          console.error('[SUBMIT] Database error detail:', (error as any).detail);
-        }
-        
         res.status(500).json({ 
           error: 'Failed to submit property',
-          message: error instanceof Error ? error.message : 'Unknown error',
-          type: error?.constructor?.name || 'Unknown'
+          message: error instanceof Error ? error.message : 'Unknown error'
         });
       }
     }
@@ -330,9 +312,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         hasFridge: req.body.hasFridge === 'true',
         hasGasStove: req.body.hasGasStove === 'true',
         description: req.body.description,
-        rooms: parseInt(req.body.rooms),
-        bathrooms: parseInt(req.body.bathrooms),
-        sizeM2: parseInt(req.body.sizeM2),
+        rooms: parseInt(req.body.rooms) || 0,
+        bathrooms: parseInt(req.body.bathrooms) || 1,
+        sizeM2: parseInt(req.body.sizeM2) || 0,
         location: req.body.location,
         price: req.body.price,
         ownerName: req.body.ownerName,
@@ -363,15 +345,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Handle images and videos differently
           if (file.mimetype.startsWith('image/')) {
-            // Optimize image and convert to base64
-            url = await optimizeImageToBase64(file.buffer);
-            finalMimetype = 'image/jpeg';
+            // Optimize image and save
+            url = await saveOptimizedImageToFile(file.buffer, file.originalname);
+            finalMimetype = 'image/webp';
           } else if (file.mimetype.startsWith('video/')) {
-            // Convert video to base64 without optimization
-            url = await videoToBase64(file.buffer, file.mimetype);
+            // Save video directly
+            url = await saveVideoToFile(file.buffer, file.originalname);
             finalMimetype = file.mimetype;
             // Generate video thumbnail
-            thumbnailUrl = await generateVideoThumbnail();
+            thumbnailUrl = await generateVideoThumbnailFile();
           } else {
             continue; // Skip unsupported file types
           }
@@ -449,8 +431,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           details: error.errors 
         });
       } else {
-        console.error('Full error details:', error);
-        res.status(500).json({ 
+          res.status(500).json({ 
           error: 'Failed to submit property',
           message: error instanceof Error ? error.message : 'Unknown error'
         });
@@ -508,8 +489,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       
-      console.log('[DELETE] Deleting property:', id);
-      
       // Get the property to find its submission ID
       const [property] = await db.select().from(properties).where(eq(properties.id, id));
       
@@ -520,36 +499,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const submissionId = property.submissionId;
       
       // Delete property media first (foreign key constraint)
-      console.log('[DELETE] Deleting property media...');
       await db.delete(propertyMedia).where(eq(propertyMedia.propertyId, id));
       
       // Delete property analytics
-      console.log('[DELETE] Deleting property analytics...');
       await db.delete(propertyAnalytics).where(eq(propertyAnalytics.propertyId, id));
       
       // Delete visitor logs for this property
-      console.log('[DELETE] Deleting visitor logs...');
       await db.delete(visitorLogs).where(eq(visitorLogs.propertyId, id));
       
       // Delete the property itself
-      console.log('[DELETE] Deleting property...');
       await db.delete(properties).where(eq(properties.id, id));
       
       // Delete the associated submission and its media
       if (submissionId) {
-        console.log('[DELETE] Deleting submission media...');
         const { submissionMedia } = await import("../shared/schema.js");
         await db.delete(submissionMedia).where(eq(submissionMedia.submissionId, submissionId));
         
-        console.log('[DELETE] Deleting submission...');
         await db.delete(propertySubmissions).where(eq(propertySubmissions.id, submissionId));
       }
       
-      console.log('[DELETE] Property deleted successfully');
       res.json({ success: true, message: 'Property deleted successfully' });
     } catch (error) {
-      console.error('[DELETE] Error deleting property:', error);
-      console.error('[DELETE] Error stack:', error instanceof Error ? error.stack : 'No stack');
+      console.error('[DELETE] Error deleting property:', error instanceof Error ? error.message : error);
       res.status(500).json({ error: 'Failed to delete property', details: error instanceof Error ? error.message : String(error) });
     }
   });
@@ -558,13 +529,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/broker/submissions/:status', requireBrokerAuth, async (req, res) => {
     try {
       const { status } = req.params;
-      console.log(`[FETCH] Fetching submissions with status: ${status}`);
-      const startTime = Date.now();
-      
       const submissions = await storage.getPropertySubmissionsByStatus(status);
       
-      const duration = Date.now() - startTime;
-      console.log(`[FETCH] Found ${submissions.length} submissions in ${duration}ms`);
+
       
       res.json(submissions);
     } catch (error) {
@@ -662,7 +629,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Handle neighborhood map upload if provided
       let neighborhoodMapUrl = req.body.neighborhoodMapUrl || null;
       if (req.file) {
-        neighborhoodMapUrl = await optimizeImageToBase64(req.file.buffer);
+        neighborhoodMapUrl = await saveOptimizedImageToFile(req.file.buffer, req.file.originalname);
       }
 
       const updateData = {
@@ -674,9 +641,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         hasFridge: req.body.hasFridge === 'true',
         hasGasStove: req.body.hasGasStove === 'true',
         description: req.body.description,
-        rooms: parseInt(req.body.rooms),
-        bathrooms: parseInt(req.body.bathrooms),
-        sizeM2: parseInt(req.body.sizeM2),
+        rooms: parseInt(req.body.rooms) || 0,
+        bathrooms: parseInt(req.body.bathrooms) || 1,
+        sizeM2: parseInt(req.body.sizeM2) || 0,
         location: req.body.location,
         price: req.body.price,
         googleMapsUrl: req.body.googleMapsUrl || null,
@@ -756,14 +723,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Find the corresponding property media by matching the submission media
           const submissionMedia = submission.media.find(m => m.id === mediaId);
           if (submissionMedia) {
-            // Find property media with matching url (since they're copied)
-            const [correspondingPropertyMedia] = await db
-              .select()
-              .from(propertyMedia)
-              .where(eq(propertyMedia.propertyId, publishedProperty.id))
-              .limit(100); // Get all property media
-            
-            // Find the one with matching URL
+            // Find the property media with matching URL
             const matchingMedia = (await db
               .select()
               .from(propertyMedia)
@@ -842,17 +802,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const startDateStr = startDate.toISOString().split('T')[0];
-      console.log('📅 Date range:', startDateStr, 'to', today, ' (endDate:', endDate.toISOString(), ')');
-      
-      // Check if we have any data in the tables
-      const visitorCount = await db.select({ count: sql<number>`COUNT(*)::int` }).from(visitorLogs);
-      const siteAnalyticsCount = await db.select({ count: sql<number>`COUNT(*)::int` }).from(siteAnalytics);
-      const propertyAnalyticsCount = await db.select({ count: sql<number>`COUNT(*)::int` }).from(propertyAnalytics);
-      
-      console.log('📋 Database counts:');
-      console.log('  - Visitor logs:', visitorCount[0]?.count || 0);
-      console.log('  - Site analytics:', siteAnalyticsCount[0]?.count || 0);
-      console.log('  - Property analytics:', propertyAnalyticsCount[0]?.count || 0);
       
       // Get unique visitors for the selected period (count distinct session IDs)
       const periodVisitorsResult = await db.select({
@@ -865,7 +814,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ));
       
       const periodVisitors = periodVisitorsResult[0]?.total || 0;
-      console.log(`👥 Unique visitors (${period}):`, periodVisitors);
       
       // Get stats for the selected period (sum from site_analytics)
       const periodStats = await db
@@ -878,10 +826,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           gte(siteAnalytics.date, startDateStr),
           lte(siteAnalytics.date, today),
         ));
-        
-      console.log(`📊 Period stats (${period}):`, periodStats[0]);
 
-      // Get property page views for the selected period (only visits to published posts)
       const periodPropertyViewsResult = await db
         .select({
           total: sql<number>`COUNT(*)::int`,
@@ -894,7 +839,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ));
 
       const periodPropertyViews = periodPropertyViewsResult[0]?.total || 0;
-      console.log(`👁️ Property page views (${period}):`, periodPropertyViews);
       
       // Count unique properties viewed (distinct properties in property_analytics)
       const uniquePropertiesViewed = await db
@@ -964,8 +908,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const totalCount = totalCountResult[0]?.count || 0;
       
-      console.log('📋 Total visitor logs in database:', totalCount);
-      
       // Return ALL visits (including non-property pages for debugging)
       const { properties } = await import("../shared/schema.js");
       
@@ -975,8 +917,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .orderBy(desc(visitorLogs.timestamp))
         .limit(limit)
         .offset(offset);
-      
-      console.log('📊 Fetched', visitorsRaw.length, 'visitor logs');
       
       // Fetch all property titles in one go
       const propertyIds = Array.from(
@@ -1023,20 +963,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { id } = req.params;
       
-      console.log('🔍 Looking for property analytics with ID:', id);
-      
       // Get property analytics
       const analytics = await db.query.propertyAnalytics.findFirst({
         where: eq(propertyAnalytics.propertyId, id),
       });
       
-      console.log('📊 Found analytics:', analytics ? 'YES' : 'NO');
-      
       if (!analytics) {
-        // Let's check what property IDs we actually have
-        const allPropertyAnalytics = await db.select({ propertyId: propertyAnalytics.propertyId }).from(propertyAnalytics).limit(5);
-        console.log('❌ No analytics found. Available property IDs in database:', allPropertyAnalytics);
-        
         res.json({
           propertyId: id,
           totalViews: 0,
@@ -1083,19 +1015,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get active visitors RIGHT NOW (last 6 seconds - heartbeat is every 3 seconds)
       const sixSecondsAgo = new Date(Date.now() - 6 * 1000);
-      console.log('🕐 Checking for visitors active after:', sixSecondsAgo.toISOString());
-      
-      // Check what timestamps we have
-      const recentLogs = await db
-        .select({
-          timestamp: visitorLogs.timestamp,
-          sessionId: visitorLogs.sessionId,
-        })
-        .from(visitorLogs)
-        .orderBy(desc(visitorLogs.timestamp))
-        .limit(5);
-      
-      console.log('🕒 Last 5 log timestamps:', recentLogs.map(l => l.timestamp.toISOString()));
       
       const { gt } = await import("drizzle-orm");
       const activeVisitors = await db
@@ -1105,20 +1024,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from(visitorLogs)
         .where(gt(visitorLogs.timestamp, sixSecondsAgo));
       
-      console.log('👥 Active visitors found:', activeVisitors[0]?.count || 0);
-      
-      // Get recent activity (last 10)
-      const recentActivity = await db
-        .select()
-        .from(visitorLogs)
-        .orderBy(desc(visitorLogs.timestamp))
-        .limit(10);
-      
-      console.log('📋 Recent activity count:', recentActivity.length);
-      
       res.json({
         activeVisitors: activeVisitors[0]?.count || 0,
-        recentActivity,
       });
     } catch (error) {
       console.error('Error fetching real-time analytics:', error);
@@ -1129,12 +1036,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Track page view from client-side navigation
   app.post('/api/analytics/pageview', async (req, res) => {
     try {
-      console.log('🔵 RECEIVED PAGEVIEW REQUEST:', req.body);
-      console.log('🔵 Session data:', req.session);
-      
       // Skip if user is authenticated admin/broker
       if (req.session?.isAuthenticated || req.session?.isBroker) {
-        console.log('⏭️ Skipping: User is authenticated admin/broker');
         res.json({ success: true, tracked: false });
         return;
       }
@@ -1146,7 +1049,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { pageUrl, referrer } = req.body;
       
       if (!pageUrl) {
-        console.log('❌ No pageUrl provided');
         res.status(400).json({ error: 'pageUrl is required' });
         return;
       }
@@ -1170,7 +1072,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const propertyMatch = pageUrl.match(/\/property\/([^/?]+)/);
       const propertyId = propertyMatch ? propertyMatch[1] : undefined;
       
-      console.log('📊 CLIENT TRACKING:', { pageUrl, propertyId, sessionId: sessionId.substring(0, 8), deviceType });
+      // Check if this session visited today BEFORE inserting the new log
+      const today = new Date().toISOString().split('T')[0];
+      const existingVisit = await db.query.visitorLogs.findFirst({
+        where: sql`${visitorLogs.sessionId} = ${sessionId} AND DATE(${visitorLogs.timestamp}) = ${today}`,
+      });
+      
+      const isNewVisitor = !existingVisit;
       
       // Insert visitor log
       await db.insert(visitorLogs).values({
@@ -1182,17 +1090,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         referrer,
       });
       
-      console.log('✅ Visitor log inserted');
-      
-      // Update site analytics - simplified
-      const today = new Date().toISOString().split('T')[0];
-      
-      // Check if this session visited today
-      const existingVisit = await db.query.visitorLogs.findFirst({
-        where: sql`${visitorLogs.sessionId} = ${sessionId} AND DATE(${visitorLogs.timestamp}) = ${today}`,
-      });
-      
-      const isNewVisitor = !existingVisit;
+      // Update site analytics
       
       await db.execute(sql`
         INSERT INTO site_analytics (date, total_visitors, total_page_views, unique_sessions, desktop_visitors, mobile_visitors, city_breakdown)
@@ -1214,12 +1112,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           mobile_visitors = site_analytics.mobile_visitors + ${deviceType === 'mobile' && isNewVisitor ? 1 : 0}
       `);
       
-      console.log('✅ Site analytics updated');
-      
       // Update property analytics if viewing a property
       if (propertyId) {
-        console.log('📈 Updating property analytics for:', propertyId);
-        
         const existing = await db.query.propertyAnalytics.findFirst({
           where: eq(propertyAnalytics.propertyId, propertyId),
         });
@@ -1249,23 +1143,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
             cityViews: '{}',
           });
         }
-        
-        console.log('✅ Property analytics updated');
-      } else {
-        console.log('⚠️ No property ID - skipping property analytics');
       }
       
       res.json({ 
         success: true, 
         tracked: true,
-        sessionId: sessionId.substring(0, 8),
         propertyId,
-        message: propertyId ? 'Property visit tracked' : 'Page visit tracked (no property)'
       });
     } catch (error) {
-      console.error('❌ Error tracking page view:', error);
-      console.error('Error details:', error);
-      res.status(500).json({ error: 'Failed to track page view', details: error instanceof Error ? error.message : 'Unknown error' });
+      console.error('Error tracking page view:', error instanceof Error ? error.message : error);
+      res.status(500).json({ error: 'Failed to track page view' });
     }
   });
 
@@ -1365,28 +1252,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Reset all analytics (set all counts to 0)
   app.post('/api/admin/analytics/reset', requireBrokerAuth, async (req, res) => {
     try {
-      console.log('🗑️ RESETTING ALL ANALYTICS DATA');
+      console.log('Resetting all analytics data');
       
       const { visitorLogs, siteAnalytics, propertyAnalytics } = await import("../shared/schema.js");
       
-      // Delete all visitor logs
       await db.delete(visitorLogs).execute();
-      console.log('✅ Deleted all visitor logs');
-      
-      // Delete all site analytics
       await db.delete(siteAnalytics).execute();
-      console.log('✅ Deleted all site analytics');
-      
-      // Delete all property analytics
       await db.delete(propertyAnalytics).execute();
-      console.log('✅ Deleted all property analytics');
       
       res.json({ 
         success: true, 
         message: 'All analytics data has been reset to zero' 
       });
     } catch (error) {
-      console.error('❌ Error resetting analytics:', error);
+      console.error('Error resetting analytics:', error instanceof Error ? error.message : error);
       res.status(500).json({ error: 'Failed to reset analytics data' });
     }
   });
@@ -1436,21 +1315,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Reset all statistics (set all counts to 0)
-  app.post('/api/admin/analytics/reset', requireBrokerAuth, async (req, res) => {
+  // Public endpoint: Get owner contact for properties where showOwnerContact is enabled
+  app.get('/api/properties/:id/owner-contact', async (req, res) => {
     try {
-      const { propertyAnalytics, siteAnalytics } = await import("../shared/schema.js");
+      const { id } = req.params;
+      const { properties, propertySubmissions } = await import("../shared/schema.js");
       
-      // Reset all property analytics
-      await db.delete(propertyAnalytics).execute();
+      const [property] = await db.select().from(properties).where(eq(properties.id, id));
       
-      // Reset site analytics
-      await db.delete(siteAnalytics).execute();
+      if (!property) {
+        res.status(404).json({ error: 'Property not found' });
+        return;
+      }
       
-      res.json({ success: true, message: 'All statistics reset to zero' });
+      if (!property.showOwnerContact) {
+        res.json({ ownerContactVisible: false });
+        return;
+      }
+      
+      // Only return owner info if showOwnerContact is explicitly true
+      if (property.submissionId) {
+        const [submission] = await db.select({
+          ownerName: propertySubmissions.ownerName,
+          ownerPhone: propertySubmissions.ownerPhone,
+          ownerEmail: propertySubmissions.ownerEmail,
+        }).from(propertySubmissions).where(eq(propertySubmissions.id, property.submissionId));
+        
+        if (submission) {
+          res.json({
+            ownerContactVisible: true,
+            ownerName: submission.ownerName,
+            ownerPhone: submission.ownerPhone,
+            ownerEmail: submission.ownerEmail,
+          });
+          return;
+        }
+      }
+      
+      res.json({ ownerContactVisible: false });
     } catch (error) {
-      console.error('Error resetting statistics:', error);
-      res.status(500).json({ error: 'Failed to reset statistics' });
+      console.error('Error fetching owner contact:', error instanceof Error ? error.message : error);
+      res.status(500).json({ error: 'Failed to fetch owner contact' });
     }
   });
 
@@ -1458,4 +1363,3 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   return httpServer;
 }
-

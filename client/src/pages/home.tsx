@@ -190,7 +190,7 @@ export default function HomePage() {
       <footer className="py-8 bg-background border-t border-border">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <p className="text-muted-foreground">
-            © 2024 Hay Khadhra & Cité Olympique Rental Hub. All rights reserved.
+            © {new Date().getFullYear()} Edarna — Hay Khadhra & Cité Olympique. All rights reserved.
           </p>
         </div>
       </footer>

@@ -180,7 +180,7 @@ export const insertPropertySubmissionSchema = createInsertSchema(propertySubmiss
   approvedAt: true,
 }).extend({
   price: z.string().regex(/^\d+(\.\d{1,2})?$/, "Price must be a valid number"),
-  rooms: z.number().min(1, "At least 1 room required"),
+  rooms: z.number().min(0, "Rooms must be 0 or more"),
   bathrooms: z.number().min(1, "At least 1 bathroom required"),
   sizeM2: z.number().min(0, "Size must be 0 or greater").default(0), // Made optional, defaults to 0
   ownerEmail: z.string().email("Valid email required"),

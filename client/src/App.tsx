@@ -6,9 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrokerAuthGuard } from "@/components/broker-auth-guard";
 import { useActiveUserHeartbeat, usePageView } from "@/hooks/use-analytics";
 import ScrollToTop from "@/components/scroll-to-top";
-import HomePage from "@/pages/home";
 import ListPropertyPage from "@/pages/list-property";
-import SubmissionConfirmedPage from "@/pages/submission-confirmed";
 import BrowsePropertiesPage from "@/pages/browse-properties";
 import PropertyDetailPage from "@/pages/property-detail";
 import BrokerLoginPage from "@/pages/broker-login";
@@ -28,9 +26,7 @@ function Router() {
     <>
       <ScrollToTop />
       <Switch>
-      <Route path="/" component={HomePage} />
-      <Route path="/list-property" component={ListPropertyPage} />
-      <Route path="/submission-confirmed" component={SubmissionConfirmedPage} />
+      <Route path="/" component={BrowsePropertiesPage} />
       <Route path="/browse-properties" component={BrowsePropertiesPage} />
       <Route path="/property/:id" component={PropertyDetailPage} />
       <Route path="/broker/login" component={BrokerLoginPage} />

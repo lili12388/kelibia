@@ -35,7 +35,7 @@ export function SEO({
   title = 'Edarna - Location d\'Appartements Vérifiés',
   description = 'Trouvez votre appartement idéal à Hay Khadhra et Cité Olympique. Logements vérifiés, meublés et non meublés disponibles.',
   keywords = 'location appartement, Hay Khadhra, Cité Olympique, Tunis, appartement meublé, immobilier',
-  image = '/og-image.jpg',
+  image = '/darna_logo-removebg-preview.png',
   url,
   type = 'website',
 }: SEOProps) {

@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Home, Building2, LogOut, BarChart3 } from "lucide-react";
+import { Building2, LogOut, BarChart3, Plus, LayoutGrid } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -27,82 +27,59 @@ export default function Navbar({ variant = "solid" }: NavbarProps) {
       return await response.json();
     },
     onSuccess: async () => {
-      // Invalidate and refetch auth status query to refresh the UI
       await queryClient.invalidateQueries({ queryKey: ['/api/broker/auth-status'] });
       await queryClient.refetchQueries({ queryKey: ['/api/broker/auth-status'] });
       
       toast({
-        title: "Logged Out",
-        description: "You have been successfully logged out.",
+        title: "Déconnecté",
+        description: "Vous avez été déconnecté avec succès.",
       });
       setLocation('/');
     },
     onError: (error: any) => {
       toast({
-        title: "Logout Failed",
-        description: error.message || "Failed to logout. Please try again.",
+        title: "Erreur",
+        description: error.message || "Échec de la déconnexion.",
         variant: "destructive",
       });
     },
   });
 
-  const navClasses = variant === "transparent" 
-    ? "absolute top-0 left-0 right-0 z-20 bg-black/20 backdrop-blur-sm border-b border-white/10"
-    : "sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm";
-
-  const linkClasses = variant === "transparent"
-    ? "text-white hover:bg-white/10"
-    : "text-foreground hover:bg-accent";
-
   return (
-    <nav className={navClasses}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+    <nav className="sticky top-0 z-40 glass border-b border-border/30">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/">
-            <div className="flex items-center gap-3 cursor-pointer group">
+            <div className="flex items-center gap-2.5 cursor-pointer group">
               <img 
                 src="/darna_logo-removebg-preview.png" 
-                alt="Darna" 
-                className="h-10 sm:h-12 w-auto transition-all duration-300 group-hover:scale-105 group-hover:drop-shadow-lg border-2 border-gray-300 rounded-lg p-2 bg-white"
+                alt="Edarna" 
+                className="h-9 sm:h-10 w-auto transition-all duration-300 group-hover:scale-105 rounded-lg"
               />
-              <div className={`hidden sm:block ${variant === "transparent" ? "text-white" : "text-foreground"}`}>
-                <div className="font-bold text-lg leading-tight group-hover:text-primary transition-colors">
-                  Darna
+              <div className="hidden sm:block">
+                <div className="font-bold text-base leading-tight text-foreground group-hover:text-primary transition-colors duration-200">
+                  Edarna
                 </div>
-                <div className={`text-xs ${variant === "transparent" ? "text-white/80" : "text-muted-foreground"}`}>
-                  Find Your Home
+                <div className="text-[10px] text-muted-foreground font-medium tracking-wide">
+                  Trouvez votre logement
                 </div>
               </div>
             </div>
           </Link>
 
           {/* Navigation Links */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Show Home button only for non-admin users */}
-            {!isAdmin && location !== "/" && (
-              <Link href="/">
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  className={linkClasses}
-                >
-                  <Home className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Home</span>
-                </Button>
-              </Link>
-            )}
-            
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Analytics Button - Only show for admin */}
             {isAdmin && location !== "/admin/analytics" && (
               <Link href="/admin/analytics">
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className={linkClasses}
+                  className="h-9 px-3 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
                 >
-                  <BarChart3 className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Analytics</span>
+                  <BarChart3 className="h-4 w-4 sm:mr-1.5" />
+                  <span className="hidden sm:inline text-sm">Analytique</span>
                 </Button>
               </Link>
             )}
@@ -113,55 +90,39 @@ export default function Navbar({ variant = "solid" }: NavbarProps) {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className={linkClasses}
+                  className="h-9 px-3 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
                 >
-                  <Building2 className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">View Posts as Admin</span>
+                  <LayoutGrid className="h-4 w-4 sm:mr-1.5" />
+                  <span className="hidden sm:inline text-sm">Admin</span>
                 </Button>
               </Link>
             )}
             
-            {/* Only show Browse button if not admin */}
-            {!isAdmin && location !== "/browse-properties" && (
-              <Link href="/browse-properties">
+            {/* Only show Browse button if not admin and not on home */}
+            {!isAdmin && location !== "/" && (
+              <Link href="/">
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className={linkClasses}
+                  className="h-9 px-3 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
                 >
-                  <Building2 className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Browse</span>
+                  <Building2 className="h-4 w-4 sm:mr-1.5" />
+                  <span className="hidden sm:inline text-sm">Parcourir</span>
                 </Button>
               </Link>
             )}
 
-            {/* List Property Button - Different routes for admin vs regular user */}
-            {isAdmin ? (
-              location !== "/admin/list-property" && (
-                <Link href="/admin/list-property">
-                  <Button 
-                    variant={variant === "transparent" ? "outline" : "default"}
-                    size="sm"
-                    className={variant === "transparent" ? "border-white/30 text-white hover:bg-white/20" : ""}
-                  >
-                    <Building2 className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Post Property as Admin</span>
-                  </Button>
-                </Link>
-              )
-            ) : (
-              location !== "/list-property" && (
-                <Link href="/list-property">
-                  <Button 
-                    variant={variant === "transparent" ? "outline" : "default"}
-                    size="sm"
-                    className={variant === "transparent" ? "border-white/30 text-white hover:bg-white/20" : ""}
-                  >
-                    <Building2 className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">List Property</span>
-                  </Button>
-                </Link>
-              )
+            {/* List Property Button - Admin only */}
+            {isAdmin && location !== "/admin/list-property" && (
+              <Link href="/admin/list-property">
+                <Button 
+                  size="sm"
+                  className="h-9 px-4 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition-all"
+                >
+                  <Plus className="h-4 w-4 sm:mr-1.5" />
+                  <span className="hidden sm:inline text-sm">Publier</span>
+                </Button>
+              </Link>
             )}
 
             {/* Logout button - only show if admin is logged in */}
@@ -171,11 +132,11 @@ export default function Navbar({ variant = "solid" }: NavbarProps) {
                 size="sm"
                 onClick={() => logoutMutation.mutate()}
                 disabled={logoutMutation.isPending}
-                className={`${linkClasses} ${variant === "transparent" ? "border border-white/30" : ""}`}
+                className="h-9 px-3 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
               >
-                <LogOut className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">
-                  {logoutMutation.isPending ? "Logging out..." : "Logout"}
+                <LogOut className="h-4 w-4 sm:mr-1.5" />
+                <span className="hidden sm:inline text-sm">
+                  {logoutMutation.isPending ? "..." : "Quitter"}
                 </span>
               </Button>
             )}

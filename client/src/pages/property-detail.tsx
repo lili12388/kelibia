@@ -22,16 +22,18 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { PropertyWithMedia, PropertySubmissionWithMedia } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { usePageView } from "@/hooks/use-analytics";
 import Navbar from "@/components/navbar";
 import { SEO } from "@/components/seo";
 import { Helmet } from "react-helmet-async";
 
+// Broker contact info — change here when broker changes
+const BROKER_PHONE = "50344187";
+const BROKER_PHONE_DISPLAY = "50 344 187";
+const BROKER_EMAIL = "laithou123@gmail.com";
+
 export default function PropertyDetailPage() {
   const { toast } = useToast();
   
-  // Track page view for this specific property (increments analytics)
-  usePageView();
   const [, params] = useRoute("/property/:id");
   const propertyId = params?.id;
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -91,6 +93,21 @@ export default function PropertyDetailPage() {
   });
 
   const isAdmin = authStatus?.isAuthenticated;
+
+  // Fetch owner contact info for non-admin users (public endpoint, only returns data when showOwnerContact is true)
+  const { data: ownerContact } = useQuery<{
+    ownerContactVisible: boolean;
+    ownerName?: string;
+    ownerPhone?: string;
+    ownerEmail?: string;
+  }>({
+    queryKey: ['/api/properties', propertyId, 'owner-contact'],
+    queryFn: async () => {
+      const response = await fetch(`/api/properties/${propertyId}/owner-contact`);
+      return response.json();
+    },
+    enabled: !!propertyId && !isAdmin, // Only fetch for non-admin users
+  });
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data, file }: { id: string; data: any; file: File | null }) => {
@@ -561,12 +578,11 @@ export default function PropertyDetailPage() {
                     <div>
                       <div className="text-sm text-muted-foreground mb-1">Phone</div>
                       <a 
-                        href="tel:50344187" 
+                        href={`tel:${BROKER_PHONE}`} 
                         className="text-lg font-semibold text-foreground hover:text-primary transition-colors"
                         data-testid="link-phone"
                       >
-                        50 344 187
-                  
+                        {BROKER_PHONE_DISPLAY}
                       </a>
                     </div>
                   </div>
@@ -576,11 +592,11 @@ export default function PropertyDetailPage() {
                     <div>
                       <div className="text-sm text-muted-foreground mb-1">Email</div>
                       <a 
-                        href="mailto:laithou123@gmail.com" 
+                        href={`mailto:${BROKER_EMAIL}`} 
                         className="text-base font-medium text-foreground hover:text-primary transition-colors break-all"
                         data-testid="link-email"
                       >
-                        laithou123@gmail.com
+                        {BROKER_EMAIL}
                       </a>
                     </div>
                   </div>
@@ -673,8 +689,8 @@ export default function PropertyDetailPage() {
                   </div>
                 )}
 
-                {/* Show owner contact to regular users if enabled */}
-                {!isAdmin && property.showOwnerContact && submission && (
+                {/* Show owner contact to regular users if enabled — uses public API */}
+                {!isAdmin && ownerContact?.ownerContactVisible && (
                   <div className="pt-4 border-t border-primary/20 space-y-3">
                     <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                       <User className="w-4 h-4" />
@@ -685,7 +701,7 @@ export default function PropertyDetailPage() {
                         <User className="w-4 h-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
                         <div>
                           <div className="text-xs text-muted-foreground mb-0.5">Owner Name</div>
-                          <span className="text-sm font-medium text-foreground">{submission.ownerName}</span>
+                          <span className="text-sm font-medium text-foreground">{ownerContact.ownerName}</span>
                         </div>
                       </div>
                       <div className="flex items-start gap-2">
@@ -693,10 +709,10 @@ export default function PropertyDetailPage() {
                         <div>
                           <div className="text-xs text-muted-foreground mb-0.5">Owner Phone</div>
                           <a 
-                            href={`tel:${submission.ownerPhone}`}
+                            href={`tel:${ownerContact.ownerPhone}`}
                             className="text-sm text-primary hover:underline font-medium"
                           >
-                            {submission.ownerPhone}
+                            {ownerContact.ownerPhone}
                           </a>
                         </div>
                       </div>
@@ -705,10 +721,10 @@ export default function PropertyDetailPage() {
                         <div>
                           <div className="text-xs text-muted-foreground mb-0.5">Owner Email</div>
                           <a 
-                            href={`mailto:${submission.ownerEmail}`}
+                            href={`mailto:${ownerContact.ownerEmail}`}
                             className="text-sm text-primary hover:underline break-all"
                           >
-                            {submission.ownerEmail}
+                            {ownerContact.ownerEmail}
                           </a>
                         </div>
                       </div>
@@ -716,7 +732,7 @@ export default function PropertyDetailPage() {
                   </div>
                 )}
 
-                {!isAdmin && !property.showOwnerContact && (
+                {!isAdmin && !ownerContact?.ownerContactVisible && (
                   <div className="pt-4 border-t border-border">
                     <p className="text-sm text-muted-foreground">
                       Our broker will help you arrange a viewing and answer any questions about this property.

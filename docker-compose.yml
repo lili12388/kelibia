@@ -1,0 +1,41 @@
+services:
+  # ── PostgreSQL Database ──
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: edarna
+      POSTGRES_PASSWORD: EdarnaPG2026Secure!
+      POSTGRES_DB: edarna
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U edarna"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── Node.js Application ──
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      DATABASE_URL: postgresql://edarna:EdarnaPG2026Secure!@db:5432/edarna
+      SESSION_SECRET: khadhra-rentals-session-s3cr3t-2026
+      JWT_SECRET: khadhra-jwt-s3cr3t-k3y-2026-pr0d
+      BROKER_PASSWORD: EdarnaBroker2026!
+      NODE_ENV: production
+      PORT: 80
+    volumes:
+      - uploads:/app/public/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  uploads:

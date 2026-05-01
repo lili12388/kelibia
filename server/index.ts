@@ -3,8 +3,9 @@ import session from "express-session";
 import cookieParser from "cookie-parser";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { analyticsMiddleware } from "./middleware/analytics";
 import path from "path";
+
+const isProduction = process.env.NODE_ENV === 'production';
 
 const app = express();
 
@@ -29,7 +30,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false, // Set to false to work with HTTP (no HTTPS)
+    secure: isProduction,
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     sameSite: 'lax',
@@ -79,8 +80,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Add analytics middleware after session but before routes
-app.use(analyticsMiddleware);
+
 
 (async () => {
   const server = await registerRoutes(app);
@@ -89,8 +89,11 @@ app.use(analyticsMiddleware);
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
-    res.status(status).json({ message });
-    throw err;
+    if (!res.headersSent) {
+      res.status(status).json({ message });
+    }
+    // Log the error but do NOT re-throw — that would crash the process
+    console.error('[ERROR]', status, message);
   });
 
   // importantly only setup vite in development and after

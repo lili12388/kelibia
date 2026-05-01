@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, BedDouble, Bath, Search, ChefHat, Refrigerator, Flame, SlidersHorizontal, X } from "lucide-react";
+import { MapPin, BedDouble, Bath, SlidersHorizontal, X, Eye, Sofa, Building2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { PropertyWithMedia } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -83,170 +83,140 @@ export default function BrowsePropertiesPage() {
 
   // Filter Sidebar Component
   const FilterSidebar = () => (
-    <div className="bg-white rounded-lg border border-border p-6 space-y-6 sticky top-0">
+    <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-5 sticky top-24 shadow-sm">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <SlidersHorizontal className="h-6 w-6" />
-            Filtres
-          </h2>
-          <Badge variant="secondary" className="text-base font-semibold">
-            {filteredProperties.length}
-          </Badge>
-        </div>
+        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+          <SlidersHorizontal className="h-4 w-4 text-primary" />
+          Filtres
+        </h2>
         {hasActiveFilters && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <button 
             onClick={clearFilters}
-            className="text-primary hover:text-primary/80"
+            className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
           >
             Réinitialiser
-          </Button>
+          </button>
         )}
       </div>
 
-      <Separator />
+      <Separator className="bg-border/40" />
 
       {/* Price Range */}
-      <div className="space-y-3">
-        <Label className="text-lg font-semibold text-foreground">Prix (TND)</Label>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2">
-            <Label htmlFor="min-price" className="text-sm text-muted-foreground">Minimum</Label>
+      <div className="space-y-2.5">
+        <Label className="text-sm font-semibold text-foreground">Prix (TND/mois)</Label>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
             <Input
               id="min-price"
               type="number"
-              placeholder="Ex: 500 TND"
+              placeholder="Min"
               value={minPrice}
               onChange={(e) => setMinPrice(e.target.value)}
-              className="text-lg h-12"
+              className="h-10 text-sm bg-background/60 border-border/50 rounded-xl focus:ring-2 focus:ring-primary/20"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="max-price" className="text-sm text-muted-foreground">Maximum</Label>
+          <div>
             <Input
               id="max-price"
               type="number"
-              placeholder="Ex: 2000 TND"
+              placeholder="Max"
               value={maxPrice}
               onChange={(e) => setMaxPrice(e.target.value)}
-              className="text-lg h-12"
+              className="h-10 text-sm bg-background/60 border-border/50 rounded-xl focus:ring-2 focus:ring-primary/20"
             />
           </div>
         </div>
       </div>
 
-      <Separator />
+      <Separator className="bg-border/40" />
 
       {/* Type/Furnished */}
-      <div className="space-y-3">
-        <Label className="text-lg font-semibold text-foreground">Type</Label>
-        <div className="grid grid-cols-1 gap-2">
-          <Button
-            variant={furnishedFilter === "all" ? "default" : "outline"}
-            size="lg"
-            onClick={() => setFurnishedFilter("all")}
-            className={`text-base h-12 justify-start ${
-              furnishedFilter === "all" 
-                ? "bg-primary text-white" 
-                : "hover:bg-primary/10"
-            }`}
-          >
-            Tous les logements
-          </Button>
-          <Button
-            variant={furnishedFilter === "furnished" ? "default" : "outline"}
-            size="lg"
-            onClick={() => setFurnishedFilter("furnished")}
-            className={`text-base h-12 justify-start ${
-              furnishedFilter === "furnished" 
-                ? "bg-primary text-white" 
-                : "hover:bg-primary/10"
-            }`}
-          >
-            Meublé
-          </Button>
-          <Button
-            variant={furnishedFilter === "semi-furnished" ? "default" : "outline"}
-            size="lg"
-            onClick={() => setFurnishedFilter("semi-furnished")}
-            className={`text-base h-12 justify-start ${
-              furnishedFilter === "semi-furnished" 
-                ? "bg-primary text-white" 
-                : "hover:bg-primary/10"
-            }`}
-          >
-            Semi-meublé
-          </Button>
-          <Button
-            variant={furnishedFilter === "unfurnished" ? "default" : "outline"}
-            size="lg"
-            onClick={() => setFurnishedFilter("unfurnished")}
-            className={`text-base h-12 justify-start ${
-              furnishedFilter === "unfurnished" 
-                ? "bg-primary text-white" 
-                : "hover:bg-primary/10"
-            }`}
-          >
-            Non meublé
-          </Button>
+      <div className="space-y-2.5">
+        <Label className="text-sm font-semibold text-foreground">Type</Label>
+        <div className="grid grid-cols-1 gap-1.5">
+          {[
+            { value: "all" as const, label: "Tous" },
+            { value: "furnished" as const, label: "Meublé" },
+            { value: "semi-furnished" as const, label: "Semi-meublé" },
+            { value: "unfurnished" as const, label: "Non meublé" },
+          ].map(({ value, label }) => (
+            <button
+              key={value}
+              onClick={() => setFurnishedFilter(value)}
+              className={`text-left px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                furnishedFilter === value 
+                  ? "bg-primary text-primary-foreground shadow-sm" 
+                  : "text-foreground hover:bg-muted/60"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 
-      <Separator />
+      <Separator className="bg-border/40" />
 
       {/* Bedrooms */}
-      <div className="space-y-3">
-        <Label className="text-lg font-semibold text-foreground flex items-center gap-2">
-          <BedDouble className="h-5 w-5" />
+      <div className="space-y-2.5">
+        <Label className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+          <BedDouble className="h-3.5 w-3.5 text-muted-foreground" />
           Chambres
         </Label>
-        <div className="grid grid-cols-4 gap-2">
-          {[1, 2, 3, 4].map((num) => (
-            <Button
+        <div className="grid grid-cols-5 gap-1.5">
+          {[0, 1, 2, 3, 4].map((num) => (
+            <button
               key={num}
-              variant={selectedRooms === num ? "default" : "outline"}
-              size="lg"
               onClick={() => setSelectedRooms(selectedRooms === num ? null : num)}
-              className={`text-lg font-semibold h-14 ${
+              className={`h-9 rounded-xl text-sm font-semibold transition-all duration-200 ${
                 selectedRooms === num 
-                  ? "bg-primary text-white" 
-                  : "hover:bg-primary/10"
+                  ? "bg-primary text-primary-foreground shadow-sm" 
+                  : "bg-background/60 text-foreground hover:bg-muted/60 border border-border/40"
               }`}
             >
-              {num}
-            </Button>
+              {num === 0 ? "S" : num}
+            </button>
           ))}
         </div>
       </div>
 
-      <Separator />
+      <Separator className="bg-border/40" />
 
       {/* Bathrooms */}
-      <div className="space-y-3">
-        <Label className="text-lg font-semibold text-foreground flex items-center gap-2">
-          <Bath className="h-5 w-5" />
+      <div className="space-y-2.5">
+        <Label className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+          <Bath className="h-3.5 w-3.5 text-muted-foreground" />
           Salles de bain
         </Label>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-4 gap-1.5">
           {[1, 2, 3, 4].map((num) => (
-            <Button
+            <button
               key={num}
-              variant={selectedBathrooms === num ? "default" : "outline"}
-              size="lg"
               onClick={() => setSelectedBathrooms(selectedBathrooms === num ? null : num)}
-              className={`text-lg font-semibold h-14 ${
+              className={`h-9 rounded-xl text-sm font-semibold transition-all duration-200 ${
                 selectedBathrooms === num 
-                  ? "bg-primary text-white" 
-                  : "hover:bg-primary/10"
+                  ? "bg-primary text-primary-foreground shadow-sm" 
+                  : "bg-background/60 text-foreground hover:bg-muted/60 border border-border/40"
               }`}
             >
               {num}
-            </Button>
+            </button>
           ))}
         </div>
       </div>
+
+      {/* Active filters count */}
+      {hasActiveFilters && (
+        <>
+          <Separator className="bg-border/40" />
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>{filteredProperties.length} résultat{filteredProperties.length !== 1 ? 's' : ''}</span>
+            <Badge variant="secondary" className="text-[10px] px-2 py-0.5 rounded-full">
+              {[minPrice, maxPrice, selectedRooms !== null, selectedBathrooms !== null, furnishedFilter !== "all"].filter(Boolean).length} filtre{[minPrice, maxPrice, selectedRooms !== null, selectedBathrooms !== null, furnishedFilter !== "all"].filter(Boolean).length !== 1 ? 's' : ''}
+            </Badge>
+          </div>
+        </>
+      )}
     </div>
   );
 
@@ -254,7 +224,7 @@ export default function BrowsePropertiesPage() {
   const seoDescription = `${filteredProperties.length} ${filteredProperties.length === 1 ? 'propriété disponible' : 'propriétés disponibles'} à Hay Khadhra et Cité Olympique. ${furnishedFilter !== 'all' ? (furnishedFilter === 'furnished' ? 'Appartements meublés' : furnishedFilter === 'semi-furnished' ? 'Appartements semi-meublés' : 'Appartements non meublés') : 'Logements meublés et non meublés'}. Trouvez votre appartement idéal à Tunis.`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#f0f4f0] to-white">
+    <div className="min-h-screen bg-background">
       <SEO 
         title={`Propriétés Disponibles - ${filteredProperties.length} Logements | Edarna`}
         description={seoDescription}
@@ -262,51 +232,71 @@ export default function BrowsePropertiesPage() {
       />
       <Navbar />
       
-      {/* Header */}
-      <div className="bg-white border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
-          <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2">Propriétés Disponibles</h1>
-          <p className="text-muted-foreground text-sm sm:text-lg">
-            Parcourez les logements vérifiés à Hay Khadhra & Cité Olympique
-          </p>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-primary/8 via-background to-primary/4">
+        {/* Subtle decorative elements */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/3 rounded-full translate-y-1/2 -translate-x-1/4 blur-2xl" />
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+          <div className="animate-fade-in-up">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-1 w-8 bg-primary rounded-full" />
+              <span className="text-xs font-semibold text-primary uppercase tracking-wider">Hay Khadhra & Cité Olympique</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight mb-3">
+              Trouvez votre
+              <span className="text-primary"> logement idéal</span>
+            </h1>
+            <p className="text-muted-foreground text-base sm:text-lg max-w-xl">
+              Des appartements vérifiés, prêts à être loués. Parcourez nos annonces et contactez-nous directement.
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Main Content with Sidebar */}
-      <div className="py-4 sm:py-8">
-        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 px-2 sm:px-4 lg:pl-8">
+      <div className="py-6 sm:py-8">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 px-4 sm:px-6 lg:pl-6 lg:pr-8">
           {/* Sidebar - Desktop */}
-          <aside className="hidden lg:block w-80 flex-shrink-0">
+          <aside className="hidden lg:block w-72 flex-shrink-0">
             <FilterSidebar />
           </aside>
 
           {/* Mobile Filter Button */}
-          <div className="lg:hidden mb-4 px-2 sm:px-4">
-            <Button
-              variant="outline"
-              size="lg"
+          <div className="lg:hidden">
+            <button
               onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
-              className="w-full h-14 text-lg font-semibold"
+              className="w-full flex items-center justify-center gap-2 h-11 text-sm font-medium bg-card border border-border/60 rounded-xl hover:bg-muted/40 transition-colors"
             >
-              <SlidersHorizontal className="mr-2 h-5 w-5" />
-              Filtres {hasActiveFilters && `(${[minPrice, maxPrice, selectedRooms, selectedBathrooms, furnishedFilter !== "all"].filter(Boolean).length})`}
-            </Button>
+              <SlidersHorizontal className="h-4 w-4" />
+              Filtres
+              {hasActiveFilters && (
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 rounded-full ml-1">
+                  {[minPrice, maxPrice, selectedRooms !== null, selectedBathrooms !== null, furnishedFilter !== "all"].filter(Boolean).length}
+                </Badge>
+              )}
+            </button>
           </div>
 
           {/* Mobile Filters Overlay */}
           {mobileFiltersOpen && (
-            <div className="fixed inset-0 bg-black/50 z-50 lg:hidden" onClick={() => setMobileFiltersOpen(false)}>
-              <div className="fixed inset-y-0 left-0 w-full max-w-sm bg-white overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold">Filtres</h2>
-                  <Button 
-                    variant="destructive" 
-                    size="icon" 
+            <div 
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 lg:hidden animate-fade-in" 
+              onClick={() => setMobileFiltersOpen(false)}
+            >
+              <div 
+                className="fixed inset-y-0 left-0 w-full max-w-sm bg-background overflow-y-auto p-5 animate-slide-in-right shadow-2xl" 
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-5">
+                  <h2 className="text-lg font-bold text-foreground">Filtres</h2>
+                  <button 
                     onClick={() => setMobileFiltersOpen(false)}
-                    className="bg-red-600 hover:bg-red-700 w-12 h-12"
+                    className="w-9 h-9 flex items-center justify-center rounded-xl bg-muted/60 hover:bg-muted transition-colors"
                   >
-                    <X className="h-6 w-6" />
-                  </Button>
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
                 <FilterSidebar />
               </div>
@@ -314,40 +304,49 @@ export default function BrowsePropertiesPage() {
           )}
 
           {/* Properties Grid */}
-          <main className="flex-1 min-w-0 pr-2 sm:pr-4 lg:pr-6">
+          <main className="flex-1 min-w-0">
+            {/* Results count */}
+            {!isLoading && (
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-semibold text-foreground">{filteredProperties.length}</span> logement{filteredProperties.length !== 1 ? 's' : ''} disponible{filteredProperties.length !== 1 ? 's' : ''}
+                </p>
+              </div>
+            )}
+
             {/* Loading State */}
             {isLoading && (
-              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 md:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
                 {[...Array(6)].map((_, i) => (
-                  <Card key={i} className="overflow-hidden">
+                  <div key={i} className="bg-card rounded-2xl overflow-hidden border border-border/40">
                     <Skeleton className="aspect-[4/3] w-full" />
-                    <CardContent className="p-2 sm:p-4 space-y-2 sm:space-y-3">
-                      <Skeleton className="h-4 sm:h-6 w-3/4" />
-                      <Skeleton className="h-3 sm:h-4 w-full" />
-                      <Skeleton className="h-3 sm:h-4 w-1/2" />
-                    </CardContent>
-                  </Card>
+                    <div className="p-4 space-y-3">
+                      <Skeleton className="h-5 w-3/4 rounded-lg" />
+                      <Skeleton className="h-4 w-full rounded-lg" />
+                      <Skeleton className="h-4 w-1/2 rounded-lg" />
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
 
             {/* Empty State */}
             {!isLoading && filteredProperties.length === 0 && (
-              <div className="text-center py-16 bg-white rounded-lg border border-border">
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted text-muted-foreground mb-6">
-                  <MapPin className="w-10 h-10" />
+              <div className="text-center py-20 animate-fade-in">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-5">
+                  <Building2 className="w-7 h-7" />
                 </div>
-                <h3 className="text-2xl font-semibold text-foreground mb-2">
+                <h3 className="text-xl font-semibold text-foreground mb-2">
                   {properties && properties.length > 0 ? "Aucun résultat" : "Aucune propriété disponible"}
                 </h3>
-                <p className="text-muted-foreground mb-6">
+                <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
                   {properties && properties.length > 0 
                     ? "Essayez d'ajuster vos filtres pour voir plus de résultats."
                     : "Revenez bientôt pour de nouvelles annonces."
                   }
                 </p>
                 {hasActiveFilters && (
-                  <Button onClick={clearFilters} size="lg">
+                  <Button onClick={clearFilters} variant="outline" className="rounded-xl">
                     Réinitialiser les filtres
                   </Button>
                 )}
@@ -356,7 +355,7 @@ export default function BrowsePropertiesPage() {
 
             {/* Properties Grid */}
             {!isLoading && filteredProperties.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 md:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 stagger-children">
                 {filteredProperties.map((property) => {
                   const primaryMedia = property.media.find(m => m.isPrimary) || property.media[0];
                   const price = parseFloat(property.price);
@@ -364,91 +363,89 @@ export default function BrowsePropertiesPage() {
                   
                   return (
                     <Link key={property.id} href={`/property/${property.id}`}>
-                      <Card className="overflow-hidden hover-elevate transition-all h-full flex flex-col group shadow-sm hover:shadow-md">
+                      <div className="property-card bg-card rounded-2xl overflow-hidden border border-border/40 h-full flex flex-col cursor-pointer group shadow-sm">
                         {/* Property Image */}
-                        <div className="relative aspect-square sm:aspect-[4/3] overflow-hidden bg-muted">
+                        <div className="relative aspect-[4/3] overflow-hidden bg-muted/30">
                           {primaryMedia ? (
                             primaryMedia.mimeType.startsWith('video/') ? (
-                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500">
-                                <div className="text-center text-white">
-                                  <div className="text-5xl sm:text-6xl mb-2">🎥</div>
-                                  <div className="text-sm sm:text-base font-medium">Video</div>
+                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
+                                <div className="text-center text-white/90">
+                                  <div className="w-14 h-14 rounded-full bg-white/15 flex items-center justify-center mx-auto mb-2 backdrop-blur-sm">
+                                    <div className="w-0 h-0 border-l-[12px] border-l-white border-y-[8px] border-y-transparent ml-1" />
+                                  </div>
+                                  <div className="text-xs font-medium text-white/60">Vidéo</div>
                                 </div>
                               </div>
                             ) : (
                               <img
                                 src={primaryMedia.url}
                                 alt={property.title}
-                                className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                                className="card-image w-full h-full object-cover"
                                 loading="lazy"
                               />
                             )
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
-                              <MapPin className="w-12 h-12 text-muted-foreground" />
+                              <Building2 className="w-10 h-10 text-muted-foreground/30" />
                             </div>
                           )}
                           
-                          {/* Furnished Badge */}
-                          {property.isFurnished && (
-                            <div className="absolute top-1 left-1 sm:top-2 sm:left-2">
-                              <Badge className="bg-blue-600 text-white border-0 font-semibold text-xs px-1.5 sm:px-2 py-0.5">
-                                Meublé
-                              </Badge>
+                          {/* Top badges */}
+                          <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
+                            <div className="flex gap-1.5">
+                              {property.isFurnished && (
+                                <span className="glass-dark text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg flex items-center gap-1">
+                                  <Sofa className="w-3 h-3" />
+                                  Meublé
+                                </span>
+                              )}
                             </div>
-                          )}
+                            
+                            {views > 0 && (
+                              <span className="glass-dark text-white/90 text-[10px] font-medium px-2 py-1 rounded-lg flex items-center gap-1">
+                                <Eye className="w-3 h-3" />
+                                {views.toLocaleString()}
+                              </span>
+                            )}
+                          </div>
 
-                          {/* View Count Badge */}
-                          <div className="absolute top-1 right-1 sm:top-2 sm:right-2">
-                            <Badge className="bg-black/70 text-white border-0 font-semibold text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 flex items-center gap-1">
-                              <span>👁</span>
-                              <span>{views.toLocaleString()}</span>
-                            </Badge>
+                          {/* Price overlay */}
+                          <div className="absolute bottom-3 left-3">
+                            <div className="bg-white/95 backdrop-blur-sm text-foreground font-bold text-sm px-3 py-1.5 rounded-lg shadow-md">
+                              {price.toLocaleString()} <span className="text-xs font-medium text-muted-foreground">TND</span>
+                            </div>
                           </div>
                         </div>
 
                         {/* Property Info */}
-                        <CardContent className="p-2 sm:p-3 md:p-4 flex-1 flex flex-col">
-                          <h3 className="font-bold text-foreground text-xs sm:text-sm md:text-base lg:text-lg mb-1 sm:mb-2 line-clamp-2 group-hover:text-primary transition-colors leading-tight">
+                        <CardContent className="p-4 flex-1 flex flex-col">
+                          <h3 className="font-semibold text-foreground text-sm sm:text-[15px] mb-1.5 line-clamp-2 group-hover:text-primary transition-colors duration-200 leading-snug">
                             {property.title}
                           </h3>
                           
-                          <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
-                            <MapPin className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                            <span className="line-clamp-1 truncate">{property.location}</span>
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground mb-3">
+                            <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-primary/60" />
+                            <span className="truncate">{property.location}</span>
                           </div>
                           
-                          {/* Metadata */}
-                          <div className="space-y-2 mt-auto">
-                            {/* Room and Bath Info */}
-                            <div className="flex items-center gap-1 sm:gap-2">
-                              <div className="flex items-center gap-0.5 sm:gap-1 text-foreground font-semibold bg-muted px-1.5 sm:px-2 py-1 rounded text-xs sm:text-sm">
-                                <BedDouble className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span>{property.rooms}</span>
-                              </div>
-                              <div className="flex items-center gap-0.5 sm:gap-1 text-foreground font-semibold bg-muted px-1.5 sm:px-2 py-1 rounded text-xs sm:text-sm">
-                                <Bath className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span>{property.bathrooms}</span>
-                              </div>
-                              {property.hasFridge && (
-                                <div className="flex items-center text-muted-foreground">
-                                  <Refrigerator className="w-3 h-3 sm:w-4 sm:h-4" />
-                                </div>
-                              )}
-                              {property.hasGasStove && (
-                                <div className="flex items-center text-muted-foreground">
-                                  <Flame className="w-3 h-3 sm:w-4 sm:h-4" />
-                                </div>
-                              )}
+                          {/* Room / Bath pills */}
+                          <div className="mt-auto flex items-center gap-2">
+                            <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground bg-muted/50 px-2.5 py-1.5 rounded-lg">
+                              <BedDouble className="w-3.5 h-3.5" />
+                              <span>{property.rooms} ch.</span>
                             </div>
-                            
-                            {/* Price Badge - Full Width on Mobile */}
-                            <Badge className="bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 text-white border-0 font-bold text-xs sm:text-sm md:text-base px-2 py-1 shadow-lg w-full justify-center">
-                              {price.toLocaleString()} TND
-                            </Badge>
+                            <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground bg-muted/50 px-2.5 py-1.5 rounded-lg">
+                              <Bath className="w-3.5 h-3.5" />
+                              <span>{property.bathrooms} sdb.</span>
+                            </div>
+                            {property.propertyType && (
+                              <div className="text-xs font-medium text-primary/70 bg-primary/8 px-2.5 py-1.5 rounded-lg ml-auto">
+                                {property.propertyType}
+                              </div>
+                            )}
                           </div>
                         </CardContent>
-                      </Card>
+                      </div>
                     </Link>
                   );
                 })}
@@ -457,6 +454,15 @@ export default function BrowsePropertiesPage() {
           </main>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="py-8 border-t border-border/40">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <p className="text-xs text-muted-foreground">
+            © {new Date().getFullYear()} Edarna — Hay Khadhra & Cité Olympique
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
