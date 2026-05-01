@@ -1,5 +1,5 @@
 #!/usr/bin/env pwsh
-# ─── Edarna Deploy Script ───
+# ─── laith-kelibia Deploy Script ───
 # Usage: .\deploy.ps1
 # Pushes code to GitHub, then SSHs into VPS to pull & rebuild.
 
@@ -7,12 +7,12 @@ $VPS = "root@31.22.10.133"
 $PROJECT_DIR = "/root/KhadhraRentals"
 $REPO = "https://github.com/lili12388/kelibia.git"
 
-Write-Host "`n🚀 Deploying Edarna to production...`n" -ForegroundColor Cyan
+Write-Host "`n🚀 Deploying laith-kelibia to production...`n" -ForegroundColor Cyan
 
 # Step 1: Commit & push to GitHub
 Write-Host "📦 Committing changes..." -ForegroundColor Yellow
 git add -A
-$commitMsg = Read-Host "Commit message (or press Enter for 'update')"
+$commitMsg = Read-Host "Commit message [leave blank for 'update']"
 if ([string]::IsNullOrWhiteSpace($commitMsg)) { $commitMsg = "update" }
 git commit -m $commitMsg
 git push kelibia main
