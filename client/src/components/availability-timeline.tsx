@@ -189,12 +189,16 @@ export default function AvailabilityTimeline({ propertyId, isAdmin = false }: Ti
           <div style={{ width: `${totalW}px` }}>
 
             {/* Month headers */}
-            <div className="flex">
+            <div className="flex h-6">
               {MONTH_INDICES.map((mIdx, i) => {
                 const cnt = new Date(year, mIdx + 1, 0).getDate();
                 return (
-                  <div key={mIdx} className="flex-shrink-0 text-center border-r border-border/15 last:border-r-0" style={{ width: `${cnt * DAY_W}px` }}>
-                    <span className="text-[10px] sm:text-xs font-bold text-foreground/70 py-1 block tracking-wide">{MONTH_NAMES_FR[i]}</span>
+                  <div key={mIdx} className="flex-shrink-0 relative border-r border-border/15 last:border-r-0" style={{ width: `${cnt * DAY_W}px` }}>
+                    <div className="absolute top-0 left-0" style={{ width: `${DAY_W}px` }}>
+                      <span className="text-[10px] sm:text-[11px] font-extrabold text-foreground py-1 block tracking-wide text-center whitespace-nowrap overflow-visible z-10">
+                        {MONTH_NAMES_FR[i]}
+                      </span>
+                    </div>
                   </div>
                 );
               })}
