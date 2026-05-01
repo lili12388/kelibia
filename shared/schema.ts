@@ -173,6 +173,25 @@ export const siteAnalytics = pgTable("site_analytics", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Reservations table for availability timeline
+export const reservations = pgTable("reservations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  propertyId: varchar("property_id").notNull().references(() => properties.id),
+  clientName: text("client_name").notNull(),
+  clientPhone: text("client_phone"), // optional, partially masked for public
+  startDate: text("start_date").notNull(), // YYYY-MM-DD format
+  endDate: text("end_date").notNull(), // YYYY-MM-DD format
+  status: text("status").notNull().default("pending"), // 'confirmed' or 'pending'
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const reservationsRelations = relations(reservations, ({ one }) => ({
+  property: one(properties, {
+    fields: [reservations.propertyId],
+    references: [properties.id],
+  }),
+}));
+
 // Insert schemas
 export const insertPropertySubmissionSchema = createInsertSchema(propertySubmissions).omit({
   id: true,
@@ -192,12 +211,23 @@ export const insertSubmissionMediaSchema = createInsertSchema(submissionMedia).o
   uploadedAt: true,
 });
 
+export const insertReservationSchema = createInsertSchema(reservations).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
+  status: z.enum(["confirmed", "pending"]),
+});
+
 // Select types
 export type PropertySubmission = typeof propertySubmissions.$inferSelect;
 export type InsertPropertySubmission = z.infer<typeof insertPropertySubmissionSchema>;
 export type Property = typeof properties.$inferSelect;
 export type SubmissionMedia = typeof submissionMedia.$inferSelect;
 export type PropertyMedia = typeof propertyMedia.$inferSelect;
+export type Reservation = typeof reservations.$inferSelect;
+export type InsertReservation = z.infer<typeof insertReservationSchema>;
 
 // Extended types with relations for frontend
 export type PropertySubmissionWithMedia = PropertySubmission & {
@@ -212,3 +242,4 @@ export type PropertyWithMedia = Property & {
 export type VisitorLog = typeof visitorLogs.$inferSelect;
 export type PropertyAnalytics = typeof propertyAnalytics.$inferSelect;
 export type SiteAnalytics = typeof siteAnalytics.$inferSelect;
+

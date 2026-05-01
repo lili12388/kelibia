@@ -6,7 +6,7 @@ import multer from "multer";
 import sharp from "sharp";
 import path from "path";
 import { mkdir } from "fs/promises";
-import { insertPropertySubmissionSchema, propertySubmissions, properties, propertyMedia, propertyAnalytics, visitorLogs } from "../shared/schema.js";
+import { insertPropertySubmissionSchema, insertReservationSchema, reservations, propertySubmissions, properties, propertyMedia, propertyAnalytics, visitorLogs } from "../shared/schema.js";
 import { z } from "zod";
 import { db } from "./db.js";
 import { eq } from "drizzle-orm";
@@ -1356,6 +1356,127 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching owner contact:', error instanceof Error ? error.message : error);
       res.status(500).json({ error: 'Failed to fetch owner contact' });
+    }
+  });
+
+  // ═══════════════════════════════════════════════
+  // RESERVATION / AVAILABILITY TIMELINE ROUTES
+  // ═══════════════════════════════════════════════
+
+  // Public: Get reservations for a property (for the availability timeline)
+  app.get('/api/properties/:id/reservations', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const propertyReservations = await db
+        .select()
+        .from(reservations)
+        .where(eq(reservations.propertyId, id))
+        .orderBy(reservations.startDate);
+
+      // Partially mask client info for public viewers
+      const publicReservations = propertyReservations.map(r => ({
+        id: r.id,
+        startDate: r.startDate,
+        endDate: r.endDate,
+        status: r.status,
+        // Mask: "MR ABDL*** ***" style
+        clientName: r.clientName.split(' ').map((part, i) => 
+          i === 0 ? part : part.substring(0, 3) + '***'
+        ).join(' '),
+        clientPhone: r.clientPhone 
+          ? r.clientPhone.substring(0, 5) + '***' 
+          : null,
+      }));
+
+      res.json(publicReservations);
+    } catch (error) {
+      console.error('Error fetching reservations:', error);
+      res.status(500).json({ error: 'Failed to fetch reservations' });
+    }
+  });
+
+  // Admin: Get full reservation details (unmasked)
+  app.get('/api/broker/properties/:id/reservations', requireBrokerAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const propertyReservations = await db
+        .select()
+        .from(reservations)
+        .where(eq(reservations.propertyId, id))
+        .orderBy(reservations.startDate);
+
+      res.json(propertyReservations);
+    } catch (error) {
+      console.error('Error fetching admin reservations:', error);
+      res.status(500).json({ error: 'Failed to fetch reservations' });
+    }
+  });
+
+  // Admin: Create a reservation
+  app.post('/api/broker/properties/:id/reservations', requireBrokerAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const data = insertReservationSchema.parse({
+        ...req.body,
+        propertyId: id,
+      });
+
+      const [reservation] = await db
+        .insert(reservations)
+        .values(data)
+        .returning();
+
+      res.json(reservation);
+    } catch (error) {
+      console.error('Error creating reservation:', error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: 'Invalid data', details: error.errors });
+      } else {
+        res.status(500).json({ error: 'Failed to create reservation' });
+      }
+    }
+  });
+
+  // Admin: Update a reservation (change status or dates)
+  app.patch('/api/broker/reservations/:id', requireBrokerAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { clientName, clientPhone, startDate, endDate, status } = req.body;
+
+      const updateData: Record<string, any> = {};
+      if (clientName !== undefined) updateData.clientName = clientName;
+      if (clientPhone !== undefined) updateData.clientPhone = clientPhone;
+      if (startDate !== undefined) updateData.startDate = startDate;
+      if (endDate !== undefined) updateData.endDate = endDate;
+      if (status !== undefined) updateData.status = status;
+
+      const [updated] = await db
+        .update(reservations)
+        .set(updateData)
+        .where(eq(reservations.id, id))
+        .returning();
+
+      if (!updated) {
+        res.status(404).json({ error: 'Reservation not found' });
+        return;
+      }
+
+      res.json(updated);
+    } catch (error) {
+      console.error('Error updating reservation:', error);
+      res.status(500).json({ error: 'Failed to update reservation' });
+    }
+  });
+
+  // Admin: Delete a reservation
+  app.delete('/api/broker/reservations/:id', requireBrokerAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await db.delete(reservations).where(eq(reservations.id, id));
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting reservation:', error);
+      res.status(500).json({ error: 'Failed to delete reservation' });
     }
   });
 

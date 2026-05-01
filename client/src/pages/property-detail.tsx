@@ -25,6 +25,9 @@ import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/navbar";
 import { SEO } from "@/components/seo";
 import { Helmet } from "react-helmet-async";
+import AvailabilityTimeline from "@/components/availability-timeline";
+import ReservationManager from "@/components/reservation-manager";
+import type { Reservation } from "@shared/schema";
 
 // Broker contact info — change here when broker changes
 const BROKER_PHONE = "50344187";
@@ -73,6 +76,11 @@ export default function PropertyDetailPage() {
 
   const { data: property, isLoading } = useQuery<PropertyWithMedia>({
     queryKey: ['/api/properties', propertyId],
+    enabled: !!propertyId,
+  });
+
+  const { data: reservations = [] } = useQuery<Reservation[]>({
+    queryKey: [`/api/properties/${propertyId}/reservations`],
     enabled: !!propertyId,
   });
 
@@ -389,6 +397,14 @@ export default function PropertyDetailPage() {
           )}
         </div>
 
+        {/* Availability Timeline (Below images) */}
+        <div className="mb-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+          <AvailabilityTimeline 
+            reservations={reservations} 
+            isAdmin={isAdmin} 
+          />
+        </div>
+
         {/* Property Information */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Details */}
@@ -638,6 +654,13 @@ export default function PropertyDetailPage() {
                       <Pencil className="mr-2 h-5 w-5" />
                       Modify This Post
                     </Button>
+                  </div>
+                )}
+
+                {/* Admin: Reservation Manager */}
+                {isAdmin && (
+                  <div className="pt-4 border-t border-border/30 mt-4">
+                    <ReservationManager propertyId={property.id} />
                   </div>
                 )}
 
