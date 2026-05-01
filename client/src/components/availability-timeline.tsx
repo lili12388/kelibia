@@ -170,7 +170,7 @@ export default function AvailabilityTimeline({ propertyId, isAdmin = false }: Ti
         </span>
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-sm bg-[#3b82f6]" /><span className="text-[9px] sm:text-[10px] text-muted-foreground">Libre</span></div>
-          <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-sm bg-[#ef4444]" /><span className="text-[9px] sm:text-[10px] text-muted-foreground">Confirmé</span></div>
+          <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-sm bg-[#16a34a]" /><span className="text-[9px] sm:text-[10px] text-muted-foreground">Confirmé</span></div>
           <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-sm bg-[#f97316]" /><span className="text-[9px] sm:text-[10px] text-muted-foreground">En attente</span></div>
         </div>
       </div>
@@ -271,14 +271,14 @@ export default function AvailabilityTimeline({ propertyId, isAdmin = false }: Ti
                     style={{ left: `${left}px`, width: `${width}px`, top: `${top}px`, height: `${BRACKET_H}px` }}
                   >
                     {/* The bracket shape */}
-                    <div className={`w-full h-full rounded-md border-2 flex items-center justify-center gap-1 px-1.5 overflow-hidden ${
+                    <div className={`w-full h-full rounded-md flex items-center justify-center gap-1 px-1.5 overflow-hidden ${
                       isConfirmed
-                        ? 'border-[#ef4444] bg-[#ef4444]/8'
-                        : 'border-[#f97316] bg-[#f97316]/8'
+                        ? 'border-[3px] border-[#16a34a] bg-[#16a34a]/10'
+                        : 'border-2 border-[#f97316] bg-[#f97316]/8'
                     }`}>
                       {/* Label */}
-                      <span className={`text-[8px] sm:text-[9px] font-bold truncate ${
-                        isConfirmed ? 'text-[#ef4444]' : 'text-[#f97316]'
+                      <span className={`text-[10px] sm:text-[11px] font-extrabold truncate tracking-tight ${
+                        isConfirmed ? 'text-[#15803d]' : 'text-[#ea580c]'
                       }`}>
                         {displayName}
                         {phoneShort && <span className="opacity-60 ml-0.5">· {phoneShort}</span>}
@@ -352,7 +352,7 @@ export default function AvailabilityTimeline({ propertyId, isAdmin = false }: Ti
           <div className="divide-y divide-border/15 max-h-[280px] overflow-y-auto">
             {reservations.map((r) => (
               <div key={r.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/15 transition-colors">
-                <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${r.status === "confirmed" ? "bg-red-500" : "bg-orange-500"}`} />
+                <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${r.status === "confirmed" ? "bg-[#16a34a]" : "bg-orange-500"}`} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-xs font-bold text-foreground truncate">{r.clientName}</span>
@@ -363,13 +363,13 @@ export default function AvailabilityTimeline({ propertyId, isAdmin = false }: Ti
                   </div>
                 </div>
                 <div className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
-                  r.status === "confirmed" ? "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400" : "bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400"
+                  r.status === "confirmed" ? "bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400" : "bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400"
                 }`}>
                   {r.status === "confirmed" ? "Réservé" : "Non confirmé"}
                 </div>
                 {isAdmin && (
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    <button onClick={() => toggleM.mutate({ id: r.id, status: r.status })} className={`h-6 w-6 flex items-center justify-center rounded-md transition-all ${r.status === "confirmed" ? "bg-red-100 text-red-600 hover:bg-red-200" : "bg-orange-100 text-orange-600 hover:bg-orange-200"}`} title={r.status === "confirmed" ? "→ Non confirmé" : "→ Confirmé"}>
+                    <button onClick={() => toggleM.mutate({ id: r.id, status: r.status })} className={`h-6 w-6 flex items-center justify-center rounded-md transition-all ${r.status === "confirmed" ? "bg-green-100 text-green-600 hover:bg-green-200" : "bg-orange-100 text-orange-600 hover:bg-orange-200"}`} title={r.status === "confirmed" ? "→ Non confirmé" : "→ Confirmé"}>
                       {r.status === "confirmed" ? <Check className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
                     </button>
                     <button onClick={() => deleteM.mutate(r.id)} className="h-6 w-6 flex items-center justify-center rounded-md bg-muted/40 text-muted-foreground hover:bg-red-100 hover:text-red-600 transition-all" title="Supprimer">
