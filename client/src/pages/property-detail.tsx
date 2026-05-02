@@ -483,7 +483,12 @@ export default function PropertyDetailPage() {
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
-                    <video src={property.media[0].url} className="w-full h-full object-cover" />
+                    <video 
+                      src={property.media[0].url} 
+                      className="w-full h-full object-cover" 
+                      controls
+                      playsInline
+                    />
                   )}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
                 </div>
@@ -502,7 +507,12 @@ export default function PropertyDetailPage() {
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     ) : (
-                      <video src={media.url} className="w-full h-full object-cover" />
+                      <video 
+                        src={media.url} 
+                        className="w-full h-full object-cover" 
+                        controls
+                        playsInline
+                      />
                     )}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
                     
