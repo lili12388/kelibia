@@ -13,6 +13,7 @@ import BrokerLoginPage from "@/pages/broker-login";
 import BrokerDashboardPage from "@/pages/broker-dashboard";
 import BrokerBrowsePage from "@/pages/broker-browse";
 import AdminAnalyticsPage from "@/pages/admin-analytics";
+import AboutPage from "@/pages/about";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -28,7 +29,9 @@ function Router() {
       <Switch>
       <Route path="/" component={BrowsePropertiesPage} />
       <Route path="/browse-properties" component={BrowsePropertiesPage} />
+      <Route path="/about" component={AboutPage} />
       <Route path="/property/:id" component={PropertyDetailPage} />
+      <Route path="/maisons/:id" component={PropertyDetailPage} />
       <Route path="/broker/login" component={BrokerLoginPage} />
       <Route path="/broker/dashboard">
         <BrokerAuthGuard>

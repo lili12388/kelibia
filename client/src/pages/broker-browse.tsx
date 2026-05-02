@@ -24,6 +24,7 @@ import type { PropertyWithMedia, PropertySubmissionWithMedia } from "@shared/sch
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/navbar";
+import { generatePropertyUrl } from "@/lib/utils";
 
 interface PropertyAnalytics {
   propertyId: string;
@@ -370,7 +371,7 @@ export default function BrokerBrowsePage() {
               return (
                 <Card key={property.id} className="overflow-hidden hover-elevate transition-all h-full flex flex-col">
                   {/* Property Image */}
-                  <Link href={`/property/${property.id}`}>
+                  <Link href={generatePropertyUrl(property.title, property.id, property.referenceCode)}>
                     <div className="relative aspect-[4/3] overflow-hidden bg-muted cursor-pointer group">
                       {primaryMedia ? (
                         primaryMedia.mimeType.startsWith('video/') ? (
@@ -435,7 +436,7 @@ export default function BrokerBrowsePage() {
 
                   {/* Property Info */}
                   <CardContent className="p-4 flex-1 flex flex-col">
-                    <Link href={`/property/${property.id}`}>
+                    <Link href={generatePropertyUrl(property.title, property.id, property.referenceCode)}>
                       <h3 className="font-semibold text-foreground text-lg mb-2 line-clamp-2 hover:text-primary transition-colors cursor-pointer">
                         {property.title}
                       </h3>

@@ -42,12 +42,8 @@ interface LanedReservation {
 }
 
 function assignLanes(reservations: Reservation[], days: Date[]): LanedReservation[] {
-  // Sort: confirmed first, then by start date
-  const sorted = [...reservations].sort((a, b) => {
-    if (a.status === "confirmed" && b.status !== "confirmed") return -1;
-    if (a.status !== "confirmed" && b.status === "confirmed") return 1;
-    return a.startDate.localeCompare(b.startDate);
-  });
+  // Sort only by start date to keep non-overlapping reservations in the same lane
+  const sorted = [...reservations].sort((a, b) => a.startDate.localeCompare(b.startDate));
 
   const result: LanedReservation[] = [];
   const laneEnds: number[] = []; // tracks the endIdx of the last item in each lane
@@ -206,21 +202,61 @@ export default function AvailabilityTimeline({ propertyId, isAdmin = false }: Ti
 
             {/* Day numbers */}
             <div className="flex">
-              {days.map((day, i) => (
-                <div key={i} className={`flex-shrink-0 text-center ${isAdmin ? 'cursor-pointer' : ''}`} style={{ width: `${DAY_W}px` }} onClick={() => handleDayClick(day)}>
-                  <span className={`text-[8px] sm:text-[9px] block py-0.5 font-semibold ${
-                    ds(day) === today ? 'text-primary font-extrabold text-[10px]' :
-                    isInSel(ds(day)) ? 'text-primary font-bold' :
-                    'text-foreground/50'
-                  }`}>{day.getDate()}</span>
-                </div>
-              ))}
+              {days.map((day, i) => {
+                const dStr = ds(day);
+                let status = "free";
+                const r = reservations.find(r => r.startDate <= dStr && r.endDate >= dStr);
+                if (r) {
+                  status = r.status === "confirmed" ? "confirmed" : "pending";
+                }
+                const textColor = 
+                  dStr === today ? 'text-primary font-extrabold text-[10px]' :
+                  isInSel(dStr) ? 'text-primary font-bold' :
+                  status === "confirmed" ? 'text-[#16a34a] font-bold' :
+                  status === "pending" ? 'text-[#f97316] font-bold' :
+                  'text-foreground/50';
+
+                return (
+                  <div key={i} className={`flex-shrink-0 text-center ${isAdmin ? 'cursor-pointer' : ''}`} style={{ width: `${DAY_W}px` }} onClick={() => handleDayClick(day)}>
+                    <span className={`text-[8px] sm:text-[9px] block py-0.5 font-semibold ${textColor}`}>{day.getDate()}</span>
+                  </div>
+                );
+              })}
             </div>
 
             {/* The BLUE LINE with tick marks */}
             <div className="relative" style={{ height: '20px' }}>
               {/* Main blue line */}
               <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[3px] bg-[#3b82f6] rounded-full" />
+              
+              {/* Colored Line Segments for Reservations */}
+              {reservations.map((r, idx) => {
+                const sIdx = days.findIndex(d => ds(d) === r.startDate);
+                const eIdx = days.findIndex(d => ds(d) === r.endDate);
+                
+                // If entirely out of bounds
+                if ((sIdx < 0 && r.startDate > ds(days[days.length - 1])) || (eIdx < 0 && r.endDate < ds(days[0]))) {
+                  return null;
+                }
+                
+                const actualS = sIdx < 0 ? 0 : sIdx;
+                const actualE = eIdx < 0 ? days.length - 1 : eIdx;
+                
+                // Tick is in the center of the day column (DAY_W / 2)
+                const startX = actualS * DAY_W + DAY_W / 2;
+                const endX = actualE * DAY_W + DAY_W / 2;
+                const width = Math.max(0, endX - startX);
+                
+                const bgColor = r.status === "confirmed" ? "bg-[#16a34a]" : "bg-[#f97316]";
+                
+                return (
+                  <div 
+                    key={`res-line-${idx}`}
+                    className={`absolute top-1/2 -translate-y-1/2 h-[3px] z-10 ${bgColor} rounded-full`}
+                    style={{ left: `${startX}px`, width: `${width}px` }}
+                  />
+                );
+              })}
               {/* Day tick marks */}
               {days.map((day, i) => {
                 const isMonth1 = day.getDate() === 1;

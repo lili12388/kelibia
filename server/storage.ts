@@ -137,13 +137,36 @@ export class DatabaseStorage implements IStorage {
     return property;
   }
 
-  async getProperty(id: string): Promise<PropertyWithMedia | undefined> {
+  async getProperty(idOrRef: string): Promise<PropertyWithMedia | undefined> {
+    const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(idOrRef);
+    
+    let whereClause;
+    if (isUUID) {
+      whereClause = eq(properties.id, idOrRef);
+    } else {
+      // Sometimes reference code is stored with or without 'REF-' prefix
+      // Let's try exact match first
+      whereClause = eq(properties.referenceCode, idOrRef);
+    }
+
     const [property] = await db.query.properties.findMany({
-      where: eq(properties.id, id),
+      where: whereClause,
       with: {
         media: true,
       },
     });
+
+    // If not found and we were looking for a reference code that starts with REF-, 
+    // maybe it's stored without the prefix in the DB.
+    if (!property && !isUUID && idOrRef.toUpperCase().startsWith('REF-')) {
+      const withoutPrefix = idOrRef.substring(4);
+      const [propertyWithoutPrefix] = await db.query.properties.findMany({
+        where: eq(properties.referenceCode, withoutPrefix),
+        with: { media: true },
+      });
+      return propertyWithoutPrefix;
+    }
+
     return property;
   }
 

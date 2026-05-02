@@ -21,7 +21,14 @@ export const propertySubmissions = pgTable("property_submissions", {
   location: text("location").notNull(), // exact location within neighborhood
   googleMapsUrl: text("google_maps_url"), // Google Maps link to the property
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  requiresDeposit: boolean("requires_deposit").notNull().default(true), // whether deposit is required
+  referenceCode: text("reference_code"), // e.g. REF-001
+  distanceToBeach: text("distance_to_beach"), // e.g. "À 5 minutes à pied"
+  maxGuests: integer("max_guests").notNull().default(1),
+  hasAC: boolean("has_ac").notNull().default(false),
+  hasWiFi: boolean("has_wifi").notNull().default(false),
+  hasParking: boolean("has_parking").notNull().default(false),
+  hasSeaView: boolean("has_sea_view").notNull().default(false),
+  nearbyPlaces: text("nearby_places").default('[]'), // JSON string of nearby places
   neighborhoodMapUrl: text("neighborhood_map_url"), // URL to neighborhood map image (added by broker)
   ownerName: text("owner_name").notNull(),
   ownerEmail: text("owner_email").notNull(),
@@ -36,7 +43,6 @@ export const propertySubmissions = pgTable("property_submissions", {
   showBathrooms: boolean("show_bathrooms").notNull().default(true), // show bathroom count to public users
   showSize: boolean("show_size").notNull().default(true), // show size to public users
   showDescription: boolean("show_description").notNull().default(true), // show full description to public users
-  showDeposit: boolean("show_deposit").notNull().default(true), // show deposit requirement to public users
   status: text("status").notNull().default("pending"), // pending, approved, rejected
   createdAt: timestamp("created_at").notNull().defaultNow(),
   approvedAt: timestamp("approved_at"),
@@ -63,7 +69,14 @@ export const properties = pgTable("properties", {
   location: text("location").notNull(),
   googleMapsUrl: text("google_maps_url"), // Google Maps link to the property
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  requiresDeposit: boolean("requires_deposit").notNull().default(true), // whether deposit is required
+  referenceCode: text("reference_code"),
+  distanceToBeach: text("distance_to_beach"),
+  maxGuests: integer("max_guests").notNull().default(1),
+  hasAC: boolean("has_ac").notNull().default(false),
+  hasWiFi: boolean("has_wifi").notNull().default(false),
+  hasParking: boolean("has_parking").notNull().default(false),
+  hasSeaView: boolean("has_sea_view").notNull().default(false),
+  nearbyPlaces: text("nearby_places").default('[]'),
   neighborhoodMapUrl: text("neighborhood_map_url"), // URL to neighborhood map image
   // Admin visibility controls (copied from submission) - granular per field
   showOwnerContact: boolean("show_owner_contact").notNull().default(false), // show owner contact to public users
@@ -75,7 +88,6 @@ export const properties = pgTable("properties", {
   showBathrooms: boolean("show_bathrooms").notNull().default(true), // show bathroom count to public users
   showSize: boolean("show_size").notNull().default(true), // show size to public users
   showDescription: boolean("show_description").notNull().default(true), // show full description to public users
-  showDeposit: boolean("show_deposit").notNull().default(true), // show deposit requirement to public users
   publishedAt: timestamp("published_at").notNull().defaultNow(),
 });
 
@@ -201,6 +213,7 @@ export const insertPropertySubmissionSchema = createInsertSchema(propertySubmiss
   price: z.string().regex(/^\d+(\.\d{1,2})?$/, "Price must be a valid number"),
   rooms: z.number().min(0, "Rooms must be 0 or more"),
   bathrooms: z.number().min(1, "At least 1 bathroom required"),
+  maxGuests: z.number().min(1, "At least 1 guest required"),
   sizeM2: z.number().min(0, "Size must be 0 or greater").default(0), // Made optional, defaults to 0
   ownerEmail: z.string().email("Valid email required"),
   ownerPhone: z.string().min(8, "Valid phone number required"),

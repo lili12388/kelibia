@@ -1,23 +1,52 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, BedDouble, Bath, SlidersHorizontal, X, Eye, Sofa, Building2, ChevronDown } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { MapPin, BedDouble, Bath, SlidersHorizontal, X, Eye, Sofa, Building2, ChevronDown, Waves, Wind, Wifi, Car, Users, Flame } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { PropertyWithMedia } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import Navbar from "@/components/navbar";
 import { SEO } from "@/components/seo";
+import { generatePropertyUrl } from "@/lib/utils";
 
 export default function BrowsePropertiesPage() {
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
   const [selectedRooms, setSelectedRooms] = useState<number | null>(null);
   const [selectedBathrooms, setSelectedBathrooms] = useState<number | null>(null);
+  const [selectedGuests, setSelectedGuests] = useState<number | null>(null);
   const [furnishedFilter, setFurnishedFilter] = useState<"all" | "furnished" | "semi-furnished" | "unfurnished">("all");
+  const [reqAC, setReqAC] = useState(false);
+  const [reqWiFi, setReqWiFi] = useState(false);
+  const [reqParking, setReqParking] = useState(false);
+  const [distanceSearch, setDistanceSearch] = useState("");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  
+  // Hero section search states
+  const [startDay, setStartDay] = useState("");
+  const [startMonth, setStartMonth] = useState("06");
+  const [endDay, setEndDay] = useState("");
+  const [endMonth, setEndMonth] = useState("06");
+
+  // Scroll tracking for Hero Parallax and Fade
+  const [scrollY, setScrollY] = useState(0);
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Calculate parallax values
+  const heroHeight = 650;
+  let fadeRatio = 1 - (scrollY / (heroHeight * 1.2));
+  fadeRatio = Math.max(0, Math.min(1, fadeRatio));
+  const parallaxTranslateY = scrollY * 0.2;
 
   const { data: properties, isLoading } = useQuery<PropertyWithMedia[]>({
     queryKey: ['/api/properties'],
@@ -48,22 +77,32 @@ export default function BrowsePropertiesPage() {
       if (maxPrice && price > parseFloat(maxPrice)) return false;
       if (selectedRooms !== null && property.rooms !== selectedRooms) return false;
       if (selectedBathrooms !== null && property.bathrooms !== selectedBathrooms) return false;
+      if (selectedGuests !== null && property.maxGuests < selectedGuests) return false;
       if (furnishedFilter === "furnished" && !property.isFurnished) return false;
       if (furnishedFilter === "unfurnished" && property.isFurnished) return false;
+      if (reqAC && !property.hasAC) return false;
+      if (reqWiFi && !property.hasWiFi) return false;
+      if (reqParking && !property.hasParking) return false;
+      if (distanceSearch && (!property.distanceToBeach || !property.distanceToBeach.toLowerCase().includes(distanceSearch.toLowerCase()))) return false;
       return true;
     });
-  }, [properties, minPrice, maxPrice, selectedRooms, selectedBathrooms, furnishedFilter]);
+  }, [properties, minPrice, maxPrice, selectedRooms, selectedBathrooms, selectedGuests, furnishedFilter, reqAC, reqWiFi, reqParking, distanceSearch]);
 
   const clearFilters = () => {
     setMinPrice("");
     setMaxPrice("");
     setSelectedRooms(null);
     setSelectedBathrooms(null);
+    setSelectedGuests(null);
     setFurnishedFilter("all");
+    setReqAC(false);
+    setReqWiFi(false);
+    setReqParking(false);
+    setDistanceSearch("");
   };
 
-  const hasActiveFilters = minPrice || maxPrice || selectedRooms !== null || selectedBathrooms !== null || furnishedFilter !== "all";
-  const activeFilterCount = [minPrice, maxPrice, selectedRooms !== null, selectedBathrooms !== null, furnishedFilter !== "all"].filter(Boolean).length;
+  const hasActiveFilters = minPrice || maxPrice || selectedRooms !== null || selectedBathrooms !== null || furnishedFilter !== "all" || selectedGuests !== null || reqAC || reqWiFi || reqParking || distanceSearch;
+  const activeFilterCount = [minPrice, maxPrice, selectedRooms !== null, selectedBathrooms !== null, furnishedFilter !== "all", selectedGuests !== null, reqAC, reqWiFi, reqParking, !!distanceSearch].filter(Boolean).length;
 
   const seoDescription = `${filteredProperties.length} logements disponibles à Kelibia. Trouvez votre appartement idéal.`;
 
@@ -76,17 +115,124 @@ export default function BrowsePropertiesPage() {
       />
       <Navbar />
       
-      {/* Compact Mobile Hero */}
-      <div className="px-4 pt-5 pb-4 sm:px-6 sm:pt-8 sm:pb-6 max-w-7xl mx-auto">
-        <div className="animate-fade-in-up">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight">
-            Logements à <span className="text-primary">Kelibia</span>
-          </h1>
-          <p className="text-muted-foreground text-sm sm:text-base mt-1">
-            Appartements vérifiés, prêts à louer
-          </p>
-        </div>
+      {/* Background Image Container (Parallax + Fade) */}
+      <div 
+        className="absolute top-0 left-0 w-full h-[320px] sm:h-[380px] lg:h-[480px] z-0 pointer-events-none overflow-hidden"
+        style={{ opacity: fadeRatio }}
+      >
+        {/* The Image with Parallax Transform */}
+        <div 
+          className="absolute inset-0 w-full h-[120%] bg-cover bg-center will-change-transform"
+          style={{ 
+            backgroundImage: `url('/kelibia%20plage.png')`,
+            transform: `translateY(${parallaxTranslateY}px)`
+          }}
+        />
+        
+        {/* Soft edge blending gradient overlay covering the whole container */}
+        <div 
+          className="absolute inset-0 w-full h-full z-10"
+          style={{
+            background: 'linear-gradient(to bottom, hsl(var(--background)) 0%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 70%, hsl(var(--background)) 100%)'
+          }}
+        />
+        
+        {/* Subtle Dark overlay for text readability (between image and blending gradient) */}
+        <div className="absolute inset-0 bg-black/15 z-0" />
       </div>
+
+      {/* Hero Content */}
+      <div className="relative z-10 w-full max-w-5xl px-4 flex flex-col items-center text-center animate-fade-in-up pt-20 sm:pt-24 lg:pt-28 pb-8 sm:pb-12 mx-auto">
+        <h1 className="text-3xl sm:text-4xl lg:text-[3.25rem] font-extrabold text-white tracking-tight mb-3 sm:mb-5 drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] leading-snug">
+          Trouvez la Maison de Vacances <br className="hidden sm:block" />
+          <span className="inline-block mt-1 sm:mt-2">Idéale à Kelibia</span>
+        </h1>
+        <p className="text-base sm:text-lg lg:text-xl text-white mb-6 sm:mb-8 max-w-2xl font-medium drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
+          Découvrez nos plus beaux logements, appartements et villas pour un séjour inoubliable près de la plage.
+        </p>
+
+        {/* Horizontal Search Bar */}
+        <div className="w-full bg-background rounded-[2rem] p-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.2)] flex flex-col sm:flex-row items-center gap-2 sm:gap-0 max-w-4xl mx-auto border border-border/40 text-left">
+            {/* Arrivée */}
+            <div className="w-full sm:w-1/2 px-5 py-3 hover:bg-gray-100 rounded-[1.5rem] cursor-pointer transition-colors border-b sm:border-b-0 sm:border-r border-border">
+              <label className="block text-[11px] font-extrabold uppercase tracking-wider text-foreground mb-1">
+                Arrivée
+              </label>
+              <div className="flex items-center gap-1.5">
+                <input 
+                  type="number" 
+                  placeholder="Jour"
+                  className="w-14 sm:w-16 text-sm sm:text-base font-bold bg-muted/30 hover:bg-muted/60 focus:bg-background rounded-md px-2 py-1 outline-none text-center transition-colors [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  value={startDay}
+                  onChange={(e) => {
+                    let val = e.target.value;
+                    if (val.length > 2) val = val.slice(0, 2);
+                    setStartDay(val);
+                  }}
+                  min="1"
+                  max="31"
+                />
+                <select 
+                  className="flex-1 text-xs sm:text-sm font-bold bg-muted/30 hover:bg-muted/60 focus:bg-background rounded-md px-1 py-1.5 outline-none cursor-pointer text-foreground transition-colors"
+                  value={startMonth}
+                  onChange={(e) => setStartMonth(e.target.value)}
+                >
+                  <option value="05">Mai</option>
+                  <option value="06">Juin</option>
+                  <option value="07">Juil.</option>
+                  <option value="08">Août</option>
+                  <option value="09">Sept.</option>
+                </select>
+              </div>
+            </div>
+            
+            {/* Départ */}
+            <div className="w-full sm:w-1/2 px-5 py-3 hover:bg-gray-100 rounded-[1.5rem] cursor-pointer transition-colors flex items-center justify-between">
+              <div className="flex-1">
+                <label className="block text-[11px] font-extrabold uppercase tracking-wider text-foreground mb-1">
+                  Départ
+                </label>
+                <div className="flex items-center gap-1.5">
+                  <input 
+                    type="number" 
+                    placeholder="Jour"
+                    className="w-14 sm:w-16 text-sm sm:text-base font-bold bg-muted/30 hover:bg-muted/60 focus:bg-background rounded-md px-2 py-1 outline-none text-center transition-colors [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    value={endDay}
+                  onChange={(e) => {
+                    let val = e.target.value;
+                    if (val.length > 2) val = val.slice(0, 2);
+                    setEndDay(val);
+                  }}
+                  min="1"
+                  max="31"
+                />
+                <select 
+                  className="flex-1 text-xs sm:text-sm font-bold bg-muted/30 hover:bg-muted/60 focus:bg-background rounded-md px-1 py-1.5 outline-none cursor-pointer text-foreground transition-colors"
+                  value={endMonth}
+                  onChange={(e) => setEndMonth(e.target.value)}
+                >
+                  <option value="05">Mai</option>
+                  <option value="06">Juin</option>
+                  <option value="07">Juil.</option>
+                  <option value="08">Août</option>
+                  <option value="09">Sept.</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+            <div className="px-2 pb-2 sm:pb-0 shrink-0">
+              <button 
+                onClick={() => {
+                  window.scrollBy({ top: 500, behavior: 'smooth' });
+                }}
+                className="rounded-full w-full sm:w-auto h-12 sm:px-8 bg-primary hover:bg-primary/90 transition-colors text-primary-foreground font-bold flex items-center justify-center shadow-md"
+              >
+                <span className="inline font-bold text-base">Rechercher</span>
+              </button>
+            </div>
+          </div>
+        </div>
 
       {/* Mobile Filter Bar — horizontal pills */}
       <div className="lg:hidden px-4 pb-3">
@@ -171,7 +317,7 @@ export default function BrowsePropertiesPage() {
 
             {/* Price */}
             <div className="space-y-2 mb-5">
-              <Label className="text-sm font-semibold">Prix (TND/mois)</Label>
+              <Label className="text-sm font-semibold">Prix (TND / nuit)</Label>
               <div className="grid grid-cols-2 gap-2">
                 <Input
                   type="number"
@@ -255,6 +401,47 @@ export default function BrowsePropertiesPage() {
               </div>
             </div>
 
+
+            {/* Amenities */}
+            <div className="space-y-3 mb-5">
+              <Label className="text-sm font-semibold">Équipements</Label>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="reqAC-mobile" checked={reqAC} onCheckedChange={(c) => setReqAC(c as boolean)} />
+                  <Label htmlFor="reqAC-mobile" className="flex items-center gap-2 cursor-pointer font-medium text-sm">
+                    <Wind className="h-4 w-4 text-muted-foreground" /> Climatisation
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="reqWiFi-mobile" checked={reqWiFi} onCheckedChange={(c) => setReqWiFi(c as boolean)} />
+                  <Label htmlFor="reqWiFi-mobile" className="flex items-center gap-2 cursor-pointer font-medium text-sm">
+                    <Wifi className="h-4 w-4 text-muted-foreground" /> WiFi
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="reqParking-mobile" checked={reqParking} onCheckedChange={(c) => setReqParking(c as boolean)} />
+                  <Label htmlFor="reqParking-mobile" className="flex items-center gap-2 cursor-pointer font-medium text-sm">
+                    <Car className="h-4 w-4 text-muted-foreground" /> Parking
+                  </Label>
+                </div>
+              </div>
+            </div>
+
+            {/* Distance to beach */}
+            <div className="space-y-2 mb-6">
+              <Label className="text-sm font-semibold">Distance de la plage</Label>
+              <div className="relative">
+                <Waves className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Ex: 5 min, pied..."
+                  value={distanceSearch}
+                  onChange={(e) => setDistanceSearch(e.target.value)}
+                  className="h-11 pl-9 text-base rounded-xl"
+                />
+              </div>
+            </div>
+
             {/* Apply button */}
             <button
               onClick={() => setMobileFiltersOpen(false)}
@@ -267,8 +454,8 @@ export default function BrowsePropertiesPage() {
       )}
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto pb-8">
-        <div className="flex flex-col lg:flex-row gap-6 px-4 sm:px-6">
+      <div className="max-w-[1600px] mx-auto pb-8">
+        <div className="flex flex-col lg:flex-row gap-6 px-4 sm:px-6 xl:px-8">
           {/* Desktop Sidebar */}
           <aside className="hidden lg:block w-64 flex-shrink-0">
             <div className="bg-card rounded-2xl border border-border/40 p-5 space-y-4 sticky top-16 shadow-sm">
@@ -287,7 +474,7 @@ export default function BrowsePropertiesPage() {
               <Separator className="bg-border/30" />
 
               <div className="space-y-2">
-                <Label className="text-xs font-semibold">Prix (TND/mois)</Label>
+                <Label className="text-xs font-semibold">Prix (TND / nuit)</Label>
                 <div className="grid grid-cols-2 gap-2">
                   <Input type="number" placeholder="Min" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="h-9 text-sm rounded-xl" />
                   <Input type="number" placeholder="Max" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className="h-9 text-sm rounded-xl" />
@@ -362,6 +549,49 @@ export default function BrowsePropertiesPage() {
                 </div>
               </div>
 
+
+              <Separator className="bg-border/30" />
+
+              <div className="space-y-3">
+                <Label className="text-xs font-semibold">Équipements</Label>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="reqAC-desk" checked={reqAC} onCheckedChange={(c) => setReqAC(c as boolean)} />
+                    <Label htmlFor="reqAC-desk" className="flex items-center gap-2 cursor-pointer font-medium text-xs">
+                      <Wind className="h-3.5 w-3.5 text-muted-foreground" /> Climatisation
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="reqWiFi-desk" checked={reqWiFi} onCheckedChange={(c) => setReqWiFi(c as boolean)} />
+                    <Label htmlFor="reqWiFi-desk" className="flex items-center gap-2 cursor-pointer font-medium text-xs">
+                      <Wifi className="h-3.5 w-3.5 text-muted-foreground" /> WiFi
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="reqParking-desk" checked={reqParking} onCheckedChange={(c) => setReqParking(c as boolean)} />
+                    <Label htmlFor="reqParking-desk" className="flex items-center gap-2 cursor-pointer font-medium text-xs">
+                      <Car className="h-3.5 w-3.5 text-muted-foreground" /> Parking
+                    </Label>
+                  </div>
+                </div>
+              </div>
+
+              <Separator className="bg-border/30" />
+
+              <div className="space-y-2 pb-2">
+                <Label className="text-xs font-semibold">Distance de la plage</Label>
+                <div className="relative">
+                  <Waves className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Ex: 5 min..."
+                    value={distanceSearch}
+                    onChange={(e) => setDistanceSearch(e.target.value)}
+                    className="h-8 pl-8 text-xs rounded-lg"
+                  />
+                </div>
+              </div>
+
               {hasActiveFilters && (
                 <>
                   <Separator className="bg-border/30" />
@@ -430,7 +660,7 @@ export default function BrowsePropertiesPage() {
                   const views = viewsMap.get(property.id) ?? 0;
                   
                   return (
-                    <Link key={property.id} href={`/property/${property.id}`}>
+                    <Link key={property.id} href={generatePropertyUrl(property.title, property.id, property.referenceCode)}>
                       <div className="property-card bg-card rounded-xl overflow-hidden border border-border/30 h-full flex flex-col cursor-pointer group">
                         {/* Image — taller on mobile for thumb-friendly tapping */}
                         <div className="relative aspect-[3/4] sm:aspect-[4/3] overflow-hidden bg-muted/20">
@@ -456,18 +686,28 @@ export default function BrowsePropertiesPage() {
                           )}
                           
                           {/* Badges */}
-                          <div className="absolute top-2 left-2 right-2 flex justify-between items-start">
-                            <div className="flex gap-1">
-                              {property.isFurnished && (
-                                <span className="glass-dark text-white text-[10px] font-semibold px-2 py-0.5 rounded-md flex items-center gap-1">
-                                  <Sofa className="w-2.5 h-2.5" />
-                                  Meublé
+                          <div className="absolute top-2 left-2 right-2 flex justify-between items-start pointer-events-none">
+                            <div className="flex flex-col gap-1.5 items-start">
+                              {views > 30 ? (
+                                <span className="bg-[#FF385C] text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1">
+                                  <Flame className="w-3 h-3" /> Très demandé
+                                </span>
+                              ) : views <= 10 ? (
+                                <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">
+                                  Nouveau
+                                </span>
+                              ) : null}
+                              
+                              {property.distanceToBeach && (
+                                <span className="bg-blue-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1">
+                                  <Waves className="w-3 h-3" /> {property.distanceToBeach}
                                 </span>
                               )}
                             </div>
+                            
                             {views > 0 && (
-                              <span className="glass-dark text-white/80 text-[9px] font-medium px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
-                                <Eye className="w-2.5 h-2.5" />
+                              <span className="glass-dark text-white/90 text-[10px] font-medium px-1.5 py-1 rounded-md flex items-center gap-1">
+                                <Eye className="w-3 h-3" />
                                 {views}
                               </span>
                             )}

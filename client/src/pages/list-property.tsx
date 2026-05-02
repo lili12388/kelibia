@@ -104,17 +104,24 @@ export default function ListPropertyPage() {
       hasLivingRoom: false,
       hasFridge: false,
       hasGasStove: false,
+      hasAC: false,
+      hasWiFi: false,
+      hasParking: false,
+      hasSeaView: false,
       description: "",
       rooms: 1,
       bathrooms: 1,
+      maxGuests: 1,
       location: "",
+      referenceCode: "",
+      distanceToBeach: "",
+      nearbyPlaces: "[]",
       price: "",
       ownerName: "",
       ownerEmail: "",
       ownerPhone: "",
       status: "pending",
       googleMapsUrl: "",
-      requiresDeposit: true,
       neighborhoodMapUrl: null,
     },
   });
@@ -430,12 +437,12 @@ export default function ListPropertyPage() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <div className="mb-8">
           <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-3">
-            {isAdminRoute ? "Post Property as Admin" : "List Your Property"}
+            {isAdminRoute ? "Ajouter une propriété (Admin)" : "Proposer votre propriété"}
           </h1>
           <p className="text-muted-foreground text-base sm:text-lg">
             {isAdmin 
-              ? "Your property will be published immediately and appear on the browse page." 
-              : "All information is private and will be reviewed by our broker before publication."}
+              ? "Votre propriété sera publiée immédiatement." 
+              : "Toutes les informations sont privées et seront examinées par notre agent avant publication."}
           </p>
         </div>
 
@@ -444,8 +451,8 @@ export default function ListPropertyPage() {
             {/* Property Details Section */}
             <Card>
               <CardHeader>
-                <CardTitle>Property Details</CardTitle>
-                <CardDescription>Provide information about your property</CardDescription>
+                <CardTitle>Détails de la propriété</CardTitle>
+                <CardDescription>Fournissez les informations sur votre propriété</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Property Type & Floor Level - First Row */}
@@ -594,6 +601,32 @@ export default function ListPropertyPage() {
                       </FormItem>
                     )}
                   />
+
+                  <FormField
+                    control={form.control}
+                    name="maxGuests"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Voyageurs max</FormLabel>
+                        <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-max-guests">
+                              <SelectValue placeholder="Nombre" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="1">1 voyageur</SelectItem>
+                            <SelectItem value="2">2 voyageurs</SelectItem>
+                            <SelectItem value="3">3 voyageurs</SelectItem>
+                            <SelectItem value="4">4 voyageurs</SelectItem>
+                            <SelectItem value="5">5 voyageurs</SelectItem>
+                            <SelectItem value="6">6+ voyageurs</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
 
                 {/* Kitchen Amenities - Fridge and Gas Stove */}
@@ -643,6 +676,97 @@ export default function ListPropertyPage() {
                   />
                 </div>
 
+                {/* Additional Amenities (AC, WiFi, Parking, Sea View) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="hasAC"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Climatisation?</FormLabel>
+                        <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choisir" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="false">Non</SelectItem>
+                            <SelectItem value="true">Oui</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="hasWiFi"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>WiFi?</FormLabel>
+                        <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choisir" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="false">Non</SelectItem>
+                            <SelectItem value="true">Oui</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="hasParking"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Parking?</FormLabel>
+                        <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choisir" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="false">Non</SelectItem>
+                            <SelectItem value="true">Oui</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="hasSeaView"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Vue sur mer?</FormLabel>
+                        <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choisir" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="false">Non</SelectItem>
+                            <SelectItem value="true">Oui</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 {/* Description - Moved to bottom */}
                 <FormField
                   control={form.control}
@@ -663,17 +787,17 @@ export default function ListPropertyPage() {
                   )}
                 />
 
-                {/* Price & Deposit - Moved up */}
+                {/* Price & Reference */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
                     name="price"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Loyer mensuel (TND)</FormLabel>
+                        <FormLabel>Prix par nuit (TND)</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="ex: 1200" 
+                            placeholder="ex: 120" 
                             data-testid="input-price"
                             {...field} 
                           />
@@ -683,27 +807,25 @@ export default function ListPropertyPage() {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="requiresDeposit"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Cautionnement requis?</FormLabel>
-                        <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                  {isAdminRoute && (
+                    <FormField
+                      control={form.control}
+                      name="referenceCode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Code de référence (Optionnel)</FormLabel>
                           <FormControl>
-                            <SelectTrigger data-testid="select-deposit">
-                              <SelectValue placeholder="Choisir" />
-                            </SelectTrigger>
+                            <Input 
+                              placeholder="ex: REF-001" 
+                              {...field} 
+                              value={field.value ?? ''}
+                            />
                           </FormControl>
-                          <SelectContent>
-                            <SelectItem value="false">Non</SelectItem>
-                            <SelectItem value="true">Oui</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -714,23 +836,43 @@ export default function ListPropertyPage() {
                 <CardTitle>Localisation & Informations Complémentaires</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="location"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Localisation exacte</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="ex: Hay Khadhra, près de l'avenue principale"
-                          data-testid="input-location"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="location"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Localisation exacte</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="ex: Hay Khadhra, près de l'avenue principale"
+                            data-testid="input-location"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="distanceToBeach"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Distance à la plage (Optionnel)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="ex: À 5 minutes à pied"
+                            {...field} 
+                            value={field.value ?? ''}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 <FormField
                   control={form.control}
