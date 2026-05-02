@@ -159,7 +159,7 @@ export default function BrokerBrowsePage() {
       
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Failed to delete property');
+        throw new Error(error.details || error.error || error.message || 'Failed to delete property');
       }
       
       return response.json();

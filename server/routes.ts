@@ -517,23 +517,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const submissionId = property.submissionId;
       
-      // Delete property media first (foreign key constraint)
-      await db.delete(propertyMedia).where(eq(propertyMedia.propertyId, id));
-      
-      // Delete property analytics
-      await db.delete(propertyAnalytics).where(eq(propertyAnalytics.propertyId, id));
-      
-      // Delete visitor logs for this property
-      await db.delete(visitorLogs).where(eq(visitorLogs.propertyId, id));
-      
-      // Delete the property itself
-      await db.delete(properties).where(eq(properties.id, id));
+      // Delete all related records through storage
+      await storage.deleteProperty(id);
       
       // Delete the associated submission and its media
       if (submissionId) {
         const { submissionMedia } = await import("../shared/schema.js");
         await db.delete(submissionMedia).where(eq(submissionMedia.submissionId, submissionId));
-        
         await db.delete(propertySubmissions).where(eq(propertySubmissions.id, submissionId));
       }
       
@@ -1511,25 +1501,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin: Delete a property
-  app.delete('/api/broker/properties/:id', requireBrokerAuth, async (req, res) => {
-    try {
-      const { id } = req.params;
-      
-      const property = await storage.getProperty(id);
-      if (!property) {
-        res.status(404).json({ error: "Property not found" });
-        return;
-      }
 
-      await storage.deleteProperty(id);
-      
-      res.json({ success: true, message: "Property deleted successfully" });
-    } catch (error: any) {
-      console.error('Error deleting property:', error);
-      res.status(500).json({ error: error.message || 'Failed to delete property' });
-    }
-  });
 
   const httpServer = createServer(app);
 
