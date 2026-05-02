@@ -564,23 +564,32 @@ export default function PropertyDetailPage() {
                 
                 {property.media.length > 1 && (
                   <>
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md shadow-md border-0 z-20 active:scale-95 transition-transform"
-                      onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                    >
-                      <ChevronLeft className="h-6 w-6 text-foreground" />
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md shadow-md border-0 z-20 active:scale-95 transition-transform"
-                      onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                    >
-                      <ChevronRight className="h-6 w-6 text-foreground" />
-                    </Button>
-                    <div className="absolute bottom-3 right-3 bg-black/70 text-white text-[10px] font-bold px-2 py-1 rounded-full tracking-wider z-20 backdrop-blur-sm">
+                    {/* Left Arrow */}
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-2 z-30">
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="w-12 h-12 rounded-full bg-white/90 backdrop-blur-md shadow-lg border-0 active:scale-90 transition-transform"
+                        onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                      >
+                        <ChevronLeft className="h-7 w-7 text-foreground" />
+                      </Button>
+                    </div>
+
+                    {/* Right Arrow */}
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-2 z-30">
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="w-12 h-12 rounded-full bg-white/90 backdrop-blur-md shadow-lg border-0 active:scale-90 transition-transform"
+                        onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                      >
+                        <ChevronRight className="h-7 w-7 text-foreground" />
+                      </Button>
+                    </div>
+
+                    {/* Badge */}
+                    <div className="absolute bottom-4 right-4 bg-black/70 text-white text-[11px] font-bold px-3 py-1.5 rounded-full tracking-wider z-30 backdrop-blur-sm">
                       {currentImageIndex + 1} / {property.media.length}
                     </div>
                   </>
