@@ -490,7 +490,9 @@ export default function PropertyDetailPage() {
                       playsInline
                     />
                   )}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
+                  {property.media[0].mimeType.startsWith('image/') && (
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
+                  )}
                 </div>
 
                 {/* Smaller images (up to 4) */}
@@ -514,7 +516,9 @@ export default function PropertyDetailPage() {
                         playsInline
                       />
                     )}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
+                    {media.mimeType.startsWith('image/') && (
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
+                    )}
                     
                     {/* Overlay for the last image if there are more than 5 */}
                     {idx === 3 && property.media.length > 5 && (
