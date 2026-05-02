@@ -824,19 +824,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const startDateStr = startDate.toISOString().split('T')[0];
       
-      // Get unique visitors for the selected period (count distinct session IDs)
-      const periodVisitorsResult = await db.select({
-        total: sql<number>`COUNT(DISTINCT session_id)::int`
-      })
-      .from(visitorLogs)
-      .where(and(
-        gte(visitorLogs.timestamp, startDate),
-        lte(visitorLogs.timestamp, endDate),
-      ));
-      
-      const periodVisitors = periodVisitorsResult[0]?.total || 0;
-      
       // Get stats for the selected period (sum from site_analytics)
+      // This is much more robust than counting visitorLogs because visitorLogs are purged every 24h
       const periodStats = await db
         .select({
           totalVisitors: sql<number>`SUM(${siteAnalytics.totalVisitors})::int`,
@@ -848,18 +837,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lte(siteAnalytics.date, today),
         ));
 
-      const periodPropertyViewsResult = await db
+      // Get stats specifically for TODAY (useful if frontend ever needs it specifically)
+      const todayStats = await db
         .select({
-          total: sql<number>`COUNT(*)::int`,
+          totalVisitors: sql<number>`SUM(${siteAnalytics.totalVisitors})::int`,
+          totalPageViews: sql<number>`SUM(${siteAnalytics.totalPageViews})::int`,
         })
-        .from(visitorLogs)
-        .where(and(
-          gte(visitorLogs.timestamp, startDate),
-          lte(visitorLogs.timestamp, endDate),
-          sql`${visitorLogs.propertyId} IS NOT NULL`,
-        ));
+        .from(siteAnalytics)
+        .where(eq(siteAnalytics.date, today));
 
-      const periodPropertyViews = periodPropertyViewsResult[0]?.total || 0;
+      const periodVisitors = periodStats[0]?.totalVisitors || 0;
+      const periodPageViews = periodStats[0]?.totalPageViews || 0;
+      const todayVisitors = todayStats[0]?.totalVisitors || 0;
+      const todayPageViews = todayStats[0]?.totalPageViews || 0;
       
       // Count unique properties viewed (distinct properties in property_analytics)
       const uniquePropertiesViewed = await db
@@ -902,9 +892,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({
         totalVisitors: periodVisitors, // Unique visitors for selected period
-        totalPageViews: periodPropertyViews, // Property page views for selected period
-        todayVisitors: periodStats[0]?.totalVisitors || 0, // Visitors for selected period
-        todayPageViews: periodPropertyViews, // Property page views for selected period
+        totalPageViews: periodPageViews, // Page views for selected period
+        todayVisitors: todayVisitors, // Visitors specifically today
+        todayPageViews: todayPageViews, // Page views specifically today
         activeVisitors: activeVisitors[0]?.count || 0,
         topProperties: topPropertiesWithDetails,
       });
