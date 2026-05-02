@@ -473,8 +473,8 @@ export default function PropertyDetailPage() {
               <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-2 h-[50vh] min-h-[400px] max-h-[500px] rounded-xl overflow-hidden">
                 {/* Main large image */}
                 <div 
-                  className="col-span-2 row-span-2 relative cursor-pointer group" 
-                  onClick={() => setCurrentImageIndex(0)}
+                  className={`col-span-2 row-span-2 relative ${property.media[0].mimeType.startsWith('image/') ? 'cursor-pointer' : ''} group`} 
+                  onClick={() => property.media[0].mimeType.startsWith('image/') && setCurrentImageIndex(0)}
                 >
                   {property.media[0].mimeType.startsWith('image/') ? (
                     <img
@@ -483,12 +483,13 @@ export default function PropertyDetailPage() {
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
-                    <video 
-                      src={property.media[0].url} 
-                      className="w-full h-full object-cover" 
-                      controls
-                      playsInline
-                    />
+                      <video 
+                        src={property.media[0].url} 
+                        className="w-full h-full object-cover" 
+                        controls
+                        playsInline
+                        onClick={(e) => e.stopPropagation()}
+                      />
                   )}
                   {property.media[0].mimeType.startsWith('image/') && (
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
@@ -499,8 +500,8 @@ export default function PropertyDetailPage() {
                 {property.media.slice(1, 5).map((media, idx) => (
                   <div 
                     key={media.id} 
-                    className="relative cursor-pointer group overflow-hidden" 
-                    onClick={() => setCurrentImageIndex(idx + 1)}
+                    className={`relative ${media.mimeType.startsWith('image/') ? 'cursor-pointer' : ''} group overflow-hidden`} 
+                    onClick={() => media.mimeType.startsWith('image/') && setCurrentImageIndex(idx + 1)}
                   >
                     {media.mimeType.startsWith('image/') ? (
                       <img
@@ -514,6 +515,7 @@ export default function PropertyDetailPage() {
                         className="w-full h-full object-cover" 
                         controls
                         playsInline
+                        onClick={(e) => e.stopPropagation()}
                       />
                     )}
                     {media.mimeType.startsWith('image/') && (
