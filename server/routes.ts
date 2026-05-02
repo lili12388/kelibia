@@ -10,6 +10,8 @@ import { insertPropertySubmissionSchema, insertReservationSchema, reservations, 
 import { z } from "zod";
 import { db } from "./db.js";
 import { eq } from "drizzle-orm";
+import fsSync from "fs";
+import crypto from "crypto";
 
 // Ensure uploads directory exists
 const UPLOADS_DIR = path.join(process.cwd(), "public", "uploads");
