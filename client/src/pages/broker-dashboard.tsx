@@ -182,7 +182,7 @@ export default function BrokerDashboardPage() {
       location: submission.location,
       price: submission.price,
       googleMapsUrl: submission.googleMapsUrl || "",
-      requiresDeposit: submission.requiresDeposit,
+      requiresDeposit: (submission as any).requiresDeposit ?? true,
       showOwnerContact: submission.showOwnerContact,
       showGoogleMaps: submission.showGoogleMaps,
       showExactLocation: submission.showExactLocation,
@@ -192,7 +192,7 @@ export default function BrokerDashboardPage() {
       showBathrooms: submission.showBathrooms,
       showSize: submission.showSize,
       showDescription: submission.showDescription,
-      showDeposit: submission.showDeposit,
+      showDeposit: (submission as any).showDeposit ?? true,
     });
     setNeighborhoodMapFile(null);
     setNeighborhoodMapPreview(submission.neighborhoodMapUrl || null);

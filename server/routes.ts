@@ -1511,6 +1511,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin: Delete a property
+  app.delete('/api/broker/properties/:id', requireBrokerAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const property = await storage.getProperty(id);
+      if (!property) {
+        res.status(404).json({ error: "Property not found" });
+        return;
+      }
+
+      await storage.deleteProperty(id);
+      
+      res.json({ success: true, message: "Property deleted successfully" });
+    } catch (error: any) {
+      console.error('Error deleting property:', error);
+      res.status(500).json({ error: error.message || 'Failed to delete property' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

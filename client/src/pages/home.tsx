@@ -13,7 +13,7 @@ export default function HomePage() {
         description="Trouvez votre logement idéal à Hay Khadhra et Cité Olympique, Tunis. Appartements meublés et non meublés vérifiés. Propriétaires, publiez gratuitement vos annonces."
         keywords="location appartement Hay Khadhra, location Cité Olympique, appartement meublé Tunis, immobilier Tunis, location logement, appartement à louer Tunis"
       />
-      <Navbar variant="transparent" />
+      <Navbar />
 
       {/* Hero Section */}
       <section 

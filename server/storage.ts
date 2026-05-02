@@ -11,6 +11,9 @@ import {
   type PropertyWithMedia,
   type SubmissionMedia,
   type PropertyMedia,
+  visitorLogs,
+  propertyAnalytics,
+  reservations,
 } from "../shared/schema.js";
 import { db } from "./db.js";
 import { eq, and } from "drizzle-orm";
@@ -31,6 +34,7 @@ export interface IStorage {
   createProperty(data: Omit<Property, 'id' | 'publishedAt'>): Promise<Property>;
   getProperty(id: string): Promise<PropertyWithMedia | undefined>;
   getAllProperties(): Promise<PropertyWithMedia[]>;
+  deleteProperty(id: string): Promise<void>;
   
   // Property Media
   createPropertyMedia(propertyId: string, filename: string, mimeType: string, url: string, isPrimary: boolean, thumbnailUrl?: string | null): Promise<PropertyMedia>;
@@ -225,6 +229,15 @@ export class DatabaseStorage implements IStorage {
         eq(propertyMedia.propertyId, propertyId),
         eq(propertyMedia.id, mediaId)
       ));
+  }
+
+  async deleteProperty(propertyId: string): Promise<void> {
+    await db.delete(visitorLogs).where(eq(visitorLogs.propertyId, propertyId));
+    await db.delete(propertyAnalytics).where(eq(propertyAnalytics.propertyId, propertyId));
+    await db.delete(propertyMedia).where(eq(propertyMedia.propertyId, propertyId));
+    // Important: import reservations to delete if they exist
+    await db.delete(reservations).where(eq(reservations.propertyId, propertyId));
+    await db.delete(properties).where(eq(properties.id, propertyId));
   }
 }
 

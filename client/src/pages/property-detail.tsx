@@ -816,7 +816,7 @@ export default function PropertyDetailPage() {
                   </div>
 
                   {/* Total Display */}
-                  {reserveDays && reserveDays !== '' && !isNaN(Number(reserveDays)) && (
+                  {String(reserveDays) !== '' && !isNaN(Number(reserveDays)) && (
                     <div className="flex justify-between items-center py-2 text-foreground font-medium">
                       <span className="underline decoration-muted-foreground/30 underline-offset-4">{parseFloat(property.price)} TND × {reserveDays} nuits</span>
                       <span className="text-lg font-bold">{(parseFloat(property.price) * Number(reserveDays)).toLocaleString()} TND</span>
