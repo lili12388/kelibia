@@ -11,11 +11,32 @@ import { z } from "zod";
 import { db } from "./db.js";
 import { eq } from "drizzle-orm";
 
-// Configure multer for file uploads
+// Ensure uploads directory exists
+const UPLOADS_DIR = path.join(process.cwd(), "public", "uploads");
+const TMP_UPLOADS_DIR = path.join(process.cwd(), "public", "uploads", "tmp");
+if (!fsSync.existsSync(UPLOADS_DIR)) {
+  fsSync.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+if (!fsSync.existsSync(TMP_UPLOADS_DIR)) {
+  fsSync.mkdirSync(TMP_UPLOADS_DIR, { recursive: true });
+}
+
+// Configure multer for file uploads using disk storage to avoid OOM errors with large videos
+const storageConfig = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, TMP_UPLOADS_DIR);
+  },
+  filename: function (req, file, cb) {
+    const extension = path.extname(file.originalname) || '';
+    const uniqueSuffix = crypto.randomUUID();
+    cb(null, `${uniqueSuffix}${extension}`);
+  }
+});
+
 const upload = multer({
-  storage: multer.memoryStorage(), // Store in memory before writing to disk
+  storage: storageConfig, // Store on disk instead of memory
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB limit per file
+    fileSize: 800 * 1024 * 1024, // 800MB limit per file to support large video uploads
   },
   fileFilter: (req, file, cb) => {
     const allowedMimes = [
@@ -30,38 +51,32 @@ const upload = multer({
   }
 });
 
-import fsSync from "fs";
-import crypto from "crypto";
-
-// Ensure uploads directory exists
-const UPLOADS_DIR = path.join(process.cwd(), "public", "uploads");
-if (!fsSync.existsSync(UPLOADS_DIR)) {
-  fsSync.mkdirSync(UPLOADS_DIR, { recursive: true });
-}
-
 // Helper function to optimize image and save to disk
-async function saveOptimizedImageToFile(buffer: Buffer, originalName: string): Promise<string> {
+async function saveOptimizedImageToFile(inputPath: string, originalName: string): Promise<string> {
   const filename = `${crypto.randomUUID()}-${originalName.replace(/[^a-zA-Z0-9.-]/g, '_').replace(/\.[^/.]+$/, "")}.webp`;
   const filepath = path.join(UPLOADS_DIR, filename);
   
-  await sharp(buffer)
+  await sharp(inputPath)
     .resize(1920, 1080, { 
       fit: 'inside',
       withoutEnlargement: true 
     })
     .webp({ quality: 85 })
     .toFile(filepath);
+    
+  // Clean up temp file
+  try { await fsSync.promises.unlink(inputPath); } catch(e) { console.error('Failed to delete tmp file:', e); }
   
   return `/uploads/${filename}`;
 }
 
 // Helper function to save video to disk
-async function saveVideoToFile(buffer: Buffer, originalName: string): Promise<string> {
+async function saveVideoToFile(inputPath: string, originalName: string): Promise<string> {
   const extension = path.extname(originalName) || '.mp4';
   const filename = `${crypto.randomUUID()}-${originalName.replace(/[^a-zA-Z0-9.-]/g, '_').replace(/\.[^/.]+$/, "")}${extension}`;
   const filepath = path.join(UPLOADS_DIR, filename);
   
-  await fsSync.promises.writeFile(filepath, buffer);
+  await fsSync.promises.rename(inputPath, filepath);
   return `/uploads/${filename}`;
 }
 
@@ -239,17 +254,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Handle images and videos differently with robust error handling
           if (file.mimetype.startsWith('image/')) {
             try {
-              url = await saveOptimizedImageToFile(file.buffer, file.originalname);
+              url = await saveOptimizedImageToFile(file.path, file.originalname);
               finalMimetype = 'image/webp';
             } catch (imageError) {
               console.error('[SUBMIT] Image optimization failed, using fallback:', imageError);
               // Fallback to direct file save
-              url = await saveVideoToFile(file.buffer, file.originalname);
+              url = await saveVideoToFile(file.path, file.originalname);
               finalMimetype = file.mimetype;
             }
           } else if (file.mimetype.startsWith('video/')) {
             try {
-              url = await saveVideoToFile(file.buffer, file.originalname);
+              url = await saveVideoToFile(file.path, file.originalname);
               finalMimetype = file.mimetype;
               try {
                 thumbnailUrl = await generateVideoThumbnailFile();
@@ -259,11 +274,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }
             } catch (videoError) {
               console.error('[SUBMIT] Video processing failed, using fallback:', videoError);
-              url = await saveVideoToFile(file.buffer, file.originalname);
+              url = await saveVideoToFile(file.path, file.originalname);
               finalMimetype = file.mimetype;
               thumbnailUrl = null;
             }
           } else {
+            // Clean up unsupported file
+            try { await fsSync.promises.unlink(file.path); } catch(e) {}
             continue; // Skip unsupported file types
           }
           
@@ -358,16 +375,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Handle images and videos differently
           if (file.mimetype.startsWith('image/')) {
-            // Optimize image and save
-            url = await saveOptimizedImageToFile(file.buffer, file.originalname);
-            finalMimetype = 'image/webp';
+            try {
+              // Optimize image and save
+              url = await saveOptimizedImageToFile(file.path, file.originalname);
+              finalMimetype = 'image/webp';
+            } catch (err) {
+              console.error('[SUBMIT ADMIN] Image optimization failed:', err);
+              url = await saveVideoToFile(file.path, file.originalname);
+              finalMimetype = file.mimetype;
+            }
           } else if (file.mimetype.startsWith('video/')) {
-            // Save video directly
-            url = await saveVideoToFile(file.buffer, file.originalname);
-            finalMimetype = file.mimetype;
-            // Generate video thumbnail
-            thumbnailUrl = await generateVideoThumbnailFile();
+            try {
+              // Save video directly
+              url = await saveVideoToFile(file.path, file.originalname);
+              finalMimetype = file.mimetype;
+              // Generate video thumbnail
+              try {
+                thumbnailUrl = await generateVideoThumbnailFile();
+              } catch (thumbError) {
+                console.error('[SUBMIT ADMIN] Thumbnail failed:', thumbError);
+                thumbnailUrl = null;
+              }
+            } catch (err) {
+              console.error('[SUBMIT ADMIN] Video save failed:', err);
+              url = await saveVideoToFile(file.path, file.originalname);
+              finalMimetype = file.mimetype;
+            }
           } else {
+            try { await fsSync.promises.unlink(file.path); } catch(e) {}
             continue; // Skip unsupported file types
           }
           
@@ -644,7 +679,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Handle neighborhood map upload if provided
       let neighborhoodMapUrl = req.body.neighborhoodMapUrl || null;
       if (req.file) {
-        neighborhoodMapUrl = await saveOptimizedImageToFile(req.file.buffer, req.file.originalname);
+        neighborhoodMapUrl = await saveOptimizedImageToFile(req.file.path, req.file.originalname);
       }
 
       const updateData = {
