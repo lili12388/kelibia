@@ -541,7 +541,7 @@ export default function PropertyDetailPage() {
 
               {/* Mobile Carousel (Hidden on desktop) */}
               <div 
-                className="md:hidden relative aspect-[4/3] rounded-xl overflow-hidden touch-pan-y"
+                className="md:hidden relative aspect-[4/3] rounded-xl overflow-hidden touch-pan-y z-0"
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
@@ -567,20 +567,20 @@ export default function PropertyDetailPage() {
                     <Button
                       variant="secondary"
                       size="icon"
-                      className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/70 backdrop-blur-md shadow-sm border-0"
+                      className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md shadow-md border-0 z-20 active:scale-95 transition-transform"
                       onClick={(e) => { e.stopPropagation(); prevImage(); }}
                     >
-                      <ChevronLeft className="h-5 w-5" />
+                      <ChevronLeft className="h-6 w-6 text-foreground" />
                     </Button>
                     <Button
                       variant="secondary"
                       size="icon"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/70 backdrop-blur-md shadow-sm border-0"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md shadow-md border-0 z-20 active:scale-95 transition-transform"
                       onClick={(e) => { e.stopPropagation(); nextImage(); }}
                     >
-                      <ChevronRight className="h-5 w-5" />
+                      <ChevronRight className="h-6 w-6 text-foreground" />
                     </Button>
-                    <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs font-semibold px-2 py-1 rounded-md tracking-wider">
+                    <div className="absolute bottom-3 right-3 bg-black/70 text-white text-[10px] font-bold px-2 py-1 rounded-full tracking-wider z-20 backdrop-blur-sm">
                       {currentImageIndex + 1} / {property.media.length}
                     </div>
                   </>
