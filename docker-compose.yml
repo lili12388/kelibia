@@ -21,8 +21,6 @@ services:
   app:
     build: .
     restart: unless-stopped
-    ports:
-      - "80:80"
     environment:
       DATABASE_URL: postgresql://edarna:EdarnaPG2026Secure!@db:5432/edarna
       SESSION_SECRET: khadhra-rentals-session-s3cr3t-2026
@@ -36,6 +34,22 @@ services:
       db:
         condition: service_healthy
 
+  # ── Caddy Reverse Proxy (HTTPS) ──
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
 volumes:
   pgdata:
   uploads:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,3 @@
+laith-kelibia.tn, www.laith-kelibia.tn {
+    reverse_proxy app:80
+}
