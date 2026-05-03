@@ -144,7 +144,7 @@ export default function BrokerBrowsePage() {
 
   // Fetch property analytics for selected property (for detailed view in dialog)
   const { data: propertyAnalytics, isLoading: analyticsLoading } = useQuery<PropertyAnalytics>({
-    queryKey: selectedPropertyId 
+    queryKey: selectedPropertyId
       ? [`/api/admin/analytics/property/${selectedPropertyId}`]
       : [],
     enabled: !!selectedPropertyId && analyticsDialogOpen,
@@ -158,15 +158,15 @@ export default function BrokerBrowsePage() {
   const updateMutation = useMutation({
     mutationFn: async ({ id, data, file }: { id: string; data: any; file: File | null }) => {
       const formData = new FormData();
-      
+
       Object.entries(data).forEach(([key, value]) => {
         formData.append(key, String(value));
       });
-      
+
       if (file) {
         formData.append('neighborhoodMap', file);
       }
-      
+
       return apiRequest('PUT', `/api/broker/submissions/${id}`, formData);
     },
     onSuccess: () => {
@@ -195,12 +195,12 @@ export default function BrokerBrowsePage() {
         method: 'DELETE',
         credentials: 'include',
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.details || error.error || error.message || 'Failed to delete property');
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
@@ -248,7 +248,7 @@ export default function BrokerBrowsePage() {
 
   const handleSetPrimaryMedia = (mediaId: string) => {
     if (!selectedSubmission) return;
-    
+
     setPrimaryMediaMutation.mutate({
       submissionId: selectedSubmission.id,
       mediaId,
@@ -311,18 +311,18 @@ export default function BrokerBrowsePage() {
 
   const handleSaveEdit = () => {
     if (!selectedSubmission) return;
-    
+
     const formData = editForm.getValues();
-    
+
     // Generate bedDetails summary
     const bedSummary = [
       formData.numDoubleBeds > 0 ? `${formData.numDoubleBeds} lit${formData.numDoubleBeds > 1 ? 's' : ''} double${formData.numDoubleBeds > 1 ? 's' : ''}` : null,
       formData.numSingleBeds > 0 ? `${formData.numSingleBeds} lit${formData.numSingleBeds > 1 ? 's' : ''} simple${formData.numSingleBeds > 1 ? 's' : ''}` : null,
       formData.hasSofaBed ? "1 canapé-lit (Salon)" : null
     ].filter(Boolean).join(", ");
-    
+
     const finalData = { ...formData, bedDetails: bedSummary };
-    
+
     updateMutation.mutate({
       id: selectedSubmission.id,
       data: finalData,
@@ -345,7 +345,7 @@ export default function BrokerBrowsePage() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       {/* Admin Header */}
       <div className="bg-primary/10 border-b border-primary/20">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -375,8 +375,8 @@ export default function BrokerBrowsePage() {
           <div className="max-w-md mx-auto">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search properties..." 
+              <Input
+                placeholder="Search properties..."
                 className="pl-10"
               />
             </div>
@@ -436,7 +436,7 @@ export default function BrokerBrowsePage() {
               const primaryMedia = property.media.find(m => m.isPrimary) || property.media[0];
               const submission = submissionsMap.get(property.submissionId);
               const views = viewsMap.get(property.id) ?? 0;
-              
+
               return (
                 <Card key={property.id} className="overflow-hidden hover-elevate transition-all h-full flex flex-col">
                   {/* Property Image */}
@@ -485,7 +485,7 @@ export default function BrokerBrowsePage() {
                           <MapPin className="w-12 h-12 text-muted-foreground" />
                         </div>
                       )}
-                      
+
                       {/* View Count Badge - Top Right */}
                       <div className="absolute top-3 right-3">
                         <Badge className="bg-black/70 backdrop-blur-sm text-white border-0 font-medium text-sm px-2.5 py-1 shadow-lg flex items-center gap-1">
@@ -493,7 +493,7 @@ export default function BrokerBrowsePage() {
                           <span>{views.toLocaleString()}</span>
                         </Badge>
                       </div>
-                      
+
                       {/* Price Badge - Bottom Right with semi-transparent background */}
                       <div className="absolute bottom-3 right-3">
                         <Badge className="bg-gradient-to-r from-[#1a5f3f] to-[#2d8659] text-white border-0 font-bold text-base px-4 py-2 shadow-xl backdrop-blur-sm">
@@ -510,12 +510,12 @@ export default function BrokerBrowsePage() {
                         {property.title}
                       </h3>
                     </Link>
-                    
+
                     <div className="flex items-center gap-1 text-sm text-muted-foreground mb-3">
                       <MapPin className="w-4 h-4 flex-shrink-0" />
                       <span className="line-clamp-1">{property.location}</span>
                     </div>
-                    
+
                     {/* Metadata */}
                     <div className="flex items-center gap-3 mb-4 text-sm flex-wrap">
                       <div className="flex items-center gap-1 text-muted-foreground">
@@ -645,6 +645,15 @@ export default function BrokerBrowsePage() {
               />
             </div>
 
+            <div className="flex items-center space-x-2 p-3 bg-slate-50 rounded-lg border">
+              <Checkbox
+                id="edit-quiet"
+                checked={editForm.watch("isQuietNeighborhood")}
+                onCheckedChange={(checked) => editForm.setValue("isQuietNeighborhood", !!checked)}
+              />
+              <Label htmlFor="edit-quiet" className="font-medium cursor-pointer">Quartier calme / Chill</Label>
+            </div>
+
             {/* Neighborhood Points */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2 p-3 bg-slate-50 rounded-lg border">
@@ -666,11 +675,10 @@ export default function BrokerBrowsePage() {
                           key={opt}
                           type="button"
                           onClick={() => toggleNearby(opt, editForm.watch("nearbyCommodities") || "")}
-                          className={`px-2 py-1 rounded-full text-xs font-medium transition-all border flex items-center gap-1 ${
-                            isSelected 
-                              ? "bg-primary text-primary-foreground border-primary" 
-                              : "bg-muted text-muted-foreground border-border hover:bg-muted"
-                          }`}
+                          className={`px-2 py-1 rounded-full text-xs font-medium transition-all border flex items-center gap-1 ${isSelected
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-muted text-muted-foreground border-border hover:bg-muted"
+                            }`}
                         >
                           {opt}
                           {isSelected ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
@@ -886,6 +894,14 @@ export default function BrokerBrowsePage() {
                   </div>
                   <div className="flex items-center space-x-2 p-2 bg-slate-50 rounded-lg border">
                     <Checkbox
+                      id="edit-utensils"
+                      checked={editForm.watch("hasKitchenUtensils")}
+                      onCheckedChange={(checked) => editForm.setValue("hasKitchenUtensils", !!checked)}
+                    />
+                    <Label htmlFor="edit-utensils">Ustensiles de cuisine</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 p-2 bg-slate-50 rounded-lg border">
+                    <Checkbox
                       id="edit-microwave"
                       checked={editForm.watch("hasMicrowave")}
                       onCheckedChange={(checked) => editForm.setValue("hasMicrowave", !!checked)}
@@ -934,8 +950,8 @@ export default function BrokerBrowsePage() {
                   </div>
                   <div className="col-span-2 space-y-2 p-2 bg-slate-50 rounded-lg border">
                     <Label htmlFor="edit-tv">Télévision</Label>
-                    <Select 
-                      value={editForm.watch("tvType")} 
+                    <Select
+                      value={editForm.watch("tvType")}
                       onValueChange={(val) => editForm.setValue("tvType", val)}
                     >
                       <SelectTrigger id="edit-tv">
@@ -955,7 +971,7 @@ export default function BrokerBrowsePage() {
             {/* Google Maps with visibility toggle */}
             <div className="space-y-2 p-3 bg-slate-50 rounded-lg border">
               <div className="flex items-center justify-between mb-2">
-                <Label htmlFor="edit-google-maps">Google Maps Link (Optional)</Label>
+                <Label htmlFor="edit-google-maps">Google Maps Link</Label>
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="show-google-maps"
@@ -1005,7 +1021,7 @@ export default function BrokerBrowsePage() {
             <div className="space-y-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
               <h4 className="font-semibold text-sm text-blue-900">Additional Visibility Settings</h4>
               <p className="text-xs text-blue-700">More granular control over what users can see</p>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox
@@ -1043,7 +1059,7 @@ export default function BrokerBrowsePage() {
                 <p className="text-xs text-muted-foreground">
                   Upload a map or screenshot showing the neighborhood location
                 </p>
-                
+
                 {neighborhoodMapPreview && (
                   <div className="mt-3">
                     <p className="text-sm font-medium mb-2">Preview:</p>
@@ -1069,18 +1085,17 @@ export default function BrokerBrowsePage() {
                     <p className="text-xs text-purple-700">Select which image/video shows in the property card</p>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-4 gap-3">
                   {selectedSubmission.media.map((media) => (
                     <button
                       key={media.id}
                       type="button"
                       onClick={() => handleSetPrimaryMedia(media.id)}
-                      className={`relative aspect-square rounded-lg overflow-hidden border-4 transition-all hover:scale-105 ${
-                        media.isPrimary 
-                          ? 'border-purple-600 shadow-xl ring-4 ring-purple-300' 
-                          : 'border-gray-300 hover:border-purple-400'
-                      }`}
+                      className={`relative aspect-square rounded-lg overflow-hidden border-4 transition-all hover:scale-105 ${media.isPrimary
+                        ? 'border-purple-600 shadow-xl ring-4 ring-purple-300'
+                        : 'border-gray-300 hover:border-purple-400'
+                        }`}
                     >
                       {media.mimeType.startsWith('video/') ? (
                         media.thumbnailUrl ? (
@@ -1104,7 +1119,7 @@ export default function BrokerBrowsePage() {
                           className="w-full h-full object-cover"
                         />
                       )}
-                      
+
                       {media.isPrimary && (
                         <div className="absolute inset-0 bg-purple-600/20 flex items-center justify-center">
                           <div className="bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">

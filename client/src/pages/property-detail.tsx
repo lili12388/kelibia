@@ -736,43 +736,61 @@ export default function PropertyDetailPage() {
               )}
             </div>
 
-            {/* Bed Details (Enhanced) */}
-            {property.bedDetails && (
-              <div className="flex flex-col gap-3 p-4 bg-muted/30 rounded-xl border border-border/50">
-                <div className="flex items-start gap-3">
-                  <BedDouble className="w-5 h-5 text-primary mt-0.5" />
-                  <div>
-                    <span className="text-sm font-bold text-foreground block">Couchages</span>
-                    <span className="text-sm text-muted-foreground">{property.bedDetails}</span>
-                  </div>
+            {/* Bed Details - Per-Room Card Layout */}
+            {(property.numDoubleBeds > 0 || property.numSingleBeds > 0 || property.hasSofaBed || property.bedDetails) && (
+              <div className="pb-2">
+                <h2 className="text-xl font-semibold mb-4 text-foreground">Couchages</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Bedroom cards — one per bedroom with double beds */}
+                  {Array.from({ length: property.numDoubleBeds || 0 }).map((_, i) => (
+                    <div key={`double-${i}`} className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-background shadow-sm">
+                      <span className="text-2xl leading-none">🛏️</span>
+                      <div>
+                        <span className="text-sm font-semibold text-foreground block">
+                          Chambre {i + 1}
+                        </span>
+                        <span className="text-sm text-muted-foreground">1 lit double</span>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Single-bed rooms — grouped after double-bed rooms */}
+                  {property.numSingleBeds > 0 && (
+                    <div className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-background shadow-sm">
+                      <span className="text-2xl leading-none">🛏️</span>
+                      <div>
+                        <span className="text-sm font-semibold text-foreground block">
+                          Chambre {(property.numDoubleBeds || 0) + 1}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          {property.numSingleBeds} lit{property.numSingleBeds > 1 ? 's' : ''} simple{property.numSingleBeds > 1 ? 's' : ''}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Sofa-bed in living room */}
+                  {property.hasSofaBed && (
+                    <div className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-background shadow-sm">
+                      <span className="text-2xl leading-none">🛋️</span>
+                      <div>
+                        <span className="text-sm font-semibold text-foreground block">Salon</span>
+                        <span className="text-sm text-muted-foreground">1 canapé-lit</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Fallback: show bedDetails text if no structured counts */}
+                  {!property.numDoubleBeds && !property.numSingleBeds && !property.hasSofaBed && property.bedDetails && (
+                    <div className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-background shadow-sm col-span-full">
+                      <span className="text-2xl leading-none">🛏️</span>
+                      <div>
+                        <span className="text-sm font-semibold text-foreground block">Couchages</span>
+                        <span className="text-sm text-muted-foreground">{property.bedDetails}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                
-                {/* Structured Bed Info (if admin provided detailed counts) */}
-                {(property.numDoubleBeds > 0 || property.numSingleBeds > 0 || property.hasSofaBed) && (
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-border/30">
-                    {property.numDoubleBeds > 0 && (
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="bg-primary/5 text-primary border-primary/10">
-                          {property.numDoubleBeds} Lit{property.numDoubleBeds > 1 ? 's' : ''} double{property.numDoubleBeds > 1 ? 's' : ''}
-                        </Badge>
-                      </div>
-                    )}
-                    {property.numSingleBeds > 0 && (
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="bg-primary/5 text-primary border-primary/10">
-                          {property.numSingleBeds} Lit{property.numSingleBeds > 1 ? 's' : ''} simple{property.numSingleBeds > 1 ? 's' : ''}
-                        </Badge>
-                      </div>
-                    )}
-                    {property.hasSofaBed && (
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="bg-primary/5 text-primary border-primary/10">
-                          Canapé-lit
-                        </Badge>
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             )}
 
@@ -825,6 +843,12 @@ export default function PropertyDetailPage() {
                     <span className="font-medium">Cuisinière à gaz</span>
                   </div>
                 )}
+                {property.hasKitchenUtensils && (
+                  <div className="flex items-center gap-3 text-foreground/80">
+                    <Utensils className="w-6 h-6 opacity-70" />
+                    <span className="font-medium">Ustensiles de cuisine</span>
+                  </div>
+                )}
                 {property.hasMicrowave && (
                   <div className="flex items-center gap-3 text-foreground/80">
                     <Microwave className="w-6 h-6 opacity-70" />
@@ -858,7 +882,25 @@ export default function PropertyDetailPage() {
                   </div>
                 )}
               </div>
+
             </div>
+
+            {/* Services à proximité — standalone section below amenities */}
+            {property.nearbyCommodities && (
+              <div className="py-6 border-b border-border">
+                <h2 className="text-xl font-semibold mb-4 text-foreground">Services à proximité</h2>
+                <div className="flex flex-wrap gap-2">
+                  {property.nearbyCommodities.split(", ").filter(Boolean).map((tag, idx) => (
+                    <span
+                      key={idx}
+                      className="text-sm font-medium px-3 py-1.5 bg-background rounded-full border border-slate-200 shadow-sm hover:shadow-md hover:border-primary/30 transition-all"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Description */}
             {(isAdmin || property.showDescription) && (
@@ -930,6 +972,18 @@ export default function PropertyDetailPage() {
                       {property.distanceToBeach}
                     </Badge>
                   )}
+                  {property.locationRepere && (
+                    <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 ml-2">
+                      <MapPin className="w-3 h-3 mr-1" />
+                      {property.locationRepere}
+                    </Badge>
+                  )}
+                  {property.isQuietNeighborhood && (
+                    <Badge variant="secondary" className="bg-green-50 text-green-700 hover:bg-green-100 border-green-200 ml-2">
+                      <span className="mr-1">🤫</span>
+                      Quartier Calme
+                    </Badge>
+                  )}
                 </div>
                 <div className="w-full h-64 md:h-[350px] rounded-xl overflow-hidden border border-border shadow-sm mb-4">
                   <iframe
@@ -941,33 +995,6 @@ export default function PropertyDetailPage() {
                     allowFullScreen
                   ></iframe>
                 </div>
-
-                {/* Neighborhood Points (New) */}
-                {(property.locationRepere || property.nearbyCommodities) && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {property.locationRepere && (
-                      <div className="flex items-start gap-3 p-4 bg-primary/5 rounded-xl border border-primary/10">
-                        <MapPin className="w-5 h-5 text-primary mt-1 shrink-0" />
-                        <p className="text-sm font-medium text-foreground">{property.locationRepere}</p>
-                      </div>
-                    )}
-                    {property.nearbyCommodities && (
-                      <div className="flex flex-col gap-2 p-4 bg-muted/30 rounded-xl border border-border/50">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Utensils className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Services proches</span>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {property.nearbyCommodities.split(", ").filter(Boolean).map((tag, idx) => (
-                            <span key={idx} className="text-sm font-medium px-2 py-1 bg-background rounded-md border border-border/50">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             )}
           </div>

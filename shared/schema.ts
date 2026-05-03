@@ -112,6 +112,8 @@ export const properties = pgTable("properties", {
   hasWiFi: boolean("has_wifi").notNull().default(false),
   hasParking: boolean("has_parking").notNull().default(false),
   hasSeaView: boolean("has_sea_view").notNull().default(false),
+  hasKitchenUtensils: boolean("has_kitchen_utensils").notNull().default(false),
+  isQuietNeighborhood: boolean("is_quiet_neighborhood").notNull().default(false),
   nearbyPlaces: text("nearby_places").default('[]'),
   neighborhoodMapUrl: text("neighborhood_map_url"), // URL to neighborhood map image
   // Admin visibility controls (copied from submission) - granular per field

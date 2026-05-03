@@ -368,6 +368,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         bedDetails: req.body.bedDetails || null,
         locationRepere: req.body.locationRepere || null,
         nearbyCommodities: req.body.nearbyCommodities || null,
+        hasKitchenUtensils: req.body.hasKitchenUtensils === 'true',
+        isQuietNeighborhood: req.body.isQuietNeighborhood === 'true',
         checkInTime: req.body.checkInTime || "14:00",
         checkOutTime: req.body.checkOutTime || "11:00",
         cancellationPolicy: req.body.cancellationPolicy || null,
@@ -524,6 +526,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         showBathrooms: submissionWithMedia.showBathrooms ?? true,
         showSize: submissionWithMedia.showSize ?? true,
         showDescription: submissionWithMedia.showDescription ?? true,
+        hasKitchenUtensils: submissionWithMedia.hasKitchenUtensils ?? false,
+        isQuietNeighborhood: submissionWithMedia.isQuietNeighborhood ?? false,
       });
 
       // Copy media to published property
@@ -723,6 +727,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         showBathrooms: submission.showBathrooms ?? true,
         showSize: submission.showSize ?? true,
         showDescription: submission.showDescription ?? true,
+        hasKitchenUtensils: submission.hasKitchenUtensils ?? false,
+        isQuietNeighborhood: submission.isQuietNeighborhood ?? false,
       });
 
       // Copy media to published property
@@ -815,6 +821,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         showBathrooms: req.body.showBathrooms === 'true',
         showSize: req.body.showSize === 'true',
         showDescription: req.body.showDescription === 'true',
+        hasKitchenUtensils: req.body.hasKitchenUtensils === 'true',
+        isQuietNeighborhood: req.body.isQuietNeighborhood === 'true',
       };
 
       // Update submission in database
