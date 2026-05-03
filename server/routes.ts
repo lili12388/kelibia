@@ -405,12 +405,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         showDescription: req.body.showDescription !== 'false',
       });
 
+      console.log('[SUBMIT ADMIN] Parsed property data successfully');
+      
       // Create property submission with approved status
+      console.log('[SUBMIT ADMIN] Creating submission...');
       const submission = await storage.createPropertySubmission(propertyData);
+      console.log('[SUBMIT ADMIN] Created submission with ID:', submission.id);
       
       // Update approved timestamp
       const now = new Date();
       await storage.updatePropertySubmissionStatus(submission.id, 'approved', now);
+      console.log('[SUBMIT ADMIN] Updated status to approved');
 
       // Save and optimize uploaded media files for submission
       const files = req.files as Express.Multer.File[];
@@ -546,18 +551,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         submissionId: submission.id 
       });
     } catch (error) {
-      console.error('Error submitting admin property:', error);
+      console.error('[SUBMIT ADMIN] FULL ERROR DETAILS:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
       if (error instanceof z.ZodError) {
-        res.status(400).json({ 
-          error: 'Validation error', 
-          details: error.errors 
-        });
-      } else {
-          res.status(500).json({ 
-          error: 'Failed to submit property',
-          message: error instanceof Error ? error.message : 'Unknown error'
+        console.log('[SUBMIT ADMIN] Validation failed:', error.errors);
+        return res.status(400).json({ 
+          error: 'Validation failed', 
+          details: error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
         });
       }
+      res.status(500).json({ error: 'Failed to submit property', message: error instanceof Error ? error.message : String(error) });
     }
   });
 
