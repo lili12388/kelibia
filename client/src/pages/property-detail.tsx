@@ -469,7 +469,18 @@ export default function PropertyDetailPage() {
 
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 pb-32 lg:pb-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-32 lg:pb-10">
+
+        {/* Back Navigation */}
+        <div className="mb-4 animate-fade-in">
+          <button 
+            onClick={() => window.history.length > 1 ? window.history.back() : window.location.href = '/'}
+            className="inline-flex items-center gap-1.5 text-primary hover:opacity-70 transition-all py-2 group cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:-translate-x-1" />
+            <span className="text-sm sm:text-base font-bold tracking-tight">Accueil</span>
+          </button>
+        </div>
 
         {/* Title & Location at the top (Airbnb style) */}
         <div className="mb-6 animate-fade-in-up">
