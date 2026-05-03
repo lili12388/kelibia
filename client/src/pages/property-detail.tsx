@@ -1001,131 +1001,137 @@ export default function PropertyDetailPage() {
 
           {/* Right Column - Booking / Contact Card (Sticky) */}
           <div className="lg:col-span-1 animate-fade-in-up" style={{ animationDelay: '150ms' }}>
-            <Card className="sticky top-24 shadow-xl border-border/60 overflow-hidden">
-              <CardContent className="p-3 sm:p-6">
-                <div>
-                  {(isAdmin || property.showPrice) && (
-                    <div className="mb-6 flex items-baseline gap-1.5">
-                      <span className="text-3xl font-black text-foreground">
-                        {parseFloat(property.price).toLocaleString()} TND
+            <Card className="sticky top-24 shadow-2xl border-border/40 overflow-hidden rounded-2xl">
+              <CardContent className="p-0">
+
+                {/* Price Header */}
+                {(isAdmin || property.showPrice) && (
+                  <div className="px-5 pt-5 pb-3 border-b border-border/40">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-3xl font-black text-foreground tracking-tight">
+                        {parseFloat(property.price).toLocaleString()}
                       </span>
-                      <span className="text-base text-muted-foreground font-semibold">/ nuit</span>
+                      <span className="text-base font-bold text-foreground">TND</span>
+                      <span className="text-xs text-muted-foreground font-medium ml-1">/ nuit</span>
                       {isAdmin && !property.showPrice && (
                         <Badge variant="secondary" className="text-[10px] ml-2">Admin</Badge>
                       )}
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
-                <div id="booking-widget" className="space-y-4 border rounded-xl p-2 sm:p-4 bg-muted/30 mb-6">
+                {/* Booking Widget */}
+                <div id="booking-widget" className="px-4 py-4 space-y-2.5">
 
-                  {/* Booking Widget Inputs */}
-                  <div className="border-2 border-border/60 rounded-xl bg-card overflow-hidden shadow-sm transition-all focus-within:border-primary/30 focus-within:ring-2 focus-within:ring-primary/10">
-                    <div className="flex items-center">
-                      {/* Arrivée -> Du */}
-                      <div className="flex-1 p-3 sm:p-5 border-r border-border/60 bg-transparent relative group">
-                        <label className="block text-[10px] font-black uppercase text-primary mb-2 tracking-widest">
-                          Du
-                        </label>
-                        <div className="grid grid-cols-2 gap-3">
-                          <input
-                            type="number"
-                            placeholder="Jour"
-                            className="w-full text-lg sm:text-xl font-black bg-muted/40 hover:bg-muted/70 focus:bg-background rounded-xl px-2 py-3 sm:py-4 outline-none text-center transition-all border border-transparent focus:border-primary/30 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            value={startDay}
-                            id="start-day-input"
-                            onChange={(e) => {
-                              let val = e.target.value;
-                              if (val.length > 2) val = val.slice(0, 2);
-                              setStartDay(val);
-                              setHasInterference(false);
-                            }}
-                            min="1"
-                            max="31"
-                          />
-                          <select
-                            className="w-full text-base sm:text-lg font-black bg-muted/40 hover:bg-muted/70 focus:bg-background rounded-xl px-1 py-3 sm:py-4 outline-none cursor-pointer text-foreground transition-all border border-transparent focus:border-primary/30"
-                            value={startMonth}
-                            onChange={(e) => {
-                              setStartMonth(e.target.value);
-                              setHasInterference(false);
-                            }}
-                          >
-                            <option value="05">Mai</option>
-                            <option value="06">Juin</option>
-                            <option value="07">Juil.</option>
-                            <option value="08">Août</option>
-                            <option value="09">Sept.</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      {/* Départ -> Au */}
-                      <div className="flex-1 p-3 sm:p-5 bg-transparent relative group">
-                        <label className="block text-[10px] font-black uppercase text-primary mb-2 tracking-widest">
-                          Au
-                        </label>
-                        <div className="grid grid-cols-2 gap-3">
-                          <input
-                            type="number"
-                            placeholder="Jour"
-                            className="w-full text-lg sm:text-xl font-black bg-muted/40 hover:bg-muted/70 focus:bg-background rounded-xl px-2 py-3 sm:py-4 outline-none text-center transition-all border border-transparent focus:border-primary/30 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            value={endDay}
-                            id="end-day-input"
-                            onChange={(e) => {
-                              let val = e.target.value;
-                              if (val.length > 2) val = val.slice(0, 2);
-                              setEndDay(val);
-                              setHasInterference(false);
-                            }}
-                            min="1"
-                            max="31"
-                          />
-                          <select
-                            className="w-full text-base sm:text-lg font-black bg-muted/40 hover:bg-muted/70 focus:bg-background rounded-xl px-1 py-3 sm:py-4 outline-none cursor-pointer text-foreground transition-all border border-transparent focus:border-primary/30"
-                            value={endMonth}
-                            onChange={(e) => {
-                              setEndMonth(e.target.value);
-                              setHasInterference(false);
-                            }}
-                          >
-                            <option value="05">Mai</option>
-                            <option value="06">Juin</option>
-                            <option value="07">Juil.</option>
-                            <option value="08">Août</option>
-                            <option value="09">Sept.</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Durée */}
-                    <div className="border-t border-border/60 p-3.5 flex items-center justify-between bg-muted/10">
-                      <label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Durée (nuits)</label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          className="w-16 text-base font-bold outline-none bg-background rounded-md px-2 py-1 text-right shadow-sm border border-border/50 focus:border-primary/50 transition-colors [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                          value={reserveDays}
-                          onChange={handleReserveDaysChange}
-                          placeholder="Ex: 3"
-                          min="1"
-                        />
-                      </div>
+                  {/* ── DU (Arrivée) ── */}
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-primary mb-1.5">
+                      📅 Arrivée — Du
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        placeholder="Jour"
+                        id="start-day-input"
+                        className="w-16 shrink-0 text-lg font-black text-center bg-muted/50 hover:bg-muted/80 focus:bg-background rounded-lg px-2 py-2 outline-none border-2 border-transparent focus:border-primary/40 transition-all [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        value={startDay}
+                        onChange={(e) => {
+                          let val = e.target.value;
+                          if (val.length > 2) val = val.slice(0, 2);
+                          setStartDay(val);
+                          setHasInterference(false);
+                        }}
+                        min="1"
+                        max="31"
+                      />
+                      <select
+                        className="flex-1 text-sm font-semibold bg-muted/50 hover:bg-muted/80 focus:bg-background rounded-lg px-3 py-2 outline-none cursor-pointer text-foreground border-2 border-transparent focus:border-primary/40 transition-all appearance-none"
+                        value={startMonth}
+                        onChange={(e) => {
+                          setStartMonth(e.target.value);
+                          setHasInterference(false);
+                        }}
+                      >
+                        <option value="05">Mai</option>
+                        <option value="06">Juin</option>
+                        <option value="07">Juillet</option>
+                        <option value="08">Août</option>
+                        <option value="09">Septembre</option>
+                      </select>
                     </div>
                   </div>
 
-                  {/* Total Display */}
+                  {/* ── Nights divider ── */}
+                  <div className="flex items-center gap-2 py-0.5">
+                    <div className="flex-1 h-px bg-border/50" />
+                    <div className="flex items-center gap-1 bg-muted/60 rounded-full px-2.5 py-1">
+                      <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Durée</span>
+                      <input
+                        type="number"
+                        className="w-8 text-xs font-black text-center bg-transparent outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-foreground"
+                        value={reserveDays}
+                        onChange={handleReserveDaysChange}
+                        placeholder="0"
+                        min="1"
+                      />
+                      <span className="text-[10px] text-muted-foreground font-semibold">nuits</span>
+                    </div>
+                    <div className="flex-1 h-px bg-border/50" />
+                  </div>
+
+                  {/* ── AU (Départ) ── */}
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-primary mb-1.5">
+                      🏁 Départ — Au
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        placeholder="Jour"
+                        id="end-day-input"
+                        className="w-16 shrink-0 text-lg font-black text-center bg-muted/50 hover:bg-muted/80 focus:bg-background rounded-lg px-2 py-2 outline-none border-2 border-transparent focus:border-primary/40 transition-all [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        value={endDay}
+                        onChange={(e) => {
+                          let val = e.target.value;
+                          if (val.length > 2) val = val.slice(0, 2);
+                          setEndDay(val);
+                          setHasInterference(false);
+                        }}
+                        min="1"
+                        max="31"
+                      />
+                      <select
+                        className="flex-1 text-sm font-semibold bg-muted/50 hover:bg-muted/80 focus:bg-background rounded-lg px-3 py-2 outline-none cursor-pointer text-foreground border-2 border-transparent focus:border-primary/40 transition-all appearance-none"
+                        value={endMonth}
+                        onChange={(e) => {
+                          setEndMonth(e.target.value);
+                          setHasInterference(false);
+                        }}
+                      >
+                        <option value="05">Mai</option>
+                        <option value="06">Juin</option>
+                        <option value="07">Juillet</option>
+                        <option value="08">Août</option>
+                        <option value="09">Septembre</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* ── Live Total ── */}
                   {String(reserveDays) !== '' && !isNaN(Number(reserveDays)) && (
-                    <div className="flex justify-between items-center py-2 text-foreground font-medium">
-                      <span className="underline decoration-muted-foreground/30 underline-offset-4">{parseFloat(property.price)} TND × {reserveDays} nuits</span>
-                      <span className="text-lg font-bold">{(parseFloat(property.price) * Number(reserveDays)).toLocaleString()} TND</span>
+                    <div className="flex justify-between items-center bg-muted/40 rounded-xl px-4 py-3 border border-border/40">
+                      <span className="text-sm text-muted-foreground font-medium">
+                        {parseFloat(property.price).toLocaleString()} TND × {reserveDays} nuits
+                      </span>
+                      <span className="text-lg font-black text-foreground">
+                        {(parseFloat(property.price) * Number(reserveDays)).toLocaleString()} TND
+                      </span>
                     </div>
                   )}
 
-                  {/* Interference Warning */}
+                  {/* ── Interference Warning ── */}
                   {hasInterference && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 text-red-600 text-sm animate-in fade-in zoom-in-95">
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2 text-red-600 text-sm animate-in fade-in zoom-in-95">
                       <TriangleAlert className="w-5 h-5 flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="font-semibold">Dates non disponibles</p>
@@ -1134,25 +1140,26 @@ export default function PropertyDetailPage() {
                     </div>
                   )}
 
-                  <div className="pt-2">
-                    <Button
-                      className="w-full py-6 text-lg font-black rounded-xl shadow-lg transition-all active:scale-[0.98] bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-95 text-white border-0"
-                      onClick={onReserveClick}
-                    >
-                      Réserver
-                    </Button>
-                  </div>
+                  {/* ── CTA Button ── */}
+                  <Button
+                    className="w-full py-4 text-sm font-black rounded-xl shadow-lg shadow-rose-500/20 transition-all active:scale-[0.98] bg-gradient-to-r from-[#FF385C] to-[#E31C5F] hover:from-[#E0314F] hover:to-[#C8185A] text-white border-0"
+                    onClick={onReserveClick}
+                  >
+                    Réserver
+                  </Button>
                 </div>
 
-                {/* Legacy Phone Block - Hidden if using the new widget */}
+                {/* Phone */}
                 {!hasInterference && (
-                  <div className="flex items-start gap-3 mt-4 justify-center border-t border-border pt-4">
-                    <Phone className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="px-5 pb-4 pt-3 border-t border-border/40 flex items-center gap-3 justify-center">
+                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <Phone className="h-4 w-4 text-primary" />
+                    </div>
                     <div>
-                      <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Téléphone</div>
+                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Téléphone</div>
                       <a
                         href={`tel:${BROKER_PHONE}`}
-                        className="text-lg font-bold text-foreground hover:text-primary transition-colors"
+                        className="text-base font-bold text-foreground hover:text-primary transition-colors"
                       >
                         {BROKER_PHONE_DISPLAY}
                       </a>
@@ -1162,7 +1169,7 @@ export default function PropertyDetailPage() {
 
                 {/* Admin Modify Button */}
                 {isAdmin && submission && (
-                  <div className="pt-6 mt-6 border-t border-border">
+                  <div className="px-5 pb-5 pt-0">
                     <Button
                       variant="outline"
                       className="w-full bg-blue-50/50 hover:bg-blue-100 text-blue-700 border-blue-200"

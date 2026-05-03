@@ -368,8 +368,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         bedDetails: req.body.bedDetails || null,
         locationRepere: req.body.locationRepere || null,
         nearbyCommodities: req.body.nearbyCommodities || null,
-        hasKitchenUtensils: req.body.hasKitchenUtensils === 'true',
-        isQuietNeighborhood: req.body.isQuietNeighborhood === 'true',
         checkInTime: req.body.checkInTime || "14:00",
         checkOutTime: req.body.checkOutTime || "11:00",
         cancellationPolicy: req.body.cancellationPolicy || null,

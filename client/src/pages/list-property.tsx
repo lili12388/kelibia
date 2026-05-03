@@ -139,8 +139,6 @@ export default function ListPropertyPage() {
       ownerPhone: "",
       status: "pending",
       googleMapsUrl: "",
-      nearbyCommodities: "",
-      neighborhoodMapUrl: null,
     },
   });
 
