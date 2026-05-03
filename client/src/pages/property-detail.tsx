@@ -1165,10 +1165,10 @@ export default function PropertyDetailPage() {
       )}
 
       {/* Mobile Floating Booking Bar - Balanced & Refined */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-background/98 backdrop-blur-lg border-t border-border/40 p-4 pb-6 flex flex-col gap-3 z-50 shadow-[0_-8px_25px_-5px_rgba(0,0,0,0.12)] animate-slide-up">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-background/98 backdrop-blur-lg border-t border-border/40 p-4 pb-6 flex flex-col gap-3 z-[100] shadow-[0_-12px_40px_-10px_rgba(0,0,0,0.2)] animate-slide-up">
 
         {/* Row 1: Price and Date Selection (Expanded) */}
-        <div className="flex items-center justify-between gap-6">
+        <div className="flex items-center justify-between gap-2">
           <div className="flex flex-col flex-shrink-0">
             <div className="flex items-baseline gap-1">
               <span className="text-xl font-black text-foreground tracking-tighter">
@@ -1181,8 +1181,8 @@ export default function PropertyDetailPage() {
           {/* Date Picker (Expanded to fill space) */}
           <div className="flex-1 flex gap-2">
             {/* Du */}
-            <div className="flex-1 bg-muted/40 rounded-xl p-2 border border-border/60 shadow-sm transition-all active:bg-muted/60">
-              <span className="block text-[9px] font-black uppercase text-primary/70 mb-1 text-center leading-none">Du</span>
+            <div className="flex-1 bg-muted/40 rounded-xl p-2 border border-border/60 shadow-sm transition-all active:bg-muted/60 relative">
+              <span className="block text-[9px] font-black uppercase text-primary/70 mb-1 text-center leading-none tracking-tight">Du</span>
               <div className="flex gap-2 items-center justify-center">
                 <input
                   type="number"
@@ -1206,8 +1206,8 @@ export default function PropertyDetailPage() {
             </div>
 
             {/* Au */}
-            <div className="flex-1 bg-muted/40 rounded-xl p-2 border border-border/60 shadow-sm transition-all active:bg-muted/60">
-              <span className="block text-[9px] font-black uppercase text-primary/70 mb-1 text-center leading-none">Au</span>
+            <div className="flex-1 bg-muted/40 rounded-xl p-2 border border-border/60 shadow-sm transition-all active:bg-muted/60 relative">
+              <span className="block text-[9px] font-black uppercase text-primary/70 mb-1 text-center leading-none tracking-tight">Au</span>
               <div className="flex gap-2 items-center justify-center">
                 <input
                   type="number"
