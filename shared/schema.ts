@@ -14,6 +14,19 @@ export const propertySubmissions = pgTable("property_submissions", {
   hasLivingRoom: boolean("has_living_room").notNull().default(false), // whether property has a living room/salon
   hasFridge: boolean("has_fridge").notNull().default(false), // whether kitchen has a fridge
   hasGasStove: boolean("has_gas_stove").notNull().default(false), // whether house has a gas stove/cooker
+  hasMicrowave: boolean("has_microwave").notNull().default(false),
+  hasCoffeeMaker: boolean("has_coffee_maker").notNull().default(false),
+  hasBalcony: boolean("has_balcony").notNull().default(false),
+  hasGarden: boolean("has_garden").notNull().default(false),
+  hasLinens: boolean("has_linens").notNull().default(false),
+  hasTowels: boolean("has_towels").notNull().default(false),
+  bedDetails: text("bed_details"), // e.g. "1 lit double, 2 lits simples"
+  locationRepere: text("location_repere"), // e.g. "5 min à pieds de la plage"
+  nearbyCommodities: text("nearby_commodities"), // e.g. "Épicerie, Pharmacie à 200m"
+  checkInTime: text("check_in_time").default("14:00"),
+  checkOutTime: text("check_out_time").default("11:00"),
+  cancellationPolicy: text("cancellation_policy"),
+  houseRules: text("house_rules"), // e.g. "Non-fumeur, Pas d'animaux"
   description: text("description").notNull(),
   rooms: integer("rooms").notNull(),
   bathrooms: integer("bathrooms").notNull(),
@@ -62,6 +75,19 @@ export const properties = pgTable("properties", {
   hasLivingRoom: boolean("has_living_room").notNull().default(false), // whether property has a living room/salon
   hasFridge: boolean("has_fridge").notNull().default(false), // whether kitchen has a fridge
   hasGasStove: boolean("has_gas_stove").notNull().default(false), // whether house has a gas stove/cooker
+  hasMicrowave: boolean("has_microwave").notNull().default(false),
+  hasCoffeeMaker: boolean("has_coffee_maker").notNull().default(false),
+  hasBalcony: boolean("has_balcony").notNull().default(false),
+  hasGarden: boolean("has_garden").notNull().default(false),
+  hasLinens: boolean("has_linens").notNull().default(false),
+  hasTowels: boolean("has_towels").notNull().default(false),
+  bedDetails: text("bed_details"),
+  locationRepere: text("location_repere"),
+  nearbyCommodities: text("nearby_commodities"),
+  checkInTime: text("check_in_time").default("14:00"),
+  checkOutTime: text("check_out_time").default("11:00"),
+  cancellationPolicy: text("cancellation_policy"),
+  houseRules: text("house_rules"),
   description: text("description").notNull(),
   rooms: integer("rooms").notNull(),
   bathrooms: integer("bathrooms").notNull(),
@@ -217,6 +243,13 @@ export const insertPropertySubmissionSchema = createInsertSchema(propertySubmiss
   sizeM2: z.number().min(0, "Size must be 0 or greater").default(0), // Made optional, defaults to 0
   ownerEmail: z.string().email("Valid email required"),
   ownerPhone: z.string().min(8, "Valid phone number required"),
+  bedDetails: z.string().optional(),
+  locationRepere: z.string().optional(),
+  nearbyCommodities: z.string().optional(),
+  checkInTime: z.string().optional().default("14:00"),
+  checkOutTime: z.string().optional().default("11:00"),
+  cancellationPolicy: z.string().optional(),
+  houseRules: z.string().optional(),
 });
 
 export const insertSubmissionMediaSchema = createInsertSchema(submissionMedia).omit({

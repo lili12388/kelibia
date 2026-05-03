@@ -104,6 +104,19 @@ export default function ListPropertyPage() {
       hasLivingRoom: false,
       hasFridge: false,
       hasGasStove: false,
+      hasMicrowave: false,
+      hasCoffeeMaker: false,
+      hasBalcony: false,
+      hasGarden: false,
+      hasLinens: false,
+      hasTowels: false,
+      bedDetails: "",
+      locationRepere: "",
+      nearbyCommodities: "",
+      checkInTime: "14:00",
+      checkOutTime: "11:00",
+      cancellationPolicy: "",
+      houseRules: "",
       hasAC: false,
       hasWiFi: false,
       hasParking: false,
@@ -627,53 +640,202 @@ export default function ListPropertyPage() {
                       </FormItem>
                     )}
                   />
+
+                  <FormField
+                    control={form.control}
+                    name="bedDetails"
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel>Précisions sur le Couchage</FormLabel>
+                        <FormControl>
+                          <Input placeholder="ex: 1 lit double, 2 lits simples, 1 canapé-lit" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
 
-                {/* Kitchen Amenities - Fridge and Gas Stove */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="hasFridge"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>La cuisine a-t-elle un frigo?</FormLabel>
-                        <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-fridge">
-                              <SelectValue placeholder="Choisir" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="false">Non</SelectItem>
-                            <SelectItem value="true">Oui</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                {/* Kitchen Amenities & Logistics */}
+                <div className="space-y-4 pt-4 border-t border-border/50">
+                  <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Cuisine & Logistique</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="hasFridge"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Réfrigérateur?</FormLabel>
+                          <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Choisir" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="false">Non</SelectItem>
+                              <SelectItem value="true">Oui</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="hasGasStove"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Y a-t-il une cuisinière à gaz?</FormLabel>
-                        <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-gas-stove">
-                              <SelectValue placeholder="Choisir" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="false">Non</SelectItem>
-                            <SelectItem value="true">Oui</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    <FormField
+                      control={form.control}
+                      name="hasGasStove"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Cuisinière à gaz?</FormLabel>
+                          <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Choisir" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="false">Non</SelectItem>
+                              <SelectItem value="true">Oui</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="hasMicrowave"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Micro-ondes?</FormLabel>
+                          <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Choisir" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="false">Non</SelectItem>
+                              <SelectItem value="true">Oui</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="hasCoffeeMaker"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Machine à café?</FormLabel>
+                          <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Choisir" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="false">Non</SelectItem>
+                              <SelectItem value="true">Oui</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="hasLinens"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Draps fournis?</FormLabel>
+                          <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Choisir" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="false">Non</SelectItem>
+                              <SelectItem value="true">Oui</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="hasTowels"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Serviettes fournies?</FormLabel>
+                          <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Choisir" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="false">Non</SelectItem>
+                              <SelectItem value="true">Oui</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="hasBalcony"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Balcon / Terrasse?</FormLabel>
+                          <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Choisir" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="false">Non</SelectItem>
+                              <SelectItem value="true">Oui</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="hasGarden"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Jardin / Accès extérieur?</FormLabel>
+                          <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Choisir" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="false">Non</SelectItem>
+                              <SelectItem value="true">Oui</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
 
                 {/* Additional Amenities (AC, WiFi, Parking, Sea View) */}
@@ -767,16 +929,116 @@ export default function ListPropertyPage() {
                   />
                 </div>
 
+                {/* Neighborhood Information */}
+                <div className="space-y-4 pt-4 border-t border-border/50">
+                  <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Quartier & Localisation</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="locationRepere"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Point de repère</FormLabel>
+                          <FormControl>
+                            <Input placeholder="ex: 5 min à pieds de la plage de Kelibia" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="nearbyCommodities"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Commodités à proximité</FormLabel>
+                          <FormControl>
+                            <Input placeholder="ex: Épicerie, Restaurant, Pharmacie à 200m" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* Rules & Terms */}
+                <div className="space-y-4 pt-4 border-t border-border/50">
+                  <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Règlement & Réassurance</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="checkInTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Heure d'entrée (Check-in)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="ex: 14:00" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="checkOutTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Heure de sortie (Check-out)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="ex: 11:00" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="cancellationPolicy"
+                      render={({ field }) => (
+                        <FormItem className="md:col-span-2">
+                          <FormLabel>Conditions d'annulation</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="ex: Annulation gratuite jusqu'à 7 jours avant l'arrivée. Acompte de 30% requis."
+                              className="min-h-20"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="houseRules"
+                      render={({ field }) => (
+                        <FormItem className="md:col-span-2">
+                          <FormLabel>Règles simples</FormLabel>
+                          <FormControl>
+                            <Input placeholder="ex: Animaux non admis, Logement non-fumeur" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
                 {/* Description - Moved to bottom */}
                 <FormField
                   control={form.control}
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel>Description détaillée</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="Décrivez votre propriété en détail..."
+                          placeholder="Décrivez votre propriété en détail (points forts, ambiance...)"
                           className="min-h-32"
                           data-testid="input-description"
                           {...field} 

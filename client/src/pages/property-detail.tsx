@@ -20,7 +20,8 @@ import {
   ArrowLeft, MapPin, BedDouble, Bath, Phone, Mail,
   ChevronLeft, ChevronRight, User, Pencil, ChefHat,
   Refrigerator, Flame, Wind, Wifi, Car, Waves, Users,
-  TriangleAlert
+  TriangleAlert, Microwave, Coffee, Home, Utensils, Info, Clock, ShieldCheck,
+  Ban, Smoke, NotebookText
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -734,6 +735,17 @@ export default function PropertyDetailPage() {
               )}
             </div>
 
+            {/* Bed Details (New) */}
+            {property.bedDetails && (
+              <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-xl border border-border/50">
+                <BedDouble className="w-5 h-5 text-primary mt-0.5" />
+                <div>
+                  <span className="text-sm font-bold text-foreground block">Couchages</span>
+                  <span className="text-sm text-muted-foreground">{property.bedDetails}</span>
+                </div>
+              </div>
+            )}
+
             {/* Availability Timeline */}
             <div className="pt-2 pb-6 border-b border-border">
               <h2 className="text-xl font-semibold mb-2 text-foreground">Disponibilités</h2>
@@ -743,48 +755,8 @@ export default function PropertyDetailPage() {
               />
             </div>
 
-            {/* Description */}
-            {(isAdmin || property.showDescription) && (
-              <div className="pb-6">
-                <h2 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
-                  À propos de ce logement
-                  {isAdmin && !property.showDescription && (
-                    <Badge variant="secondary" className="text-[10px]">Admin</Badge>
-                  )}
-                </h2>
-                <div className="text-foreground/90 whitespace-pre-line leading-relaxed mb-8">
-                  {property.description}
-                </div>
-
-                {/* Google Maps Embed Location - Moved right under description */}
-                {property.location && (
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-foreground">Où se situe le logement</h3>
-                      {property.distanceToBeach && (
-                        <Badge variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200">
-                          <Waves className="w-3 h-3 mr-1" />
-                          {property.distanceToBeach}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="w-full h-64 md:h-[350px] rounded-xl overflow-hidden border border-border shadow-sm">
-                      <iframe
-                        width="100%"
-                        height="100%"
-                        frameBorder="0"
-                        style={{ border: 0 }}
-                        src={`https://www.google.com/maps?q=${encodeURIComponent(property.location + ', Tunisia')}&output=embed`}
-                        allowFullScreen
-                      ></iframe>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Amenities Grid (Ce que propose ce logement) */}
-            <div className="pt-6 border-t border-border">
+            {/* Amenities Grid (Ce que propose ce logement) - Moved up */}
+            <div className="py-6 border-b border-border">
               <h2 className="text-xl font-semibold mb-6 text-foreground">Ce que propose ce logement</h2>
               <div className="grid grid-cols-2 gap-y-4 gap-x-8">
                 {property.hasWiFi && (
@@ -823,8 +795,132 @@ export default function PropertyDetailPage() {
                     <span className="font-medium">Cuisinière à gaz</span>
                   </div>
                 )}
+                {property.hasMicrowave && (
+                  <div className="flex items-center gap-3 text-foreground/80">
+                    <Microwave className="w-6 h-6 opacity-70" />
+                    <span className="font-medium">Micro-ondes</span>
+                  </div>
+                )}
+                {property.hasCoffeeMaker && (
+                  <div className="flex items-center gap-3 text-foreground/80">
+                    <Coffee className="w-6 h-6 opacity-70" />
+                    <span className="font-medium">Machine à café</span>
+                  </div>
+                )}
+                {property.hasLinens && (
+                  <div className="flex items-center gap-3 text-foreground/80">
+                    <NotebookText className="w-6 h-6 opacity-70" />
+                    <span className="font-medium">Draps fournis</span>
+                  </div>
+                )}
+                {property.hasTowels && (
+                  <div className="flex items-center gap-3 text-foreground/80">
+                    <NotebookText className="w-6 h-6 opacity-70" />
+                    <span className="font-medium">Serviettes fournies</span>
+                  </div>
+                )}
               </div>
             </div>
+
+            {/* Description */}
+            {(isAdmin || property.showDescription) && (
+              <div className="pb-6">
+                <h2 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                  À propos de ce logement
+                  {isAdmin && !property.showDescription && (
+                    <Badge variant="secondary" className="text-[10px]">Admin</Badge>
+                  )}
+                </h2>
+                <div className="text-foreground/90 whitespace-pre-line leading-relaxed mb-8">
+                  {property.description}
+                </div>
+
+            {/* Rules & Terms (New) - Moved before Map */}
+            <div className="py-6 border-t border-border">
+              <h2 className="text-xl font-semibold mb-6 text-foreground">Règles et conditions</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Entry/Exit Times */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                      <Clock className="w-5 h-5 text-foreground" />
+                    </div>
+                    <div>
+                      <span className="text-sm text-muted-foreground block">Heures d'arrivée / départ</span>
+                      <span className="font-bold text-foreground">Entrée: {property.checkInTime || "14:00"} • Sortie: {property.checkOutTime || "11:00"}</span>
+                    </div>
+                  </div>
+
+                  {property.houseRules && (
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
+                        <ShieldCheck className="w-5 h-5 text-foreground" />
+                      </div>
+                      <div>
+                        <span className="text-sm text-muted-foreground block">Règles de la maison</span>
+                        <span className="font-medium text-foreground">{property.houseRules}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Cancellation Policy */}
+                {property.cancellationPolicy && (
+                  <div className="bg-muted/30 p-5 rounded-2xl border border-border/50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Info className="w-4 h-4 text-muted-foreground" />
+                      <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Conditions d'annulation</h3>
+                    </div>
+                    <p className="text-sm text-foreground/80 leading-relaxed italic">
+                      "{property.cancellationPolicy}"
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Google Maps Embed Location - Moved right under rules */}
+            {property.location && (
+              <div className="pt-6 border-t border-border">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-foreground">Où se situe le logement</h3>
+                  {property.distanceToBeach && (
+                    <Badge variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200">
+                      <Waves className="w-3 h-3 mr-1" />
+                      {property.distanceToBeach}
+                    </Badge>
+                  )}
+                </div>
+                <div className="w-full h-64 md:h-[350px] rounded-xl overflow-hidden border border-border shadow-sm mb-4">
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    frameBorder="0"
+                    style={{ border: 0 }}
+                    src={`https://www.google.com/maps?q=${encodeURIComponent(property.location + ', Tunisia')}&output=embed`}
+                    allowFullScreen
+                  ></iframe>
+                </div>
+
+                {/* Neighborhood Points (New) */}
+                {(property.locationRepere || property.nearbyCommodities) && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {property.locationRepere && (
+                      <div className="flex items-start gap-3 p-4 bg-primary/5 rounded-xl border border-primary/10">
+                        <MapPin className="w-5 h-5 text-primary mt-1 shrink-0" />
+                        <p className="text-sm font-medium text-foreground">{property.locationRepere}</p>
+                      </div>
+                    )}
+                    {property.nearbyCommodities && (
+                      <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-xl border border-border/50">
+                        <Utensils className="w-5 h-5 text-muted-foreground mt-1 shrink-0" />
+                        <p className="text-sm text-muted-foreground">{property.nearbyCommodities}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
           </div>
 

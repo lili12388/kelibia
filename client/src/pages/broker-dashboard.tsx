@@ -70,6 +70,20 @@ export default function BrokerDashboardPage() {
       showSize: true,
       showDescription: true,
       showDeposit: true,
+      hasMicrowave: false,
+      hasCoffeeMaker: false,
+      hasBalcony: false,
+      hasGarden: false,
+      hasLinens: false,
+      hasTowels: false,
+      bedDetails: "",
+      locationRepere: "",
+      nearbyCommodities: "",
+      checkInTime: "14:00",
+      checkOutTime: "11:00",
+      cancellationPolicy: "",
+      houseRules: "",
+      maxGuests: 1,
     },
   });
 
@@ -193,6 +207,20 @@ export default function BrokerDashboardPage() {
       showSize: submission.showSize,
       showDescription: submission.showDescription,
       showDeposit: (submission as any).showDeposit ?? true,
+      hasMicrowave: submission.hasMicrowave,
+      hasCoffeeMaker: submission.hasCoffeeMaker,
+      hasBalcony: submission.hasBalcony,
+      hasGarden: submission.hasGarden,
+      hasLinens: submission.hasLinens,
+      hasTowels: submission.hasTowels,
+      bedDetails: submission.bedDetails || "",
+      locationRepere: submission.locationRepere || "",
+      nearbyCommodities: submission.nearbyCommodities || "",
+      checkInTime: submission.checkInTime || "14:00",
+      checkOutTime: submission.checkOutTime || "11:00",
+      cancellationPolicy: submission.cancellationPolicy || "",
+      houseRules: submission.houseRules || "",
+      maxGuests: submission.maxGuests || 1,
     });
     setNeighborhoodMapFile(null);
     setNeighborhoodMapPreview(submission.neighborhoodMapUrl || null);
@@ -579,6 +607,39 @@ export default function BrokerDashboardPage() {
                   <div className="text-sm text-muted-foreground mb-1">Size</div>
                   <div className="text-foreground">{selectedSubmission.sizeM2}m²</div>
                 </div>
+                <div>
+                  <div className="text-sm text-muted-foreground mb-1">Max Guests</div>
+                  <div className="text-foreground">{selectedSubmission.maxGuests} voyageurs</div>
+                </div>
+                {selectedSubmission.bedDetails && (
+                  <div className="col-span-2">
+                    <div className="text-sm text-muted-foreground mb-1">Couchages</div>
+                    <div className="text-foreground">{selectedSubmission.bedDetails}</div>
+                  </div>
+                )}
+                {(selectedSubmission.locationRepere || selectedSubmission.nearbyCommodities) && (
+                  <div className="col-span-2 border-t pt-2 mt-2">
+                    <div className="text-sm font-medium mb-1">Quartier</div>
+                    <div className="space-y-1">
+                      {selectedSubmission.locationRepere && (
+                        <div className="text-sm"><span className="text-muted-foreground">Repère:</span> {selectedSubmission.locationRepere}</div>
+                      )}
+                      {selectedSubmission.nearbyCommodities && (
+                        <div className="text-sm"><span className="text-muted-foreground">Commodités:</span> {selectedSubmission.nearbyCommodities}</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                <div className="col-span-2 border-t pt-2 mt-2">
+                  <div className="text-sm font-medium mb-1">Règlement</div>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div><span className="text-muted-foreground">Check-in:</span> {selectedSubmission.checkInTime || "14:00"}</div>
+                    <div><span className="text-muted-foreground">Check-out:</span> {selectedSubmission.checkOutTime || "11:00"}</div>
+                    {selectedSubmission.houseRules && (
+                      <div className="col-span-2"><span className="text-muted-foreground">Règles:</span> {selectedSubmission.houseRules}</div>
+                    )}
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -717,38 +778,137 @@ export default function BrokerDashboardPage() {
               </div>
             </div>
 
-            {/* Kitchen Amenities */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-fridge">La cuisine a-t-elle un frigo?</Label>
-                <Select
-                  value={editForm.watch("hasFridge") ? "true" : "false"}
-                  onValueChange={(value) => editForm.setValue("hasFridge", value === "true")}
-                >
-                  <SelectTrigger id="edit-fridge">
-                    <SelectValue placeholder="Choisir" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="false">Non</SelectItem>
-                    <SelectItem value="true">Oui</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            {/* Kitchen & Logistics */}
+            <div className="space-y-4 pt-4 border-t">
+              <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Cuisine & Logistique</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-fridge">Réfrigérateur?</Label>
+                  <Select
+                    value={editForm.watch("hasFridge") ? "true" : "false"}
+                    onValueChange={(value) => editForm.setValue("hasFridge", value === "true")}
+                  >
+                    <SelectTrigger id="edit-fridge">
+                      <SelectValue placeholder="Choisir" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="false">Non</SelectItem>
+                      <SelectItem value="true">Oui</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="edit-gas-stove">Y a-t-il une cuisinière à gaz?</Label>
-                <Select
-                  value={editForm.watch("hasGasStove") ? "true" : "false"}
-                  onValueChange={(value) => editForm.setValue("hasGasStove", value === "true")}
-                >
-                  <SelectTrigger id="edit-gas-stove">
-                    <SelectValue placeholder="Choisir" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="false">Non</SelectItem>
-                    <SelectItem value="true">Oui</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-gas-stove">Cuisinière à gaz?</Label>
+                  <Select
+                    value={editForm.watch("hasGasStove") ? "true" : "false"}
+                    onValueChange={(value) => editForm.setValue("hasGasStove", value === "true")}
+                  >
+                    <SelectTrigger id="edit-gas-stove">
+                      <SelectValue placeholder="Choisir" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="false">Non</SelectItem>
+                      <SelectItem value="true">Oui</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-microwave">Micro-ondes?</Label>
+                  <Select
+                    value={editForm.watch("hasMicrowave") ? "true" : "false"}
+                    onValueChange={(value) => editForm.setValue("hasMicrowave", value === "true")}
+                  >
+                    <SelectTrigger id="edit-microwave">
+                      <SelectValue placeholder="Choisir" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="false">Non</SelectItem>
+                      <SelectItem value="true">Oui</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-coffee">Machine à café?</Label>
+                  <Select
+                    value={editForm.watch("hasCoffeeMaker") ? "true" : "false"}
+                    onValueChange={(value) => editForm.setValue("hasCoffeeMaker", value === "true")}
+                  >
+                    <SelectTrigger id="edit-coffee">
+                      <SelectValue placeholder="Choisir" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="false">Non</SelectItem>
+                      <SelectItem value="true">Oui</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-linens">Draps fournis?</Label>
+                  <Select
+                    value={editForm.watch("hasLinens") ? "true" : "false"}
+                    onValueChange={(value) => editForm.setValue("hasLinens", value === "true")}
+                  >
+                    <SelectTrigger id="edit-linens">
+                      <SelectValue placeholder="Choisir" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="false">Non</SelectItem>
+                      <SelectItem value="true">Oui</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-towels">Serviettes fournies?</Label>
+                  <Select
+                    value={editForm.watch("hasTowels") ? "true" : "false"}
+                    onValueChange={(value) => editForm.setValue("hasTowels", value === "true")}
+                  >
+                    <SelectTrigger id="edit-towels">
+                      <SelectValue placeholder="Choisir" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="false">Non</SelectItem>
+                      <SelectItem value="true">Oui</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-balcony">Balcon / Terrasse?</Label>
+                  <Select
+                    value={editForm.watch("hasBalcony") ? "true" : "false"}
+                    onValueChange={(value) => editForm.setValue("hasBalcony", value === "true")}
+                  >
+                    <SelectTrigger id="edit-balcony">
+                      <SelectValue placeholder="Choisir" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="false">Non</SelectItem>
+                      <SelectItem value="true">Oui</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-garden">Jardin / Accès extérieur?</Label>
+                  <Select
+                    value={editForm.watch("hasGarden") ? "true" : "false"}
+                    onValueChange={(value) => editForm.setValue("hasGarden", value === "true")}
+                  >
+                    <SelectTrigger id="edit-garden">
+                      <SelectValue placeholder="Choisir" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="false">Non</SelectItem>
+                      <SelectItem value="true">Oui</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 
@@ -794,6 +954,35 @@ export default function BrokerDashboardPage() {
                     <SelectItem value="5">5+ chambres</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-max-guests">Voyageurs max</Label>
+                <Select
+                  value={String(editForm.watch("maxGuests"))}
+                  onValueChange={(value) => editForm.setValue("maxGuests", parseInt(value))}
+                >
+                  <SelectTrigger id="edit-max-guests">
+                    <SelectValue placeholder="Nombre" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 voyageur</SelectItem>
+                    <SelectItem value="2">2 voyageurs</SelectItem>
+                    <SelectItem value="3">3 voyageurs</SelectItem>
+                    <SelectItem value="4">4 voyageurs</SelectItem>
+                    <SelectItem value="5">5 voyageurs</SelectItem>
+                    <SelectItem value="6">6+ voyageurs</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="col-span-2 space-y-2">
+                <Label htmlFor="edit-bed-details">Précisions sur le Couchage</Label>
+                <Input
+                  id="edit-bed-details"
+                  {...editForm.register("bedDetails")}
+                  placeholder="ex: 1 lit double, 2 lits simples"
+                />
               </div>
 
               <div className="space-y-2">
@@ -918,6 +1107,66 @@ export default function BrokerDashboardPage() {
                 {...editForm.register("location")}
                 placeholder="e.g., Hay Khadhra, près de l'avenue principale"
               />
+            </div>
+
+            {/* Neighborhood Points */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-location-repere">Point de repère</Label>
+                <Input
+                  id="edit-location-repere"
+                  {...editForm.register("locationRepere")}
+                  placeholder="ex: 5 min de la plage"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-nearby">Commodités à proximité</Label>
+                <Input
+                  id="edit-nearby"
+                  {...editForm.register("nearbyCommodities")}
+                  placeholder="ex: Épicerie, Restaurant"
+                />
+              </div>
+            </div>
+
+            {/* Règlement */}
+            <div className="space-y-4 pt-4 border-t">
+              <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Règlement & Réassurance</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-checkin">Heure d'entrée (Check-in)</Label>
+                  <Input
+                    id="edit-checkin"
+                    {...editForm.register("checkInTime")}
+                    placeholder="14:00"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-checkout">Heure de sortie (Check-out)</Label>
+                  <Input
+                    id="edit-checkout"
+                    {...editForm.register("checkOutTime")}
+                    placeholder="11:00"
+                  />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label htmlFor="edit-cancel">Conditions d'annulation</Label>
+                  <Textarea
+                    id="edit-cancel"
+                    {...editForm.register("cancellationPolicy")}
+                    rows={2}
+                    placeholder="ex: Annulation gratuite jusqu'à 7 jours..."
+                  />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label htmlFor="edit-rules">Règles de la maison</Label>
+                  <Input
+                    id="edit-rules"
+                    {...editForm.register("houseRules")}
+                    placeholder="ex: Animaux non admis"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Google Maps URL */}

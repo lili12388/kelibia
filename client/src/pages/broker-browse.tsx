@@ -72,6 +72,20 @@ export default function BrokerBrowsePage() {
       showSize: true,
       showDescription: true,
       showDeposit: true,
+      hasMicrowave: false,
+      hasCoffeeMaker: false,
+      hasBalcony: false,
+      hasGarden: false,
+      hasLinens: false,
+      hasTowels: false,
+      bedDetails: "",
+      locationRepere: "",
+      nearbyCommodities: "",
+      checkInTime: "14:00",
+      checkOutTime: "11:00",
+      cancellationPolicy: "",
+      houseRules: "",
+      maxGuests: 1,
     },
   });
 
@@ -244,6 +258,20 @@ export default function BrokerBrowsePage() {
       showSize: submission.showSize ?? true,
       showDescription: submission.showDescription ?? true,
       showDeposit: (submission as any).showDeposit ?? true,
+      hasMicrowave: submission.hasMicrowave ?? false,
+      hasCoffeeMaker: submission.hasCoffeeMaker ?? false,
+      hasBalcony: submission.hasBalcony ?? false,
+      hasGarden: submission.hasGarden ?? false,
+      hasLinens: submission.hasLinens ?? false,
+      hasTowels: submission.hasTowels ?? false,
+      bedDetails: submission.bedDetails || "",
+      locationRepere: submission.locationRepere || "",
+      nearbyCommodities: submission.nearbyCommodities || "",
+      checkInTime: submission.checkInTime || "14:00",
+      checkOutTime: submission.checkOutTime || "11:00",
+      cancellationPolicy: submission.cancellationPolicy || "",
+      houseRules: submission.houseRules || "",
+      maxGuests: submission.maxGuests || 1,
     });
     setNeighborhoodMapFile(null);
     setNeighborhoodMapPreview(submission.neighborhoodMapUrl || null);
@@ -576,6 +604,66 @@ export default function BrokerBrowsePage() {
               />
             </div>
 
+            {/* Neighborhood Points */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2 p-3 bg-slate-50 rounded-lg border">
+                <Label htmlFor="edit-location-repere">Point de repère</Label>
+                <Input
+                  id="edit-location-repere"
+                  {...editForm.register("locationRepere")}
+                  placeholder="ex: 5 min de la plage"
+                />
+              </div>
+              <div className="space-y-2 p-3 bg-slate-50 rounded-lg border">
+                <Label htmlFor="edit-nearby">Commodités à proximité</Label>
+                <Input
+                  id="edit-nearby"
+                  {...editForm.register("nearbyCommodities")}
+                  placeholder="ex: Épicerie, Restaurant"
+                />
+              </div>
+            </div>
+
+            {/* Règlement */}
+            <div className="space-y-4 pt-4 border-t">
+              <h4 className="font-bold text-sm text-primary uppercase">Règlement & Réassurance</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-checkin">Check-in</Label>
+                  <Input
+                    id="edit-checkin"
+                    {...editForm.register("checkInTime")}
+                    placeholder="14:00"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-checkout">Check-out</Label>
+                  <Input
+                    id="edit-checkout"
+                    {...editForm.register("checkOutTime")}
+                    placeholder="11:00"
+                  />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label htmlFor="edit-cancel">Conditions d'annulation</Label>
+                  <Textarea
+                    id="edit-cancel"
+                    {...editForm.register("cancellationPolicy")}
+                    rows={2}
+                    placeholder="ex: Annulation gratuite jusqu'à 7 jours..."
+                  />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label htmlFor="edit-rules">Règles de la maison</Label>
+                  <Input
+                    id="edit-rules"
+                    {...editForm.register("houseRules")}
+                    placeholder="ex: Animaux non admis"
+                  />
+                </div>
+              </div>
+            </div>
+
             {/* Property Details Grid with individual toggles */}
             <div className="grid grid-cols-2 gap-4">
               {/* Rooms */}
@@ -598,6 +686,27 @@ export default function BrokerBrowsePage() {
                   type="number"
                   {...editForm.register("rooms", { valueAsNumber: true })}
                   min={1}
+                />
+              </div>
+
+              {/* Max Guests */}
+              <div className="space-y-2 p-3 bg-slate-50 rounded-lg border">
+                <Label htmlFor="edit-max-guests">Max Guests</Label>
+                <Input
+                  id="edit-max-guests"
+                  type="number"
+                  {...editForm.register("maxGuests", { valueAsNumber: true })}
+                  min={1}
+                />
+              </div>
+
+              {/* Bed Details */}
+              <div className="col-span-2 space-y-2 p-3 bg-slate-50 rounded-lg border">
+                <Label htmlFor="edit-bed-details">Précisions sur le Couchage</Label>
+                <Input
+                  id="edit-bed-details"
+                  {...editForm.register("bedDetails")}
+                  placeholder="ex: 1 lit double, 2 lits simples"
                 />
               </div>
 
@@ -667,6 +776,77 @@ export default function BrokerBrowsePage() {
                   {...editForm.register("price")}
                   placeholder="e.g., 1200"
                 />
+              </div>
+
+              {/* Kitchen & Logistics */}
+              <div className="col-span-2 space-y-4 pt-4 border-t">
+                <h4 className="font-bold text-sm text-primary uppercase">Cuisine & Logistique</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center space-x-2 p-2 bg-slate-50 rounded-lg border">
+                    <Checkbox
+                      id="edit-fridge"
+                      checked={editForm.watch("hasFridge")}
+                      onCheckedChange={(checked) => editForm.setValue("hasFridge", !!checked)}
+                    />
+                    <Label htmlFor="edit-fridge">Réfrigérateur</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 p-2 bg-slate-50 rounded-lg border">
+                    <Checkbox
+                      id="edit-gas"
+                      checked={editForm.watch("hasGasStove")}
+                      onCheckedChange={(checked) => editForm.setValue("hasGasStove", !!checked)}
+                    />
+                    <Label htmlFor="edit-gas">Cuisinière à gaz</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 p-2 bg-slate-50 rounded-lg border">
+                    <Checkbox
+                      id="edit-microwave"
+                      checked={editForm.watch("hasMicrowave")}
+                      onCheckedChange={(checked) => editForm.setValue("hasMicrowave", !!checked)}
+                    />
+                    <Label htmlFor="edit-microwave">Micro-ondes</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 p-2 bg-slate-50 rounded-lg border">
+                    <Checkbox
+                      id="edit-coffee"
+                      checked={editForm.watch("hasCoffeeMaker")}
+                      onCheckedChange={(checked) => editForm.setValue("hasCoffeeMaker", !!checked)}
+                    />
+                    <Label htmlFor="edit-coffee">Machine à café</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 p-2 bg-slate-50 rounded-lg border">
+                    <Checkbox
+                      id="edit-linens"
+                      checked={editForm.watch("hasLinens")}
+                      onCheckedChange={(checked) => editForm.setValue("hasLinens", !!checked)}
+                    />
+                    <Label htmlFor="edit-linens">Draps fournis</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 p-2 bg-slate-50 rounded-lg border">
+                    <Checkbox
+                      id="edit-towels"
+                      checked={editForm.watch("hasTowels")}
+                      onCheckedChange={(checked) => editForm.setValue("hasTowels", !!checked)}
+                    />
+                    <Label htmlFor="edit-towels">Serviettes fournies</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 p-2 bg-slate-50 rounded-lg border">
+                    <Checkbox
+                      id="edit-balcony"
+                      checked={editForm.watch("hasBalcony")}
+                      onCheckedChange={(checked) => editForm.setValue("hasBalcony", !!checked)}
+                    />
+                    <Label htmlFor="edit-balcony">Balcon / Terrasse</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 p-2 bg-slate-50 rounded-lg border">
+                    <Checkbox
+                      id="edit-garden"
+                      checked={editForm.watch("hasGarden")}
+                      onCheckedChange={(checked) => editForm.setValue("hasGarden", !!checked)}
+                    />
+                    <Label htmlFor="edit-garden">Jardin / Accès ext.</Label>
+                  </div>
+                </div>
               </div>
             </div>
 
