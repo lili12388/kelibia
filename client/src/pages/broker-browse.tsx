@@ -104,7 +104,7 @@ export default function BrokerBrowsePage() {
     "🏖️ Plage",
     "🥖 Boulangerie",
     "🏦 Banque",
-    "🚌 Transport",
+    "🚕 Transport",
     "🍎 Marché",
     "🏥 Hôpital"
   ];
@@ -116,6 +116,18 @@ export default function BrokerBrowsePage() {
     } else {
       editForm.setValue("nearbyCommodities", [...tags, option].join(", "));
     }
+  };
+
+  const [roomBeds, setRoomBeds] = useState<{double: number, single: number}[]>(
+    Array.from({ length: 10 }, () => ({ double: 0, single: 0 }))
+  );
+
+  const updateRoomBed = (index: number, type: 'double' | 'single', value: number) => {
+    setRoomBeds(prev => {
+      const copy = [...prev];
+      copy[index] = { ...copy[index], [type]: value };
+      return copy;
+    });
   };
 
   const { data: properties, isLoading } = useQuery<PropertyWithMedia[]>({
@@ -261,6 +273,25 @@ export default function BrokerBrowsePage() {
 
   const handleEditSubmission = (submission: PropertySubmissionWithMedia) => {
     setSelectedSubmission(submission);
+    
+    // Parse room configuration if it exists
+    try {
+      if (submission.bedDetails && submission.bedDetails.startsWith('[')) {
+        const parsed = JSON.parse(submission.bedDetails);
+        const newRoomBeds = Array.from({ length: 10 }, () => ({ double: 0, single: 0 }));
+        parsed.forEach((room: any, i: number) => {
+          if (i < 10) {
+            newRoomBeds[i] = { double: room.double || 0, single: room.single || 0 };
+          }
+        });
+        setRoomBeds(newRoomBeds);
+      } else {
+        setRoomBeds(Array.from({ length: 10 }, () => ({ double: 0, single: 0 })));
+      }
+    } catch(e) {
+      setRoomBeds(Array.from({ length: 10 }, () => ({ double: 0, single: 0 })));
+    }
+
     editForm.reset({
       title: submission.title,
       propertyType: submission.propertyType,
@@ -318,12 +349,13 @@ export default function BrokerBrowsePage() {
 
     const formData = editForm.getValues();
 
-    // Generate bedDetails summary
-    const bedSummary = [
-      formData.numDoubleBeds > 0 ? `${formData.numDoubleBeds} lit${formData.numDoubleBeds > 1 ? 's' : ''} double${formData.numDoubleBeds > 1 ? 's' : ''}` : null,
-      formData.numSingleBeds > 0 ? `${formData.numSingleBeds} lit${formData.numSingleBeds > 1 ? 's' : ''} simple${formData.numSingleBeds > 1 ? 's' : ''}` : null,
-      formData.hasSofaBed ? "1 canapé-lit (Salon)" : null
-    ].filter(Boolean).join(", ");
+    const roomsCount = formData.rooms || 0;
+    const finalRoomBeds = roomBeds.slice(0, roomsCount);
+    
+    formData.numDoubleBeds = finalRoomBeds.reduce((acc, r) => acc + r.double, 0);
+    formData.numSingleBeds = finalRoomBeds.reduce((acc, r) => acc + r.single, 0);
+
+    const bedSummary = JSON.stringify(finalRoomBeds);
 
     const finalData = { ...formData, bedDetails: bedSummary };
 
@@ -775,36 +807,41 @@ export default function BrokerBrowsePage() {
                 />
               </div>
 
-              {/* Bed Details - Structured */}
-              <div className="col-span-2 grid grid-cols-3 gap-4 p-3 bg-slate-50 rounded-lg border">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-double-beds">Lits doubles</Label>
-                  <Input
-                    id="edit-double-beds"
-                    type="number"
-                    {...editForm.register("numDoubleBeds", { valueAsNumber: true })}
-                    min={0}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-single-beds">Lits simples</Label>
-                  <Input
-                    id="edit-single-beds"
-                    type="number"
-                    {...editForm.register("numSingleBeds", { valueAsNumber: true })}
-                    min={0}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Canapé-lit?</Label>
-                  <div className="flex items-center space-x-2 pt-2">
-                    <Checkbox
-                      id="edit-sofa-bed"
-                      checked={editForm.watch("hasSofaBed")}
-                      onCheckedChange={(checked) => editForm.setValue("hasSofaBed", !!checked)}
-                    />
-                    <Label htmlFor="edit-sofa-bed" className="text-xs">Salon</Label>
+              {/* Bed Details - Structured per room */}
+              <div className="col-span-2 space-y-4 p-3 bg-slate-50 rounded-lg border">
+                <h4 className="text-sm font-bold text-primary uppercase">Configuration des couchages</h4>
+                {Array.from({ length: editForm.watch("rooms") || 0 }).map((_, idx) => (
+                  <div key={idx} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center bg-white p-3 rounded border shadow-sm">
+                    <div className="font-bold text-primary text-sm">🛏️ Chambre {idx + 1}</div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Lits doubles</Label>
+                      <Input 
+                        type="number" 
+                        min={0} 
+                        value={roomBeds[idx]?.double || 0}
+                        onChange={e => updateRoomBed(idx, 'double', parseInt(e.target.value) || 0)} 
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Lits simples</Label>
+                      <Input 
+                        type="number" 
+                        min={0} 
+                        value={roomBeds[idx]?.single || 0}
+                        onChange={e => updateRoomBed(idx, 'single', parseInt(e.target.value) || 0)} 
+                      />
+                    </div>
                   </div>
+                ))}
+                
+                <div className="flex items-center space-x-2 pt-2 pb-2 bg-white px-3 rounded border shadow-sm">
+                  <span className="font-bold text-primary text-sm mr-4">🛋️ Salon</span>
+                  <Checkbox
+                    id="edit-sofa-bed"
+                    checked={editForm.watch("hasSofaBed")}
+                    onCheckedChange={(checked) => editForm.setValue("hasSofaBed", !!checked)}
+                  />
+                  <Label htmlFor="edit-sofa-bed" className="text-sm font-medium">1 canapé-lit</Label>
                 </div>
               </div>
 

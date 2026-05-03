@@ -142,6 +142,18 @@ export default function ListPropertyPage() {
     },
   });
 
+  const [roomBeds, setRoomBeds] = useState<{double: number, single: number}[]>(
+    Array.from({ length: 10 }, () => ({ double: 0, single: 0 }))
+  );
+
+  const updateRoomBed = (index: number, type: 'double' | 'single', value: number) => {
+    setRoomBeds(prev => {
+      const copy = [...prev];
+      copy[index] = { ...copy[index], [type]: value };
+      return copy;
+    });
+  };
+
   const nearbyOptions = [
     "🛒 Épicerie",
     "🍽️ Restaurant",
@@ -150,7 +162,7 @@ export default function ListPropertyPage() {
     "🏖️ Plage",
     "🥖 Boulangerie",
     "🏦 Banque",
-    "🚌 Transport",
+    "🚕 Transport",
     "🍎 Marché",
     "🏥 Hôpital"
   ];
@@ -462,12 +474,15 @@ export default function ListPropertyPage() {
     const salon = data.hasLivingRoom ? " - Avec salon" : "";
     const autoTitle = `${data.propertyType}${floor}${salon} - ${furni}`;
 
-    // Generate bedDetails summary from structured fields
-    const bedSummary = [
-      data.numDoubleBeds > 0 ? `${data.numDoubleBeds} lit${data.numDoubleBeds > 1 ? 's' : ''} double${data.numDoubleBeds > 1 ? 's' : ''}` : null,
-      data.numSingleBeds > 0 ? `${data.numSingleBeds} lit${data.numSingleBeds > 1 ? 's' : ''} simple${data.numSingleBeds > 1 ? 's' : ''}` : null,
-      data.hasSofaBed ? "1 canapé-lit (Salon)" : null
-    ].filter(Boolean).join(", ");
+    // Generate bedDetails JSON for room-specific bed configurations
+    const roomsCount = data.rooms || 0;
+    const finalRoomBeds = roomBeds.slice(0, roomsCount);
+    
+    // For schema compatibility, we calculate totals for legacy fields
+    data.numDoubleBeds = finalRoomBeds.reduce((acc, r) => acc + r.double, 0);
+    data.numSingleBeds = finalRoomBeds.reduce((acc, r) => acc + r.single, 0);
+
+    const bedSummary = JSON.stringify(finalRoomBeds);
 
     // Add default sizeM2 since we removed the input field
     // Use isAdminRoute to determine if posting as admin
@@ -673,33 +688,42 @@ export default function ListPropertyPage() {
                     )}
                   />
 
-                  <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-xl border border-border/50">
-                    <FormField
-                      control={form.control}
-                      name="numDoubleBeds"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Lits doubles</FormLabel>
-                          <FormControl>
-                            <Input type="number" min={0} {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="numSingleBeds"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Lits simples</FormLabel>
-                          <FormControl>
-                            <Input type="number" min={0} {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  <div className="md:col-span-3 space-y-4">
+                    <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-2">Configuration des couchages</h3>
+                    
+                    {Array.from({ length: form.watch("rooms") || 0 }).map((_, idx) => (
+                      <div key={idx} className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-xl border border-border/50 items-center">
+                        <div className="font-bold text-primary">
+                          🛏️ Chambre {idx + 1}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label className="text-xs">Lits doubles</Label>
+                          <Input 
+                            type="number" 
+                            min={0} 
+                            value={roomBeds[idx]?.double || 0}
+                            onChange={e => updateRoomBed(idx, 'double', parseInt(e.target.value) || 0)} 
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label className="text-xs">Lits simples</Label>
+                          <Input 
+                            type="number" 
+                            min={0} 
+                            value={roomBeds[idx]?.single || 0}
+                            onChange={e => updateRoomBed(idx, 'single', parseInt(e.target.value) || 0)} 
+                          />
+                        </div>
+                      </div>
+                    ))}
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-xl border border-border/50 items-center mt-2">
+                      <div className="font-bold text-primary">
+                        🛋️ Salon
+                      </div>
+                      <div className="md:col-span-2">
                     <FormField
                       control={form.control}
                       name="hasSofaBed"

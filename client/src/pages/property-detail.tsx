@@ -741,54 +741,97 @@ export default function PropertyDetailPage() {
               <div className="pb-2">
                 <h2 className="text-xl font-semibold mb-4 text-foreground">Couchages</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {/* Bedroom cards — one per bedroom with double beds */}
-                  {Array.from({ length: property.numDoubleBeds || 0 }).map((_, i) => (
-                    <div key={`double-${i}`} className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-background shadow-sm">
-                      <span className="text-2xl leading-none">🛏️</span>
-                      <div>
-                        <span className="text-sm font-semibold text-foreground block">
-                          Chambre {i + 1}
-                        </span>
-                        <span className="text-sm text-muted-foreground">1 lit double</span>
-                      </div>
-                    </div>
-                  ))}
+                  {property.bedDetails && property.bedDetails.startsWith('[') ? (
+                    <>
+                      {(() => {
+                        try {
+                          return JSON.parse(property.bedDetails).map((room: any, i: number) => {
+                            if (room.double === 0 && room.single === 0) return null;
+                            return (
+                              <div key={`room-${i}`} className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-background shadow-sm">
+                                <span className="text-2xl leading-none">🛏️</span>
+                                <div>
+                                  <span className="text-sm font-semibold text-foreground block">
+                                    Chambre {i + 1}
+                                  </span>
+                                  <span className="text-sm text-muted-foreground">
+                                    {[
+                                      room.double > 0 ? `${room.double} lit${room.double > 1 ? 's' : ''} double${room.double > 1 ? 's' : ''}` : null,
+                                      room.single > 0 ? `${room.single} lit${room.single > 1 ? 's' : ''} simple${room.single > 1 ? 's' : ''}` : null
+                                    ].filter(Boolean).join(", ")}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          });
+                        } catch(e) {
+                          return null;
+                        }
+                      })()}
+                      
+                      {/* Sofa-bed in living room */}
+                      {property.hasSofaBed && (
+                        <div className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-background shadow-sm">
+                          <span className="text-2xl leading-none">🛋️</span>
+                          <div>
+                            <span className="text-sm font-semibold text-foreground block">Salon</span>
+                            <span className="text-sm text-muted-foreground">1 canapé-lit</span>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {/* Bedroom cards — one per bedroom with double beds */}
+                      {Array.from({ length: property.numDoubleBeds || 0 }).map((_, i) => (
+                        <div key={`double-${i}`} className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-background shadow-sm">
+                          <span className="text-2xl leading-none">🛏️</span>
+                          <div>
+                            <span className="text-sm font-semibold text-foreground block">
+                              Chambre {i + 1}
+                            </span>
+                            <span className="text-sm text-muted-foreground">1 lit double</span>
+                          </div>
+                        </div>
+                      ))}
 
-                  {/* Single-bed rooms — grouped after double-bed rooms */}
-                  {property.numSingleBeds > 0 && (
-                    <div className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-background shadow-sm">
-                      <span className="text-2xl leading-none">🛏️</span>
-                      <div>
-                        <span className="text-sm font-semibold text-foreground block">
-                          Chambre {(property.numDoubleBeds || 0) + 1}
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                          {property.numSingleBeds} lit{property.numSingleBeds > 1 ? 's' : ''} simple{property.numSingleBeds > 1 ? 's' : ''}
-                        </span>
-                      </div>
-                    </div>
-                  )}
+                      {/* Single-bed rooms — grouped after double-bed rooms */}
+                      {property.numSingleBeds > 0 && (
+                        <div className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-background shadow-sm">
+                          <span className="text-2xl leading-none">🛏️</span>
+                          <div>
+                            <span className="text-sm font-semibold text-foreground block">
+                              Chambre {(property.numDoubleBeds || 0) + 1}
+                            </span>
+                            <span className="text-sm text-muted-foreground">
+                              {property.numSingleBeds} lit{property.numSingleBeds > 1 ? 's' : ''} simple{property.numSingleBeds > 1 ? 's' : ''}
+                            </span>
+                          </div>
+                        </div>
+                      )}
 
-                  {/* Sofa-bed in living room */}
-                  {property.hasSofaBed && (
-                    <div className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-background shadow-sm">
-                      <span className="text-2xl leading-none">🛋️</span>
-                      <div>
-                        <span className="text-sm font-semibold text-foreground block">Salon</span>
-                        <span className="text-sm text-muted-foreground">1 canapé-lit</span>
-                      </div>
-                    </div>
-                  )}
+                      {/* Sofa-bed in living room */}
+                      {property.hasSofaBed && (
+                        <div className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-background shadow-sm">
+                          <span className="text-2xl leading-none">🛋️</span>
+                          <div>
+                            <span className="text-sm font-semibold text-foreground block">Salon</span>
+                            <span className="text-sm text-muted-foreground">1 canapé-lit</span>
+                          </div>
+                        </div>
+                      )}
 
-                  {/* Fallback: show bedDetails text if no structured counts */}
-                  {!property.numDoubleBeds && !property.numSingleBeds && !property.hasSofaBed && property.bedDetails && (
-                    <div className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-background shadow-sm col-span-full">
-                      <span className="text-2xl leading-none">🛏️</span>
-                      <div>
-                        <span className="text-sm font-semibold text-foreground block">Couchages</span>
-                        <span className="text-sm text-muted-foreground">{property.bedDetails}</span>
-                      </div>
-                    </div>
+                      {/* Fallback: show bedDetails text if no structured counts */}
+                      {!property.numDoubleBeds && !property.numSingleBeds && !property.hasSofaBed && property.bedDetails && (
+                        <div className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-background shadow-sm col-span-full">
+                          <span className="text-2xl leading-none">🛏️</span>
+                          <div>
+                            <span className="text-sm font-semibold text-foreground block">Couchages</span>
+                            <span className="text-sm text-muted-foreground">{property.bedDetails}</span>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
@@ -890,14 +933,27 @@ export default function PropertyDetailPage() {
               <div className="py-6 border-b border-border">
                 <h2 className="text-xl font-semibold mb-4 text-foreground">Services à proximité</h2>
                 <div className="flex flex-wrap gap-2">
-                  {property.nearbyCommodities.split(", ").filter(Boolean).map((tag, idx) => (
-                    <span
-                      key={idx}
-                      className="text-sm font-medium px-3 py-1.5 bg-background rounded-full border border-slate-200 shadow-sm hover:shadow-md hover:border-primary/30 transition-all"
-                    >
-                      {tag}
-                    </span>
-                  ))}
+                  {property.nearbyCommodities.split(", ").filter(Boolean).map((rawTag, idx) => {
+                    let tag = rawTag.trim();
+                    const lower = tag.toLowerCase();
+                    
+                    if (lower.includes("transport")) {
+                      tag = `🚕 ${tag.replace("🚌", "").trim()}`;
+                    } else if (lower.includes("restaurant") && !tag.includes("🍽️")) {
+                      tag = `🍽️ ${tag}`;
+                    } else if ((lower.includes("café") || lower.includes("caffé") || lower.includes("cafe")) && !tag.includes("☕")) {
+                      tag = `☕ ${tag}`;
+                    }
+
+                    return (
+                      <span
+                        key={idx}
+                        className="text-sm font-medium px-3 py-1.5 bg-background rounded-full border border-slate-200 shadow-sm hover:shadow-md hover:border-primary/30 transition-all"
+                      >
+                        {tag}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             )}
