@@ -21,7 +21,7 @@ import {
   ChevronLeft, ChevronRight, User, Pencil, ChefHat,
   Refrigerator, Flame, Wind, Wifi, Car, Waves, Users,
   TriangleAlert, Microwave, Coffee, Home, Utensils, Info, Clock, ShieldCheck,
-  Ban, Smoke, NotebookText, Tv
+  Ban, NotebookText, Tv
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -952,9 +952,18 @@ export default function PropertyDetailPage() {
                       </div>
                     )}
                     {property.nearbyCommodities && (
-                      <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-xl border border-border/50">
-                        <Utensils className="w-5 h-5 text-muted-foreground mt-1 shrink-0" />
-                        <p className="text-sm text-muted-foreground">{property.nearbyCommodities}</p>
+                      <div className="flex flex-col gap-2 p-4 bg-muted/30 rounded-xl border border-border/50">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Utensils className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Services proches</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {property.nearbyCommodities.split(", ").filter(Boolean).map((tag, idx) => (
+                            <span key={idx} className="text-sm font-medium px-2 py-1 bg-background rounded-md border border-border/50">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>

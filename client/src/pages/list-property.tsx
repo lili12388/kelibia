@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { Upload, X, Image as ImageIcon, Video } from "lucide-react";
+import { Upload, X, Image as ImageIcon, Video, Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -139,9 +139,32 @@ export default function ListPropertyPage() {
       ownerPhone: "",
       status: "pending",
       googleMapsUrl: "",
+      nearbyCommodities: "",
       neighborhoodMapUrl: null,
     },
   });
+
+  const nearbyOptions = [
+    "🛒 Épicerie",
+    "🍽️ Restaurant",
+    "💊 Pharmacie",
+    "☕ Café",
+    "🏖️ Plage",
+    "🥖 Boulangerie",
+    "🏦 Banque",
+    "🚌 Transport",
+    "🍎 Marché",
+    "🏥 Hôpital"
+  ];
+
+  const toggleNearby = (option: string, current: string) => {
+    const tags = current ? current.split(", ").filter(Boolean) : [];
+    if (tags.includes(option)) {
+      form.setValue("nearbyCommodities", tags.filter(t => t !== option).join(", "));
+    } else {
+      form.setValue("nearbyCommodities", [...tags, option].join(", "));
+    }
+  };
 
   const submitPropertyMutation = useMutation({
     mutationFn: async (data: InsertPropertySubmission & { files: File[]; isAdmin?: boolean }) => {
@@ -753,6 +776,28 @@ export default function ListPropertyPage() {
 
                     <FormField
                       control={form.control}
+                      name="hasKitchenUtensils"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Ustensiles de cuisine fournis? (Cuillères, marmites...)</FormLabel>
+                          <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Choisir" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="false">Non</SelectItem>
+                              <SelectItem value="true">Oui</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
                       name="hasMicrowave"
                       render={({ field }) => (
                         <FormItem>
@@ -1175,6 +1220,28 @@ export default function ListPropertyPage() {
 
                   <FormField
                     control={form.control}
+                    name="isQuietNeighborhood"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Quartier calme / Chill?</FormLabel>
+                        <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choisir" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="false">Non</SelectItem>
+                            <SelectItem value="true">Oui</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
                     name="locationRepere"
                     render={({ field }) => (
                       <FormItem>
@@ -1192,10 +1259,39 @@ export default function ListPropertyPage() {
                     name="nearbyCommodities"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Commodités à proximité</FormLabel>
+                        <FormLabel>Services & Commerces à proximité</FormLabel>
                         <FormControl>
-                          <Input placeholder="ex: Épicerie, Restaurant, Pharmacie à 200m" {...field} />
+                          <div className="space-y-3">
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              {nearbyOptions.map((opt) => {
+                                const isSelected = (field.value || "").split(", ").includes(opt);
+                                return (
+                                  <button
+                                    key={opt}
+                                    type="button"
+                                    onClick={() => toggleNearby(opt, field.value || "")}
+                                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all border flex items-center gap-1.5 ${
+                                      isSelected 
+                                        ? "bg-primary text-primary-foreground border-primary" 
+                                        : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
+                                    }`}
+                                  >
+                                    {opt}
+                                    {isSelected ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            <Input 
+                              placeholder="Ou tapez d'autres services (ex: Cinéma, Salle de sport)" 
+                              {...field} 
+                              value={field.value || ""}
+                            />
+                          </div>
                         </FormControl>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Cliquez sur les suggestions ou ajoutez vos propres services séparés par des virgules.
+                        </p>
                         <FormMessage />
                       </FormItem>
                     )}

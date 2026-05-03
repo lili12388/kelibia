@@ -254,6 +254,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'pending',
         googleMapsUrl: req.body.googleMapsUrl || null,
         neighborhoodMapUrl: null,
+        hasKitchenUtensils: req.body.hasKitchenUtensils === 'true',
+        isQuietNeighborhood: req.body.isQuietNeighborhood === 'true',
       });
 
       // Create property submission
@@ -390,6 +392,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'approved', // Auto-approve for admin
         googleMapsUrl: req.body.googleMapsUrl || null,
         neighborhoodMapUrl: null,
+        hasKitchenUtensils: req.body.hasKitchenUtensils === 'true',
+        isQuietNeighborhood: req.body.isQuietNeighborhood === 'true',
         showOwnerContact: req.body.showOwnerContact === 'true',
         showGoogleMaps: req.body.showGoogleMaps !== 'false',
         showExactLocation: req.body.showExactLocation === 'true',

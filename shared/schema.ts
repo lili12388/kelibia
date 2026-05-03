@@ -60,6 +60,8 @@ export const propertySubmissions = pgTable("property_submissions", {
   showBathrooms: boolean("show_bathrooms").notNull().default(true), // show bathroom count to public users
   showSize: boolean("show_size").notNull().default(true), // show size to public users
   showDescription: boolean("show_description").notNull().default(true), // show full description to public users
+  hasKitchenUtensils: boolean("has_kitchen_utensils").notNull().default(false),
+  isQuietNeighborhood: boolean("is_quiet_neighborhood").notNull().default(false),
   status: text("status").notNull().default("pending"), // pending, approved, rejected
   createdAt: timestamp("created_at").notNull().defaultNow(),
   approvedAt: timestamp("approved_at"),
@@ -271,6 +273,8 @@ export const insertPropertySubmissionSchema = createInsertSchema(propertySubmiss
   showBathrooms: z.boolean().default(true),
   showSize: z.boolean().default(true),
   showDescription: z.boolean().default(true),
+  hasKitchenUtensils: z.boolean().default(false),
+  isQuietNeighborhood: z.boolean().default(false),
 });
 
 export const insertSubmissionMediaSchema = createInsertSchema(submissionMedia).omit({

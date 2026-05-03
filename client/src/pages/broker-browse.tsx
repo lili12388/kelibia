@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { MapPin, BedDouble, Bath, Search, Phone, Mail, User, ArrowLeft, Pencil, ChefHat, Refrigerator, Flame, BarChart3, Eye, MousePointer, Monitor, Smartphone, Trash2 } from "lucide-react";
+import { MapPin, BedDouble, Bath, Search, Phone, Mail, User, ArrowLeft, Pencil, ChefHat, Refrigerator, Flame, BarChart3, Eye, MousePointer, Monitor, Smartphone, Trash2, Plus, X } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { PropertyWithMedia, PropertySubmissionWithMedia } from "@shared/schema";
@@ -87,8 +87,32 @@ export default function BrokerBrowsePage() {
       cancellationPolicy: "",
       houseRules: "",
       maxGuests: 1,
+      hasKitchenUtensils: false,
+      isQuietNeighborhood: false,
     },
   });
+
+  const nearbyOptions = [
+    "🛒 Épicerie",
+    "🍽️ Restaurant",
+    "💊 Pharmacie",
+    "☕ Café",
+    "🏖️ Plage",
+    "🥖 Boulangerie",
+    "🏦 Banque",
+    "🚌 Transport",
+    "🍎 Marché",
+    "🏥 Hôpital"
+  ];
+
+  const toggleNearby = (option: string, current: string) => {
+    const tags = current ? current.split(", ").filter(Boolean) : [];
+    if (tags.includes(option)) {
+      editForm.setValue("nearbyCommodities", tags.filter(t => t !== option).join(", "));
+    } else {
+      editForm.setValue("nearbyCommodities", [...tags, option].join(", "));
+    }
+  };
 
   const { data: properties, isLoading } = useQuery<PropertyWithMedia[]>({
     queryKey: ['/api/properties'],
@@ -277,6 +301,8 @@ export default function BrokerBrowsePage() {
       cancellationPolicy: submission.cancellationPolicy || "",
       houseRules: submission.houseRules || "",
       maxGuests: submission.maxGuests || 1,
+      hasKitchenUtensils: submission.hasKitchenUtensils ?? false,
+      isQuietNeighborhood: submission.isQuietNeighborhood ?? false,
     });
     setNeighborhoodMapFile(null);
     setNeighborhoodMapPreview(submission.neighborhoodMapUrl || null);
@@ -630,12 +656,34 @@ export default function BrokerBrowsePage() {
                 />
               </div>
               <div className="space-y-2 p-3 bg-slate-50 rounded-lg border">
-                <Label htmlFor="edit-nearby">Commodités à proximité</Label>
-                <Input
-                  id="edit-nearby"
-                  {...editForm.register("nearbyCommodities")}
-                  placeholder="ex: Épicerie, Restaurant"
-                />
+                <Label htmlFor="edit-nearby">Services & Commerces à proximité</Label>
+                <div className="space-y-3">
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {nearbyOptions.map((opt) => {
+                      const isSelected = (editForm.watch("nearbyCommodities") || "").split(", ").includes(opt);
+                      return (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => toggleNearby(opt, editForm.watch("nearbyCommodities") || "")}
+                          className={`px-2 py-1 rounded-full text-xs font-medium transition-all border flex items-center gap-1 ${
+                            isSelected 
+                              ? "bg-primary text-primary-foreground border-primary" 
+                              : "bg-muted text-muted-foreground border-border hover:bg-muted"
+                          }`}
+                        >
+                          {opt}
+                          {isSelected ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <Input
+                    id="edit-nearby"
+                    {...editForm.register("nearbyCommodities")}
+                    placeholder="Ou tapez vos propres services..."
+                  />
+                </div>
               </div>
             </div>
 
