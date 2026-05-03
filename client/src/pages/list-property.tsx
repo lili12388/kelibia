@@ -1113,6 +1113,7 @@ export default function ListPropertyPage() {
                               placeholder="ex: Annulation gratuite jusqu'à 7 jours avant l'arrivée. Acompte de 30% requis."
                               className="min-h-20"
                               {...field}
+                              value={field.value ?? ""}
                             />
                           </FormControl>
                           <FormMessage />
@@ -1127,7 +1128,7 @@ export default function ListPropertyPage() {
                         <FormItem className="md:col-span-2">
                           <FormLabel>Règles simples</FormLabel>
                           <FormControl>
-                            <Input placeholder="ex: Animaux non admis, Logement non-fumeur" {...field} />
+                            <Input placeholder="ex: Animaux non admis, Logement non-fumeur" {...field} value={field.value ?? ""} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -1271,7 +1272,7 @@ export default function ListPropertyPage() {
                       <FormItem>
                         <FormLabel>Point de repère</FormLabel>
                         <FormControl>
-                          <Input placeholder="ex: 5 min à pieds de la plage de Kelibia" {...field} />
+                          <Input placeholder="ex: 5 min à pieds de la plage de Kelibia" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
