@@ -16,9 +16,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { 
-  ArrowLeft, MapPin, BedDouble, Bath, Phone, Mail, 
-  ChevronLeft, ChevronRight, User, Pencil, ChefHat, 
+import {
+  ArrowLeft, MapPin, BedDouble, Bath, Phone, Mail,
+  ChevronLeft, ChevronRight, User, Pencil, ChefHat,
   Refrigerator, Flame, Wind, Wifi, Car, Waves, Users,
   TriangleAlert
 } from "lucide-react";
@@ -38,23 +38,23 @@ const BROKER_PHONE_DISPLAY = "50 344 187";
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" className={className} fill="currentColor">
-    <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zM223.9 413.4c-33 0-65.4-8.9-94-25.7l-6.7-4-69.8 18.3L72 334.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7 .9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/>
+    <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zM223.9 413.4c-33 0-65.4-8.9-94-25.7l-6.7-4-69.8 18.3L72 334.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7 .9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z" />
   </svg>
 );
 
 export default function PropertyDetailPage() {
   const { toast } = useToast();
-  
+
   const [, paramsProperty] = useRoute("/property/:id");
   const [, paramsMaisons] = useRoute("/maisons/:id");
-  
+
   const fullId = paramsMaisons?.id || paramsProperty?.id;
-  
+
   let propertyId = undefined;
   if (fullId) {
     const uuidRegex = /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
     const uuidMatch = fullId.match(uuidRegex);
-    
+
     if (uuidMatch) {
       propertyId = uuidMatch[0];
     } else {
@@ -173,7 +173,7 @@ export default function PropertyDetailPage() {
     const days = e.target.value === '' ? '' : parseInt(e.target.value);
     setReserveDays(days);
     setHasInterference(false);
-    
+
     if (startDate && days !== '') {
       const start = new Date(startDate);
       if (!isNaN(start.getTime())) {
@@ -246,15 +246,15 @@ export default function PropertyDetailPage() {
   const updateMutation = useMutation({
     mutationFn: async ({ id, data, file }: { id: string; data: any; file: File | null }) => {
       const formData = new FormData();
-      
+
       Object.entries(data).forEach(([key, value]) => {
         formData.append(key, String(value));
       });
-      
+
       if (file) {
         formData.append('neighborhoodMap', file);
       }
-      
+
       return apiRequest('PUT', `/api/broker/submissions/${id}`, formData);
     },
     onSuccess: () => {
@@ -279,7 +279,7 @@ export default function PropertyDetailPage() {
 
   const handleEditProperty = () => {
     if (!submission) return;
-    
+
     editForm.reset({
       title: submission.title,
       propertyType: submission.propertyType,
@@ -318,7 +318,7 @@ export default function PropertyDetailPage() {
 
   const handleSaveEdit = () => {
     if (!submission) return;
-    
+
     const formData = editForm.getValues();
     updateMutation.mutate({
       id: submission.id,
@@ -385,12 +385,12 @@ export default function PropertyDetailPage() {
   }
 
   const currentMedia = property.media[currentImageIndex] || property.media[0];
-  
+
   // SEO data
   const primaryImage = property.media.find(m => m.isPrimary) || property.media[0];
   const seoTitle = `${property.title} - ${property.rooms} Ch, ${property.bathrooms} Salles de bain | Edarna`;
   const seoDescription = `${property.isFurnished ? 'Appartement meublé' : 'Appartement'} avec ${property.rooms} chambres et ${property.bathrooms} salles de bain à ${property.location}. Prix: ${parseFloat(property.price).toLocaleString()} TND/nuit. ${property.description.substring(0, 100)}...`;
-  
+
   // Structured Data (Schema.org) for Google rich snippets
   const structuredData = {
     "@context": "https://schema.org",
@@ -419,24 +419,24 @@ export default function PropertyDetailPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-12">
-      <SEO 
+      <SEO
         title={seoTitle}
         description={seoDescription}
         keywords={`${property.title}, location ${property.location}, ${property.rooms} chambres, ${property.isFurnished ? 'meublé' : 'non meublé'}, ${parseFloat(property.price).toLocaleString()} TND`}
         image={primaryImage?.url}
         type="article"
       />
-      
+
       <Helmet>
         <script type="application/ld+json">
           {JSON.stringify(structuredData)}
         </script>
       </Helmet>
-      
+
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        
+
         {/* Title & Location at the top (Airbnb style) */}
         <div className="mb-6 animate-fade-in-up">
           <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2 leading-tight">
@@ -472,8 +472,8 @@ export default function PropertyDetailPage() {
               {/* Desktop Hero Grid (Hidden on mobile) */}
               <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-2 h-[50vh] min-h-[400px] max-h-[500px] rounded-xl overflow-hidden">
                 {/* Main large image */}
-                <div 
-                  className={`col-span-2 row-span-2 relative ${property.media[0].mimeType.startsWith('image/') ? 'cursor-pointer' : ''} group`} 
+                <div
+                  className={`col-span-2 row-span-2 relative ${property.media[0].mimeType.startsWith('image/') ? 'cursor-pointer' : ''} group`}
                   onClick={() => property.media[0].mimeType.startsWith('image/') && setCurrentImageIndex(0)}
                 >
                   {property.media[0].mimeType.startsWith('image/') ? (
@@ -483,13 +483,13 @@ export default function PropertyDetailPage() {
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
-                      <video 
-                        src={property.media[0].url} 
-                        className="w-full h-full object-cover" 
-                        controls
-                        playsInline
-                        onClick={(e) => e.stopPropagation()}
-                      />
+                    <video
+                      src={property.media[0].url}
+                      className="w-full h-full object-cover"
+                      controls
+                      playsInline
+                      onClick={(e) => e.stopPropagation()}
+                    />
                   )}
                   {property.media[0].mimeType.startsWith('image/') && (
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
@@ -498,9 +498,9 @@ export default function PropertyDetailPage() {
 
                 {/* Smaller images (up to 4) */}
                 {property.media.slice(1, 5).map((media, idx) => (
-                  <div 
-                    key={media.id} 
-                    className={`relative ${media.mimeType.startsWith('image/') ? 'cursor-pointer' : ''} group overflow-hidden`} 
+                  <div
+                    key={media.id}
+                    className={`relative ${media.mimeType.startsWith('image/') ? 'cursor-pointer' : ''} group overflow-hidden`}
                     onClick={() => media.mimeType.startsWith('image/') && setCurrentImageIndex(idx + 1)}
                   >
                     {media.mimeType.startsWith('image/') ? (
@@ -510,9 +510,9 @@ export default function PropertyDetailPage() {
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     ) : (
-                      <video 
-                        src={media.url} 
-                        className="w-full h-full object-cover" 
+                      <video
+                        src={media.url}
+                        className="w-full h-full object-cover"
                         controls
                         playsInline
                         onClick={(e) => e.stopPropagation()}
@@ -521,7 +521,7 @@ export default function PropertyDetailPage() {
                     {media.mimeType.startsWith('image/') && (
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
                     )}
-                    
+
                     {/* Overlay for the last image if there are more than 5 */}
                     {idx === 3 && property.media.length > 5 && (
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center hover:bg-black/40 transition-colors">
@@ -532,68 +532,125 @@ export default function PropertyDetailPage() {
                     )}
                   </div>
                 ))}
-                
+
                 {/* Fill empty spots if less than 5 images */}
                 {Array.from({ length: Math.max(0, 4 - (property.media.length - 1)) }).map((_, i) => (
-                   <div key={`empty-${i}`} className="bg-muted w-full h-full"></div>
+                  <div key={`empty-${i}`} className="bg-muted w-full h-full"></div>
                 ))}
               </div>
 
-              {/* Mobile Carousel (Hidden on desktop) */}
-              <div 
-                className="md:hidden relative aspect-[4/3] rounded-xl overflow-hidden touch-pan-y z-0"
-                onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
-                onTouchEnd={onTouchEnd}
-              >
-                {currentMedia.mimeType.startsWith('image/') ? (
-                  <img
-                    key={currentImageIndex} // Add key to force re-render for transition if needed
-                    src={currentMedia.url}
-                    alt={property.title}
-                    className="w-full h-full object-cover animate-fade-in"
-                  />
-                ) : (
-                  <video
-                    key={currentImageIndex}
-                    src={currentMedia.url}
-                    controls
-                    className="w-full h-full object-contain bg-black"
-                  />
-                )}
-                
+              {/* Mobile Gallery: Main Viewer + Thumbnails (Hidden on desktop) */}
+              <div className="md:hidden flex flex-col gap-2">
+
+                {/* ── Main Viewer ── */}
+                <div
+                  className="relative aspect-[4/3] rounded-xl overflow-hidden bg-black"
+                  onTouchStart={onTouchStart}
+                  onTouchMove={onTouchMove}
+                  onTouchEnd={onTouchEnd}
+                >
+                  {currentMedia.mimeType.startsWith('image/') ? (
+                    <img
+                      key={currentImageIndex}
+                      src={currentMedia.url}
+                      alt={property.title}
+                      className="w-full h-full object-cover animate-fade-in"
+                    />
+                  ) : (
+                    <video
+                      key={currentImageIndex}
+                      src={currentMedia.url}
+                      controls
+                      playsInline
+                      className="w-full h-full object-contain bg-black"
+                    />
+                  )}
+
+                  {property.media.length > 1 && (
+                    <>
+                      {/* Left arrow */}
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-2 z-30">
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          className="w-10 h-10 rounded-full bg-white/90 shadow-lg border-0 active:scale-90 transition-transform"
+                          onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                        >
+                          <ChevronLeft className="h-5 w-5 text-foreground" />
+                        </Button>
+                      </div>
+
+                      {/* Right arrow */}
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-2 z-30">
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          className="w-10 h-10 rounded-full bg-white/90 shadow-lg border-0 active:scale-90 transition-transform"
+                          onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                        >
+                          <ChevronRight className="h-5 w-5 text-foreground" />
+                        </Button>
+                      </div>
+
+                      {/* Counter */}
+                      <div className="absolute bottom-3 right-3 bg-black/65 text-white text-[11px] font-bold px-2.5 py-1 rounded-full z-30">
+                        {currentImageIndex + 1} / {property.media.length}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* ── Thumbnail Strip ── */}
                 {property.media.length > 1 && (
-                  <>
-                    {/* Left Arrow */}
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-2 z-30">
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        className="w-12 h-12 rounded-full bg-white/90 backdrop-blur-md shadow-lg border-0 active:scale-90 transition-transform"
-                        onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                      >
-                        <ChevronLeft className="h-7 w-7 text-foreground" />
-                      </Button>
-                    </div>
+                  <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 px-0.5">
+                    {property.media.map((media, idx) => {
+                      const isActive = idx === currentImageIndex;
+                      const isVideo = media.mimeType.startsWith('video/');
+                      return (
+                        <button
+                          key={media.id}
+                          onClick={() => setCurrentImageIndex(idx)}
+                          className={`relative flex-shrink-0 w-[72px] h-[72px] rounded-lg overflow-hidden transition-all active:scale-95 ${isActive
+                              ? 'ring-2 ring-primary ring-offset-1 opacity-100'
+                              : 'opacity-55 hover:opacity-80'
+                            }`}
+                        >
+                          {/* Thumbnail image */}
+                          {isVideo ? (
+                            media.thumbnailUrl ? (
+                              <img
+                                src={media.thumbnailUrl}
+                                alt={`Vidéo ${idx + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                                <div className="w-0 h-0 border-l-[8px] border-l-white border-y-[6px] border-y-transparent ml-1" />
+                              </div>
+                            )
+                          ) : (
+                            <img
+                              src={media.url}
+                              alt={`Photo ${idx + 1}`}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          )}
 
-                    {/* Right Arrow */}
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-2 z-30">
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        className="w-12 h-12 rounded-full bg-white/90 backdrop-blur-md shadow-lg border-0 active:scale-90 transition-transform"
-                        onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                      >
-                        <ChevronRight className="h-7 w-7 text-foreground" />
-                      </Button>
-                    </div>
-
-                    {/* Badge */}
-                    <div className="absolute bottom-4 right-4 bg-black/70 text-white text-[11px] font-bold px-3 py-1.5 rounded-full tracking-wider z-30 backdrop-blur-sm">
-                      {currentImageIndex + 1} / {property.media.length}
-                    </div>
-                  </>
+                          {/* Play overlay for videos */}
+                          {isVideo && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="w-7 h-7 rounded-full bg-black/50 flex items-center justify-center">
+                                <div className="w-0 h-0 border-l-[7px] border-l-white border-y-[5px] border-y-transparent ml-0.5" />
+                              </div>
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
                 )}
+
               </div>
             </>
           ) : (
@@ -607,7 +664,7 @@ export default function PropertyDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           {/* Left Column - Details */}
           <div className="lg:col-span-2 space-y-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-            
+
             {/* Quick Summary Row */}
             <div className="flex flex-wrap items-center gap-4 pb-6 border-b border-border">
               {(isAdmin || property.showRooms) && (
@@ -635,9 +692,9 @@ export default function PropertyDetailPage() {
             {/* Availability Timeline */}
             <div className="pt-6 pb-6 border-b border-border">
               <h2 className="text-xl font-semibold mb-6 text-foreground">Disponibilités</h2>
-              <AvailabilityTimeline 
-                propertyId={property.id} 
-                isAdmin={isAdmin} 
+              <AvailabilityTimeline
+                propertyId={property.id}
+                isAdmin={isAdmin}
               />
             </div>
 
@@ -653,7 +710,7 @@ export default function PropertyDetailPage() {
                 <div className="text-foreground/90 whitespace-pre-line leading-relaxed mb-8">
                   {property.description}
                 </div>
-                
+
                 {/* Google Maps Embed Location - Moved right under description */}
                 {property.location && (
                   <div>
@@ -723,7 +780,7 @@ export default function PropertyDetailPage() {
                 )}
               </div>
             </div>
-            
+
           </div>
 
           {/* Right Column - Booking / Contact Card (Sticky) */}
@@ -745,7 +802,7 @@ export default function PropertyDetailPage() {
                 </div>
 
                 <div id="booking-widget" className="space-y-4 border rounded-xl p-4 bg-muted/30 mb-6">
-                  
+
                   {/* Booking Widget Inputs */}
                   <div className="border-2 border-border/60 rounded-xl bg-card overflow-hidden shadow-sm transition-all focus-within:border-primary/30 focus-within:ring-2 focus-within:ring-primary/10">
                     <div className="flex items-center">
@@ -755,8 +812,8 @@ export default function PropertyDetailPage() {
                           Arrivée
                         </label>
                         <div className="flex items-center gap-1.5">
-                          <input 
-                            type="number" 
+                          <input
+                            type="number"
                             placeholder="Jour"
                             className="w-16 text-base font-bold bg-muted/30 hover:bg-muted/60 focus:bg-background rounded-md px-2 py-1 outline-none text-center transition-colors [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             value={startDay}
@@ -769,7 +826,7 @@ export default function PropertyDetailPage() {
                             min="1"
                             max="31"
                           />
-                          <select 
+                          <select
                             className="flex-1 text-sm font-bold bg-muted/30 hover:bg-muted/60 focus:bg-background rounded-md px-1 py-1.5 outline-none cursor-pointer text-foreground transition-colors"
                             value={startMonth}
                             onChange={(e) => {
@@ -785,15 +842,15 @@ export default function PropertyDetailPage() {
                           </select>
                         </div>
                       </div>
-                      
+
                       {/* Départ */}
                       <div className="flex-1 p-3.5 bg-transparent relative group">
                         <label className="block text-[10px] font-extrabold uppercase text-primary/80 mb-2 tracking-widest">
                           Départ
                         </label>
                         <div className="flex items-center gap-1.5">
-                          <input 
-                            type="number" 
+                          <input
+                            type="number"
                             placeholder="Jour"
                             className="w-16 text-base font-bold bg-muted/30 hover:bg-muted/60 focus:bg-background rounded-md px-2 py-1 outline-none text-center transition-colors [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             value={endDay}
@@ -806,7 +863,7 @@ export default function PropertyDetailPage() {
                             min="1"
                             max="31"
                           />
-                          <select 
+                          <select
                             className="flex-1 text-sm font-bold bg-muted/30 hover:bg-muted/60 focus:bg-background rounded-md px-1 py-1.5 outline-none cursor-pointer text-foreground transition-colors"
                             value={endMonth}
                             onChange={(e) => {
@@ -823,14 +880,14 @@ export default function PropertyDetailPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Durée */}
                     <div className="border-t border-border/60 p-3.5 flex items-center justify-between bg-muted/10">
                       <label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Durée (nuits)</label>
                       <div className="flex items-center gap-2">
-                        <input 
-                          type="number" 
-                          className="w-16 text-base font-bold outline-none bg-background rounded-md px-2 py-1 text-right shadow-sm border border-border/50 focus:border-primary/50 transition-colors [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                        <input
+                          type="number"
+                          className="w-16 text-base font-bold outline-none bg-background rounded-md px-2 py-1 text-right shadow-sm border border-border/50 focus:border-primary/50 transition-colors [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           value={reserveDays}
                           onChange={handleReserveDaysChange}
                           placeholder="Ex: 3"
@@ -858,9 +915,9 @@ export default function PropertyDetailPage() {
                       </div>
                     </div>
                   )}
-                  
+
                   <div className="pt-2">
-                    <Button 
+                    <Button
                       className="w-full py-6 text-lg font-bold rounded-xl shadow-md transition-transform active:scale-[0.98] bg-primary hover:bg-primary/90 text-primary-foreground border-0"
                       onClick={onReserveClick}
                     >
@@ -875,8 +932,8 @@ export default function PropertyDetailPage() {
                     <Phone className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                     <div>
                       <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Téléphone</div>
-                      <a 
-                        href={`tel:${BROKER_PHONE}`} 
+                      <a
+                        href={`tel:${BROKER_PHONE}`}
                         className="text-lg font-bold text-foreground hover:text-primary transition-colors"
                       >
                         {BROKER_PHONE_DISPLAY}
@@ -940,7 +997,7 @@ export default function PropertyDetailPage() {
                   {...editForm.register("location")}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="edit-distance-beach">Distance à la plage</Label>
                 <Input
@@ -970,7 +1027,7 @@ export default function PropertyDetailPage() {
                     min={1}
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="edit-max-guests">Voyageurs max</Label>
                   <Input
@@ -1024,7 +1081,7 @@ export default function PropertyDetailPage() {
               {/* Visibility Controls */}
               <div className="space-y-3 p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-900">
                 <h4 className="font-semibold text-sm text-blue-900 dark:text-blue-300">Paramètres de visibilité</h4>
-                
+
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -1069,14 +1126,14 @@ export default function PropertyDetailPage() {
             </span>
             <span className="text-sm text-muted-foreground font-medium">/ nuit</span>
           </div>
-          <a 
-            href={`tel:${BROKER_PHONE}`} 
+          <a
+            href={`tel:${BROKER_PHONE}`}
             className="text-sm font-semibold text-primary underline underline-offset-2"
           >
             {BROKER_PHONE_DISPLAY}
           </a>
         </div>
-        <Button 
+        <Button
           className="bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-90 text-white font-bold px-8 py-6 rounded-xl shadow-md transition-transform active:scale-[0.98] border-0"
           onClick={onReserveClick}
         >
@@ -1094,26 +1151,26 @@ export default function PropertyDetailPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-4 py-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full justify-between text-lg py-6 h-auto border-2 hover:bg-slate-50"
               onClick={() => window.location.href = `tel:${BROKER_PHONE}`}
             >
               <span>Nous appeler</span>
               <span className="text-2xl">📞</span>
             </Button>
-            
-            <Button 
-              variant="outline" 
+
+            <Button
+              variant="outline"
               className="w-full justify-between text-lg py-6 h-auto border-2 border-[#25D366]/20 hover:bg-[#25D366]/5 text-[#075E54] hover:text-[#128C7E]"
               onClick={() => window.open(`https://wa.me/216${BROKER_PHONE}`, '_blank')}
             >
               <span>Nous appeler sur WhatsApp</span>
               <WhatsAppIcon className="w-8 h-8 text-[#25D366]" />
             </Button>
-            
-            <Button 
-              variant="outline" 
+
+            <Button
+              variant="outline"
               className="w-full justify-between text-lg py-6 h-auto border-2 border-[#25D366]/20 hover:bg-[#25D366]/5 text-[#075E54] hover:text-[#128C7E]"
               onClick={() => {
                 const datesText = (startDate && endDate) ? `\nJ'aimerais réserver du ${startDate} au ${endDate} (${reserveDays} nuits).` : '';
