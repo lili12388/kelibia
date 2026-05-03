@@ -21,7 +21,7 @@ import {
   ChevronLeft, ChevronRight, User, Pencil, ChefHat,
   Refrigerator, Flame, Wind, Wifi, Car, Waves, Users,
   TriangleAlert, Microwave, Coffee, Home, Utensils, Info, Clock, ShieldCheck,
-  Ban, Smoke, NotebookText
+  Ban, Smoke, NotebookText, Tv
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -453,7 +453,8 @@ export default function PropertyDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-12">
+    <>
+      <div className="min-h-screen bg-background pb-20 md:pb-12">
       <SEO
         title={seoTitle}
         description={seoDescription}
@@ -735,14 +736,43 @@ export default function PropertyDetailPage() {
               )}
             </div>
 
-            {/* Bed Details (New) */}
+            {/* Bed Details (Enhanced) */}
             {property.bedDetails && (
-              <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-xl border border-border/50">
-                <BedDouble className="w-5 h-5 text-primary mt-0.5" />
-                <div>
-                  <span className="text-sm font-bold text-foreground block">Couchages</span>
-                  <span className="text-sm text-muted-foreground">{property.bedDetails}</span>
+              <div className="flex flex-col gap-3 p-4 bg-muted/30 rounded-xl border border-border/50">
+                <div className="flex items-start gap-3">
+                  <BedDouble className="w-5 h-5 text-primary mt-0.5" />
+                  <div>
+                    <span className="text-sm font-bold text-foreground block">Couchages</span>
+                    <span className="text-sm text-muted-foreground">{property.bedDetails}</span>
+                  </div>
                 </div>
+                
+                {/* Structured Bed Info (if admin provided detailed counts) */}
+                {(property.numDoubleBeds > 0 || property.numSingleBeds > 0 || property.hasSofaBed) && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-border/30">
+                    {property.numDoubleBeds > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="bg-primary/5 text-primary border-primary/10">
+                          {property.numDoubleBeds} Lit{property.numDoubleBeds > 1 ? 's' : ''} double{property.numDoubleBeds > 1 ? 's' : ''}
+                        </Badge>
+                      </div>
+                    )}
+                    {property.numSingleBeds > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="bg-primary/5 text-primary border-primary/10">
+                          {property.numSingleBeds} Lit{property.numSingleBeds > 1 ? 's' : ''} simple{property.numSingleBeds > 1 ? 's' : ''}
+                        </Badge>
+                      </div>
+                    )}
+                    {property.hasSofaBed && (
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="bg-primary/5 text-primary border-primary/10">
+                          Canapé-lit
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
@@ -819,6 +849,14 @@ export default function PropertyDetailPage() {
                     <span className="font-medium">Serviettes fournies</span>
                   </div>
                 )}
+                {property.tvType && property.tvType !== "None" && (
+                  <div className="flex items-center gap-3 text-foreground/80">
+                    <Tv className="w-6 h-6 opacity-70" />
+                    <span className="font-medium">
+                      {property.tvType === "Smart TV" ? "Smart TV (Netflix/YT)" : "Télévision"}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -834,6 +872,8 @@ export default function PropertyDetailPage() {
                 <div className="text-foreground/90 whitespace-pre-line leading-relaxed mb-8">
                   {property.description}
                 </div>
+              </div>
+            )}
 
             {/* Rules & Terms (New) - Moved before Map */}
             <div className="py-6 border-t border-border">
@@ -921,7 +961,6 @@ export default function PropertyDetailPage() {
                 )}
               </div>
             )}
-
           </div>
 
           {/* Right Column - Booking / Contact Card (Sticky) */}
@@ -1370,6 +1409,7 @@ export default function PropertyDetailPage() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </>
   );
 }

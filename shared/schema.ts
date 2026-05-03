@@ -20,6 +20,10 @@ export const propertySubmissions = pgTable("property_submissions", {
   hasGarden: boolean("has_garden").notNull().default(false),
   hasLinens: boolean("has_linens").notNull().default(false),
   hasTowels: boolean("has_towels").notNull().default(false),
+  tvType: text("tv_type").notNull().default("None"), // None, Standard, Smart TV
+  numDoubleBeds: integer("num_double_beds").notNull().default(0),
+  numSingleBeds: integer("num_single_beds").notNull().default(0),
+  hasSofaBed: boolean("has_sofa_bed").notNull().default(false),
   bedDetails: text("bed_details"), // e.g. "1 lit double, 2 lits simples"
   locationRepere: text("location_repere"), // e.g. "5 min à pieds de la plage"
   nearbyCommodities: text("nearby_commodities"), // e.g. "Épicerie, Pharmacie à 200m"
@@ -81,6 +85,10 @@ export const properties = pgTable("properties", {
   hasGarden: boolean("has_garden").notNull().default(false),
   hasLinens: boolean("has_linens").notNull().default(false),
   hasTowels: boolean("has_towels").notNull().default(false),
+  tvType: text("tv_type").notNull().default("None"),
+  numDoubleBeds: integer("num_double_beds").notNull().default(0),
+  numSingleBeds: integer("num_single_beds").notNull().default(0),
+  hasSofaBed: boolean("has_sofa_bed").notNull().default(false),
   bedDetails: text("bed_details"),
   locationRepere: text("location_repere"),
   nearbyCommodities: text("nearby_commodities"),
@@ -250,6 +258,10 @@ export const insertPropertySubmissionSchema = createInsertSchema(propertySubmiss
   checkOutTime: z.string().optional().default("11:00"),
   cancellationPolicy: z.string().optional(),
   houseRules: z.string().optional(),
+  tvType: z.string().default("None"),
+  numDoubleBeds: z.number().min(0).default(0),
+  numSingleBeds: z.number().min(0).default(0),
+  hasSofaBed: z.boolean().default(false),
 });
 
 export const insertSubmissionMediaSchema = createInsertSchema(submissionMedia).omit({

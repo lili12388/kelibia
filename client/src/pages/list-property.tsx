@@ -24,7 +24,7 @@ export default function ListPropertyPage() {
   const [previews, setPreviews] = useState<string[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
-  
+
   // Upload statistics
   const [uploadStats, setUploadStats] = useState({
     uploadedBytes: 0,
@@ -68,7 +68,7 @@ export default function ListPropertyPage() {
       uploadAbortController.abort();
       setUploadAbortController(null);
     }
-    
+
     // Reset upload state but keep form data
     setIsUploading(false);
     setUploadProgress(0);
@@ -79,18 +79,18 @@ export default function ListPropertyPage() {
       estimatedTimeRemaining: 0,
       startTime: 0
     });
-    
+
     toast({
       title: "Upload Cancelled",
       description: "Your upload has been cancelled. Your form data is preserved.",
     });
   };
-  
+
   // Check if user is admin and if they're on admin route
   const { data: authStatus } = useQuery<{ isAuthenticated: boolean }>({
     queryKey: ['/api/broker/auth-status'],
   });
-  
+
   const isAdmin = authStatus?.isAuthenticated;
   const isAdminRoute = location.startsWith('/admin');
 
@@ -110,6 +110,10 @@ export default function ListPropertyPage() {
       hasGarden: false,
       hasLinens: false,
       hasTowels: false,
+      tvType: "None",
+      numDoubleBeds: 0,
+      numSingleBeds: 0,
+      hasSofaBed: false,
       bedDetails: "",
       locationRepere: "",
       nearbyCommodities: "",
@@ -143,10 +147,10 @@ export default function ListPropertyPage() {
     mutationFn: async (data: InsertPropertySubmission & { files: File[]; isAdmin?: boolean }) => {
       setIsUploading(true);
       setUploadProgress(0);
-      
+
       // Simulate progress for compression phase
       setUploadProgress(10);
-      
+
       // Compress images on client side to reduce payload size
       const compressedFiles = await Promise.all(
         files.map(async (file) => {
@@ -211,10 +215,10 @@ export default function ListPropertyPage() {
           });
         })
       );
-      
+
       // Use FormData for file uploads (much more efficient than base64)
       const formData = new FormData();
-      
+
       // Add all property data fields
       const { files: _, isAdmin, ...propertyData } = data;
       Object.entries(propertyData).forEach(([key, value]) => {
@@ -222,22 +226,22 @@ export default function ListPropertyPage() {
           formData.append(key, String(value));
         }
       });
-      
+
       // Add compressed files to FormData
       compressedFiles.forEach((file) => {
         formData.append('media', file);
       });
-      
+
       // Start upload progress tracking from 0%
       setUploadProgress(0);
 
       // Use admin endpoint if admin is posting
       const endpoint = data.isAdmin ? '/api/broker/properties/submit-admin' : '/api/properties/submit';
-      
+
       // Calculate total file size for statistics
       const totalBytes = compressedFiles.reduce((sum, file) => sum + file.size, 0);
       const startTime = Date.now();
-      
+
       // Initialize upload stats
       setUploadStats({
         uploadedBytes: 0,
@@ -254,13 +258,13 @@ export default function ListPropertyPage() {
       // Use XMLHttpRequest for real-time upload progress tracking
       const response = await new Promise<Response>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        
+
         // Handle abort signal
         abortController.signal.addEventListener('abort', () => {
           xhr.abort();
           reject(new Error('Upload cancelled by user'));
         });
-        
+
         // Track upload progress
         xhr.upload.addEventListener('progress', (event) => {
           if (event.lengthComputable) {
@@ -270,7 +274,7 @@ export default function ListPropertyPage() {
             const speed = elapsedTime > 0 ? uploadedBytes / elapsedTime : 0;
             const remainingBytes = event.total - uploadedBytes;
             const estimatedTimeRemaining = speed > 0 ? remainingBytes / speed : 0;
-            
+
             // Update upload statistics
             setUploadStats({
               uploadedBytes,
@@ -279,13 +283,13 @@ export default function ListPropertyPage() {
               estimatedTimeRemaining,
               startTime
             });
-            
+
             // Calculate real upload progress percentage
             const realUploadPercent = (event.loaded / event.total) * 100;
             setUploadProgress(realUploadPercent);
           }
         });
-        
+
         // Handle completion
         xhr.addEventListener('load', () => {
           setUploadProgress(95); // Leave 5% for server processing
@@ -305,23 +309,23 @@ export default function ListPropertyPage() {
             reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
           }
         });
-        
+
         // Handle errors
         xhr.addEventListener('error', () => {
           reject(new Error('Network error occurred'));
         });
-        
+
         xhr.addEventListener('timeout', () => {
           reject(new Error('Upload timeout'));
         });
-        
+
         // Configure and send request
         xhr.open('POST', endpoint);
         xhr.withCredentials = true; // Include cookies for authentication
         xhr.timeout = 300000; // 5 minute timeout
         xhr.send(formData);
       });
-      
+
       // Final progress update
       setUploadProgress(100);
 
@@ -329,7 +333,7 @@ export default function ListPropertyPage() {
         // Get response text first (can only read body once)
         const responseText = await response.text();
         let errorMessage = 'Failed to submit property';
-        
+
         try {
           // Try to parse as JSON
           const error = JSON.parse(responseText);
@@ -342,7 +346,7 @@ export default function ListPropertyPage() {
       }
 
       const result = await response.json();
-      
+
       // Keep progress at 100% for a moment before resetting
       setTimeout(() => {
         setIsUploading(false);
@@ -355,7 +359,7 @@ export default function ListPropertyPage() {
           startTime: 0
         });
       }, 1000);
-      
+
       return result;
     },
     onSuccess: (data, variables) => {
@@ -382,7 +386,7 @@ export default function ListPropertyPage() {
         estimatedTimeRemaining: 0,
         startTime: 0
       });
-      
+
       // Don't show error toast if upload was cancelled by user
       if (error.message !== 'Upload cancelled by user') {
         toast({
@@ -396,11 +400,11 @@ export default function ListPropertyPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
-    
+
     const validFiles = selectedFiles.filter(file => {
       const isImage = file.type.startsWith('image/');
       const isVideo = file.type.startsWith('video/');
-      
+
       return isImage || isVideo;
     });
 
@@ -436,10 +440,17 @@ export default function ListPropertyPage() {
     const floor = data.floorLevel ? ` - ${data.floorLevel}` : "";
     const salon = data.hasLivingRoom ? " - Avec salon" : "";
     const autoTitle = `${data.propertyType}${floor}${salon} - ${furni}`;
-    
+
+    // Generate bedDetails summary from structured fields
+    const bedSummary = [
+      data.numDoubleBeds > 0 ? `${data.numDoubleBeds} lit${data.numDoubleBeds > 1 ? 's' : ''} double${data.numDoubleBeds > 1 ? 's' : ''}` : null,
+      data.numSingleBeds > 0 ? `${data.numSingleBeds} lit${data.numSingleBeds > 1 ? 's' : ''} simple${data.numSingleBeds > 1 ? 's' : ''}` : null,
+      data.hasSofaBed ? "1 canapé-lit (Salon)" : null
+    ].filter(Boolean).join(", ");
+
     // Add default sizeM2 since we removed the input field
     // Use isAdminRoute to determine if posting as admin
-    submitPropertyMutation.mutate({ ...data, title: autoTitle, sizeM2: 0, files, isAdmin: isAdminRoute });
+    submitPropertyMutation.mutate({ ...data, title: autoTitle, bedDetails: bedSummary, sizeM2: 0, files, isAdmin: isAdminRoute });
   };
 
   return (
@@ -453,8 +464,8 @@ export default function ListPropertyPage() {
             {isAdminRoute ? "Ajouter une propriété (Admin)" : "Proposer votre propriété"}
           </h1>
           <p className="text-muted-foreground text-base sm:text-lg">
-            {isAdmin 
-              ? "Votre propriété sera publiée immédiatement." 
+            {isAdmin
+              ? "Votre propriété sera publiée immédiatement."
               : "Toutes les informations sont privées et seront examinées par notre agent avant publication."}
           </p>
         </div>
@@ -641,19 +652,55 @@ export default function ListPropertyPage() {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="bedDetails"
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel>Précisions sur le Couchage</FormLabel>
-                        <FormControl>
-                          <Input placeholder="ex: 1 lit double, 2 lits simples, 1 canapé-lit" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-xl border border-border/50">
+                    <FormField
+                      control={form.control}
+                      name="numDoubleBeds"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Lits doubles</FormLabel>
+                          <FormControl>
+                            <Input type="number" min={0} {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="numSingleBeds"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Lits simples</FormLabel>
+                          <FormControl>
+                            <Input type="number" min={0} {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="hasSofaBed"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Canapé-lit (Salon)?</FormLabel>
+                          <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Choisir" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="false">Non</SelectItem>
+                              <SelectItem value="true">Oui</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
 
                 {/* Kitchen Amenities & Logistics */}
@@ -794,6 +841,29 @@ export default function ListPropertyPage() {
 
                     <FormField
                       control={form.control}
+                      name="tvType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Télévision?</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Choisir" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="None">Pas de TV</SelectItem>
+                              <SelectItem value="Standard">Oui, TV Standard</SelectItem>
+                              <SelectItem value="Smart TV">Oui, Smart TV (Netflix/YouTube)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
                       name="hasBalcony"
                       render={({ field }) => (
                         <FormItem>
@@ -861,7 +931,7 @@ export default function ListPropertyPage() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="hasWiFi"
@@ -929,39 +999,7 @@ export default function ListPropertyPage() {
                   />
                 </div>
 
-                {/* Neighborhood Information */}
-                <div className="space-y-4 pt-4 border-t border-border/50">
-                  <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Quartier & Localisation</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="locationRepere"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Point de repère</FormLabel>
-                          <FormControl>
-                            <Input placeholder="ex: 5 min à pieds de la plage de Kelibia" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
 
-                    <FormField
-                      control={form.control}
-                      name="nearbyCommodities"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Commodités à proximité</FormLabel>
-                          <FormControl>
-                            <Input placeholder="ex: Épicerie, Restaurant, Pharmacie à 200m" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
 
                 {/* Rules & Terms */}
                 <div className="space-y-4 pt-4 border-t border-border/50">
@@ -1002,10 +1040,10 @@ export default function ListPropertyPage() {
                         <FormItem className="md:col-span-2">
                           <FormLabel>Conditions d'annulation</FormLabel>
                           <FormControl>
-                            <Textarea 
+                            <Textarea
                               placeholder="ex: Annulation gratuite jusqu'à 7 jours avant l'arrivée. Acompte de 30% requis."
                               className="min-h-20"
-                              {...field} 
+                              {...field}
                             />
                           </FormControl>
                           <FormMessage />
@@ -1037,11 +1075,11 @@ export default function ListPropertyPage() {
                     <FormItem>
                       <FormLabel>Description détaillée</FormLabel>
                       <FormControl>
-                        <Textarea 
+                        <Textarea
                           placeholder="Décrivez votre propriété en détail (points forts, ambiance...)"
                           className="min-h-32"
                           data-testid="input-description"
-                          {...field} 
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
@@ -1058,10 +1096,10 @@ export default function ListPropertyPage() {
                       <FormItem>
                         <FormLabel>Prix par nuit (TND)</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="ex: 120" 
+                          <Input
+                            placeholder="ex: 120"
                             data-testid="input-price"
-                            {...field} 
+                            {...field}
                           />
                         </FormControl>
                         <FormMessage />
@@ -1075,11 +1113,11 @@ export default function ListPropertyPage() {
                       name="referenceCode"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Code de référence (Optionnel)</FormLabel>
+                          <FormLabel>Code de référence</FormLabel>
                           <FormControl>
-                            <Input 
-                              placeholder="ex: REF-001" 
-                              {...field} 
+                            <Input
+                              placeholder="ex: REF-001"
+                              {...field}
                               value={field.value ?? ''}
                             />
                           </FormControl>
@@ -1092,10 +1130,10 @@ export default function ListPropertyPage() {
               </CardContent>
             </Card>
 
-            {/* Location & Additional Information Section */}
+            {/* Location & Neighborhood Section */}
             <Card>
               <CardHeader>
-                <CardTitle>Localisation & Informations Complémentaires</CardTitle>
+                <CardTitle>Localisation & Quartier</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1106,10 +1144,10 @@ export default function ListPropertyPage() {
                       <FormItem>
                         <FormLabel>Localisation exacte</FormLabel>
                         <FormControl>
-                          <Input 
+                          <Input
                             placeholder="ex: Hay Khadhra, près de l'avenue principale"
                             data-testid="input-location"
-                            {...field} 
+                            {...field}
                           />
                         </FormControl>
                         <FormMessage />
@@ -1124,11 +1162,39 @@ export default function ListPropertyPage() {
                       <FormItem>
                         <FormLabel>Distance à la plage (Optionnel)</FormLabel>
                         <FormControl>
-                          <Input 
+                          <Input
                             placeholder="ex: À 5 minutes à pied"
-                            {...field} 
+                            {...field}
                             value={field.value ?? ''}
                           />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="locationRepere"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Point de repère</FormLabel>
+                        <FormControl>
+                          <Input placeholder="ex: 5 min à pieds de la plage de Kelibia" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="nearbyCommodities"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Commodités à proximité</FormLabel>
+                        <FormControl>
+                          <Input placeholder="ex: Épicerie, Restaurant, Pharmacie à 200m" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1143,7 +1209,7 @@ export default function ListPropertyPage() {
                     <FormItem>
                       <FormLabel>Lien Google Maps (Optionnel)</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           type="url"
                           placeholder="ex: https://maps.app.goo.gl/..."
                           data-testid="input-google-maps"
@@ -1192,8 +1258,8 @@ export default function ListPropertyPage() {
                       <div key={index} className="relative group" data-testid={`media-preview-${index}`}>
                         <div className="aspect-square rounded-lg overflow-hidden bg-muted touch-manipulation">
                           {files[index].type.startsWith('image/') ? (
-                            <img 
-                              src={preview} 
+                            <img
+                              src={preview}
                               alt={`Preview ${index + 1}`}
                               className="w-full h-full object-cover"
                             />
@@ -1241,10 +1307,10 @@ export default function ListPropertyPage() {
                     <FormItem>
                       <FormLabel>Full Name</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           placeholder="Your full name"
                           data-testid="input-owner-name"
-                          {...field} 
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
@@ -1260,11 +1326,11 @@ export default function ListPropertyPage() {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input 
+                          <Input
                             type="email"
                             placeholder="your@email.com"
                             data-testid="input-owner-email"
-                            {...field} 
+                            {...field}
                           />
                         </FormControl>
                         <FormMessage />
@@ -1283,12 +1349,12 @@ export default function ListPropertyPage() {
                             <div className="flex items-center bg-muted px-3 py-2 rounded-md border border-input h-10">
                               <span className="text-sm font-medium text-foreground">+216</span>
                             </div>
-                            <Input 
+                            <Input
                               type="tel"
                               placeholder="XX XXX XXX"
                               data-testid="input-owner-phone"
                               className="flex-1"
-                              {...field} 
+                              {...field}
                             />
                           </div>
                         </FormControl>
@@ -1309,16 +1375,16 @@ export default function ListPropertyPage() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <p className="text-sm sm:text-base font-medium text-foreground">
-                          {uploadProgress < 95 ? "Uploading your property..." : 
-                           "Processing submission..."}
+                          {uploadProgress < 95 ? "Uploading your property..." :
+                            "Processing submission..."}
                         </p>
                         <p className="text-lg sm:text-xl font-bold text-primary">
                           {Math.round(uploadProgress)}%
                         </p>
                       </div>
-                      
+
                       <Progress value={uploadProgress} className="h-4 sm:h-3" />
-                      
+
                       {/* Upload Statistics - Show during upload phase */}
                       {uploadProgress > 0 && uploadProgress < 95 && uploadStats.totalBytes > 0 && (
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs sm:text-sm">
@@ -1329,7 +1395,7 @@ export default function ListPropertyPage() {
                             </div>
                             <div className="text-muted-foreground">Speed</div>
                           </div>
-                          
+
                           {/* File Size Progress */}
                           <div className="bg-muted/50 rounded-lg p-3 text-center">
                             <div className="font-semibold text-primary">
@@ -1337,7 +1403,7 @@ export default function ListPropertyPage() {
                             </div>
                             <div className="text-muted-foreground">Uploaded</div>
                           </div>
-                          
+
                           {/* Time Remaining */}
                           <div className="bg-muted/50 rounded-lg p-3 text-center">
                             <div className="font-semibold text-primary">
@@ -1347,22 +1413,22 @@ export default function ListPropertyPage() {
                           </div>
                         </div>
                       )}
-                      
+
                       <p className="text-xs sm:text-sm text-muted-foreground text-center">
                         {uploadProgress < 95 ? "Uploading files to server" :
-                         "Almost done! Finalizing your property listing"}
+                          "Almost done! Finalizing your property listing"}
                       </p>
                     </div>
                   </CardContent>
                 </Card>
               )}
-              
+
               <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
                 {isUploading ? (
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    data-testid="button-cancel" 
+                  <Button
+                    type="button"
+                    variant="outline"
+                    data-testid="button-cancel"
                     onClick={cancelUpload}
                     className="w-full sm:w-auto order-2 sm:order-1"
                   >
@@ -1370,18 +1436,18 @@ export default function ListPropertyPage() {
                   </Button>
                 ) : (
                   <Link href="/" className="order-2 sm:order-1">
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      data-testid="button-cancel" 
+                    <Button
+                      type="button"
+                      variant="outline"
+                      data-testid="button-cancel"
                       className="w-full sm:w-auto"
                     >
                       Cancel
                     </Button>
                   </Link>
                 )}
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   size="lg"
                   disabled={submitPropertyMutation.isPending || isUploading}
                   data-testid="button-submit"

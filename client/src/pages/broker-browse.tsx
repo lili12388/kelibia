@@ -264,6 +264,10 @@ export default function BrokerBrowsePage() {
       hasGarden: submission.hasGarden ?? false,
       hasLinens: submission.hasLinens ?? false,
       hasTowels: submission.hasTowels ?? false,
+      tvType: submission.tvType || "None",
+      numDoubleBeds: submission.numDoubleBeds ?? 0,
+      numSingleBeds: submission.numSingleBeds ?? 0,
+      hasSofaBed: submission.hasSofaBed ?? false,
       bedDetails: submission.bedDetails || "",
       locationRepere: submission.locationRepere || "",
       nearbyCommodities: submission.nearbyCommodities || "",
@@ -282,9 +286,19 @@ export default function BrokerBrowsePage() {
     if (!selectedSubmission) return;
     
     const formData = editForm.getValues();
+    
+    // Generate bedDetails summary
+    const bedSummary = [
+      formData.numDoubleBeds > 0 ? `${formData.numDoubleBeds} lit${formData.numDoubleBeds > 1 ? 's' : ''} double${formData.numDoubleBeds > 1 ? 's' : ''}` : null,
+      formData.numSingleBeds > 0 ? `${formData.numSingleBeds} lit${formData.numSingleBeds > 1 ? 's' : ''} simple${formData.numSingleBeds > 1 ? 's' : ''}` : null,
+      formData.hasSofaBed ? "1 canapé-lit (Salon)" : null
+    ].filter(Boolean).join(", ");
+    
+    const finalData = { ...formData, bedDetails: bedSummary };
+    
     updateMutation.mutate({
       id: selectedSubmission.id,
-      data: formData,
+      data: finalData,
       file: neighborhoodMapFile,
     });
   };
@@ -700,14 +714,37 @@ export default function BrokerBrowsePage() {
                 />
               </div>
 
-              {/* Bed Details */}
-              <div className="col-span-2 space-y-2 p-3 bg-slate-50 rounded-lg border">
-                <Label htmlFor="edit-bed-details">Précisions sur le Couchage</Label>
-                <Input
-                  id="edit-bed-details"
-                  {...editForm.register("bedDetails")}
-                  placeholder="ex: 1 lit double, 2 lits simples"
-                />
+              {/* Bed Details - Structured */}
+              <div className="col-span-2 grid grid-cols-3 gap-4 p-3 bg-slate-50 rounded-lg border">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-double-beds">Lits doubles</Label>
+                  <Input
+                    id="edit-double-beds"
+                    type="number"
+                    {...editForm.register("numDoubleBeds", { valueAsNumber: true })}
+                    min={0}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-single-beds">Lits simples</Label>
+                  <Input
+                    id="edit-single-beds"
+                    type="number"
+                    {...editForm.register("numSingleBeds", { valueAsNumber: true })}
+                    min={0}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Canapé-lit?</Label>
+                  <div className="flex items-center space-x-2 pt-2">
+                    <Checkbox
+                      id="edit-sofa-bed"
+                      checked={editForm.watch("hasSofaBed")}
+                      onCheckedChange={(checked) => editForm.setValue("hasSofaBed", !!checked)}
+                    />
+                    <Label htmlFor="edit-sofa-bed" className="text-xs">Salon</Label>
+                  </div>
+                </div>
               </div>
 
               {/* Bathrooms */}
@@ -845,6 +882,22 @@ export default function BrokerBrowsePage() {
                       onCheckedChange={(checked) => editForm.setValue("hasGarden", !!checked)}
                     />
                     <Label htmlFor="edit-garden">Jardin / Accès ext.</Label>
+                  </div>
+                  <div className="col-span-2 space-y-2 p-2 bg-slate-50 rounded-lg border">
+                    <Label htmlFor="edit-tv">Télévision</Label>
+                    <Select 
+                      value={editForm.watch("tvType")} 
+                      onValueChange={(val) => editForm.setValue("tvType", val)}
+                    >
+                      <SelectTrigger id="edit-tv">
+                        <SelectValue placeholder="Choisir le type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="None">Pas de TV</SelectItem>
+                        <SelectItem value="Standard">Oui, TV Standard</SelectItem>
+                        <SelectItem value="Smart TV">Oui, Smart TV (Netflix/YouTube)</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>

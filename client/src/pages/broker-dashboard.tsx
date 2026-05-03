@@ -76,6 +76,10 @@ export default function BrokerDashboardPage() {
       hasGarden: false,
       hasLinens: false,
       hasTowels: false,
+      tvType: "None",
+      numDoubleBeds: 0,
+      numSingleBeds: 0,
+      hasSofaBed: false,
       bedDetails: "",
       locationRepere: "",
       nearbyCommodities: "",
@@ -212,7 +216,11 @@ export default function BrokerDashboardPage() {
       hasBalcony: submission.hasBalcony,
       hasGarden: submission.hasGarden,
       hasLinens: submission.hasLinens,
-      hasTowels: submission.hasTowels,
+      hasTowels: submission.hasTowels ?? false,
+      tvType: submission.tvType || "None",
+      numDoubleBeds: submission.numDoubleBeds ?? 0,
+      numSingleBeds: submission.numSingleBeds ?? 0,
+      hasSofaBed: submission.hasSofaBed ?? false,
       bedDetails: submission.bedDetails || "",
       locationRepere: submission.locationRepere || "",
       nearbyCommodities: submission.nearbyCommodities || "",
@@ -231,9 +239,19 @@ export default function BrokerDashboardPage() {
     if (!selectedSubmission) return;
     
     const formData = editForm.getValues();
+    
+    // Generate bedDetails summary
+    const bedSummary = [
+      formData.numDoubleBeds > 0 ? `${formData.numDoubleBeds} lit${formData.numDoubleBeds > 1 ? 's' : ''} double${formData.numDoubleBeds > 1 ? 's' : ''}` : null,
+      formData.numSingleBeds > 0 ? `${formData.numSingleBeds} lit${formData.numSingleBeds > 1 ? 's' : ''} simple${formData.numSingleBeds > 1 ? 's' : ''}` : null,
+      formData.hasSofaBed ? "1 canapé-lit (Salon)" : null
+    ].filter(Boolean).join(", ");
+    
+    const finalData = { ...formData, bedDetails: bedSummary };
+    
     updateMutation.mutate({
       id: selectedSubmission.id,
-      data: formData,
+      data: finalData,
       file: neighborhoodMapFile,
     });
   };
@@ -862,20 +880,13 @@ export default function BrokerDashboardPage() {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="edit-towels">Serviettes fournies?</Label>
-                  <Select
-                    value={editForm.watch("hasTowels") ? "true" : "false"}
-                    onValueChange={(value) => editForm.setValue("hasTowels", value === "true")}
-                  >
-                    <SelectTrigger id="edit-towels">
-                      <SelectValue placeholder="Choisir" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="false">Non</SelectItem>
-                      <SelectItem value="true">Oui</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="flex items-center space-x-2 p-2 bg-slate-50 rounded-lg border">
+                  <Checkbox
+                    id="edit-towels"
+                    checked={editForm.watch("hasTowels")}
+                    onCheckedChange={(checked) => editForm.setValue("hasTowels", !!checked)}
+                  />
+                  <Label htmlFor="edit-towels">Serviettes fournies</Label>
                 </div>
 
                 <div className="space-y-2">
@@ -909,6 +920,23 @@ export default function BrokerDashboardPage() {
                     </SelectContent>
                   </Select>
                 </div>
+
+                <div className="col-span-2 space-y-2 p-2 bg-slate-50 rounded-lg border">
+                  <Label htmlFor="edit-tv">Télévision</Label>
+                  <Select 
+                    value={editForm.watch("tvType")} 
+                    onValueChange={(val) => editForm.setValue("tvType", val)}
+                  >
+                    <SelectTrigger id="edit-tv">
+                      <SelectValue placeholder="Choisir le type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="None">Pas de TV</SelectItem>
+                      <SelectItem value="Standard">Oui, TV Standard</SelectItem>
+                      <SelectItem value="Smart TV">Oui, Smart TV (Netflix/YouTube)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 
@@ -938,51 +966,56 @@ export default function BrokerDashboardPage() {
                     </Label>
                   </div>
                 </div>
-                <Select
-                  value={String(editForm.watch("rooms"))}
-                  onValueChange={(value) => editForm.setValue("rooms", parseInt(value))}
-                >
-                  <SelectTrigger id="edit-rooms">
-                    <SelectValue placeholder="Choisir" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0">Studio (0 chambre)</SelectItem>
-                    <SelectItem value="1">1 chambre</SelectItem>
-                    <SelectItem value="2">2 chambres</SelectItem>
-                    <SelectItem value="3">3 chambres</SelectItem>
-                    <SelectItem value="4">4 chambres</SelectItem>
-                    <SelectItem value="5">5+ chambres</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="edit-max-guests">Voyageurs max</Label>
-                <Select
-                  value={String(editForm.watch("maxGuests"))}
-                  onValueChange={(value) => editForm.setValue("maxGuests", parseInt(value))}
-                >
-                  <SelectTrigger id="edit-max-guests">
-                    <SelectValue placeholder="Nombre" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1 voyageur</SelectItem>
-                    <SelectItem value="2">2 voyageurs</SelectItem>
-                    <SelectItem value="3">3 voyageurs</SelectItem>
-                    <SelectItem value="4">4 voyageurs</SelectItem>
-                    <SelectItem value="5">5 voyageurs</SelectItem>
-                    <SelectItem value="6">6+ voyageurs</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="col-span-2 space-y-2">
-                <Label htmlFor="edit-bed-details">Précisions sur le Couchage</Label>
                 <Input
-                  id="edit-bed-details"
-                  {...editForm.register("bedDetails")}
-                  placeholder="ex: 1 lit double, 2 lits simples"
+                  id="edit-rooms"
+                  type="number"
+                  {...editForm.register("rooms", { valueAsNumber: true })}
+                  min={1}
                 />
+              </div>
+
+              {/* Max Guests */}
+              <div className="space-y-2 p-3 bg-slate-50 rounded-lg border">
+                <Label htmlFor="edit-max-guests">Max Guests</Label>
+                <Input
+                  id="edit-max-guests"
+                  type="number"
+                  {...editForm.register("maxGuests", { valueAsNumber: true })}
+                  min={1}
+                />
+              </div>
+
+              {/* Bed Details - Structured */}
+              <div className="col-span-2 grid grid-cols-3 gap-4 p-3 bg-slate-50 rounded-lg border">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-double-beds">Lits doubles</Label>
+                  <Input
+                    id="edit-double-beds"
+                    type="number"
+                    {...editForm.register("numDoubleBeds", { valueAsNumber: true })}
+                    min={0}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-single-beds">Lits simples</Label>
+                  <Input
+                    id="edit-single-beds"
+                    type="number"
+                    {...editForm.register("numSingleBeds", { valueAsNumber: true })}
+                    min={0}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Canapé-lit?</Label>
+                  <div className="flex items-center space-x-2 pt-2">
+                    <Checkbox
+                      id="edit-sofa-bed"
+                      checked={editForm.watch("hasSofaBed")}
+                      onCheckedChange={(checked) => editForm.setValue("hasSofaBed", !!checked)}
+                    />
+                    <Label htmlFor="edit-sofa-bed" className="text-xs">Salon</Label>
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-2">
