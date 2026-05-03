@@ -852,16 +852,17 @@ export default function PropertyDetailPage() {
                   <div className="border-2 border-border/60 rounded-xl bg-card overflow-hidden shadow-sm transition-all focus-within:border-primary/30 focus-within:ring-2 focus-within:ring-primary/10">
                     <div className="flex items-center">
                       {/* Arrivée -> Du */}
-                      <div className="flex-1 p-2 sm:p-4 border-r border-border/60 bg-transparent relative group">
+                      <div className="flex-1 p-3 sm:p-5 border-r border-border/60 bg-transparent relative group">
                         <label className="block text-[10px] font-black uppercase text-primary mb-2 tracking-widest">
                           Du
                         </label>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-2 gap-3">
                           <input
                             type="number"
                             placeholder="Jour"
-                            className="w-full text-base sm:text-lg font-black bg-muted/40 hover:bg-muted/70 focus:bg-background rounded-lg px-2 py-1.5 outline-none text-center transition-all border border-transparent focus:border-primary/30 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-full text-lg sm:text-xl font-black bg-muted/40 hover:bg-muted/70 focus:bg-background rounded-xl px-2 py-3 sm:py-4 outline-none text-center transition-all border border-transparent focus:border-primary/30 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             value={startDay}
+                            id="start-day-input"
                             onChange={(e) => {
                               let val = e.target.value;
                               if (val.length > 2) val = val.slice(0, 2);
@@ -872,7 +873,7 @@ export default function PropertyDetailPage() {
                             max="31"
                           />
                           <select
-                            className="w-full text-base sm:text-lg font-black bg-muted/40 hover:bg-muted/70 focus:bg-background rounded-lg px-1 py-2 outline-none cursor-pointer text-foreground transition-all border border-transparent focus:border-primary/30"
+                            className="w-full text-base sm:text-lg font-black bg-muted/40 hover:bg-muted/70 focus:bg-background rounded-xl px-1 py-3 sm:py-4 outline-none cursor-pointer text-foreground transition-all border border-transparent focus:border-primary/30"
                             value={startMonth}
                             onChange={(e) => {
                               setStartMonth(e.target.value);
@@ -889,16 +890,17 @@ export default function PropertyDetailPage() {
                       </div>
 
                       {/* Départ -> Au */}
-                      <div className="flex-1 p-2 bg-transparent relative group sm:p-4">
+                      <div className="flex-1 p-3 sm:p-5 bg-transparent relative group">
                         <label className="block text-[10px] font-black uppercase text-primary mb-2 tracking-widest">
                           Au
                         </label>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-2 gap-3">
                           <input
                             type="number"
                             placeholder="Jour"
-                            className="w-full text-base sm:text-lg font-black bg-muted/40 hover:bg-muted/70 focus:bg-background rounded-lg px-2 py-1.5 outline-none text-center transition-all border border-transparent focus:border-primary/30 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-full text-lg sm:text-xl font-black bg-muted/40 hover:bg-muted/70 focus:bg-background rounded-xl px-2 py-3 sm:py-4 outline-none text-center transition-all border border-transparent focus:border-primary/30 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             value={endDay}
+                            id="end-day-input"
                             onChange={(e) => {
                               let val = e.target.value;
                               if (val.length > 2) val = val.slice(0, 2);
@@ -909,7 +911,7 @@ export default function PropertyDetailPage() {
                             max="31"
                           />
                           <select
-                            className="w-full text-base sm:text-lg font-black bg-muted/40 hover:bg-muted/70 focus:bg-background rounded-lg px-1 py-2 outline-none cursor-pointer text-foreground transition-all border border-transparent focus:border-primary/30"
+                            className="w-full text-base sm:text-lg font-black bg-muted/40 hover:bg-muted/70 focus:bg-background rounded-xl px-1 py-3 sm:py-4 outline-none cursor-pointer text-foreground transition-all border border-transparent focus:border-primary/30"
                             value={endMonth}
                             onChange={(e) => {
                               setEndMonth(e.target.value);
