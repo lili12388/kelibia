@@ -747,6 +747,8 @@ export default function ListPropertyPage() {
                     />
                   </div>
                 </div>
+              </div>
+            </div>
 
                 {/* Kitchen Amenities & Logistics */}
                 <div className="space-y-4 pt-4 border-t border-border/50">
