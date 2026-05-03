@@ -206,7 +206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Submit a new property
-  app.post('/api/properties/submit', upload.array('media', 10), async (req, res) => {
+  app.post('/api/properties/submit', upload.array('media', 50), async (req, res) => {
     try {
       // Parse and validate property data
       const propertyData = insertPropertySubmissionSchema.parse({
@@ -344,7 +344,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin submit property - Auto-approve and publish directly
-  app.post('/api/broker/properties/submit-admin', requireBrokerAuth, upload.array('media', 10), async (req, res) => {
+  app.post('/api/broker/properties/submit-admin', requireBrokerAuth, upload.array('media', 50), async (req, res) => {
     try {
       // Parse and validate property data
       const propertyData = insertPropertySubmissionSchema.parse({
