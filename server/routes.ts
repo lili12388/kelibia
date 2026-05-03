@@ -390,6 +390,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'approved', // Auto-approve for admin
         googleMapsUrl: req.body.googleMapsUrl || null,
         neighborhoodMapUrl: null,
+        showOwnerContact: req.body.showOwnerContact === 'true',
+        showGoogleMaps: req.body.showGoogleMaps !== 'false',
+        showExactLocation: req.body.showExactLocation === 'true',
+        showNeighborhoodMap: req.body.showNeighborhoodMap !== 'false',
+        showPrice: req.body.showPrice !== 'false',
+        showRooms: req.body.showRooms !== 'false',
+        showBathrooms: req.body.showBathrooms !== 'false',
+        showSize: req.body.showSize !== 'false',
+        showDescription: req.body.showDescription !== 'false',
       });
 
       // Create property submission with approved status

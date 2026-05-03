@@ -262,6 +262,15 @@ export const insertPropertySubmissionSchema = createInsertSchema(propertySubmiss
   numDoubleBeds: z.number().min(0).default(0),
   numSingleBeds: z.number().min(0).default(0),
   hasSofaBed: z.boolean().default(false),
+  showOwnerContact: z.boolean().default(false),
+  showGoogleMaps: z.boolean().default(true),
+  showExactLocation: z.boolean().default(false),
+  showNeighborhoodMap: z.boolean().default(true),
+  showPrice: z.boolean().default(true),
+  showRooms: z.boolean().default(true),
+  showBathrooms: z.boolean().default(true),
+  showSize: z.boolean().default(true),
+  showDescription: z.boolean().default(true),
 });
 
 export const insertSubmissionMediaSchema = createInsertSchema(submissionMedia).omit({
