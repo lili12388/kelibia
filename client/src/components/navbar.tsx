@@ -1,10 +1,20 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { LogOut, BarChart3, Plus, LayoutGrid } from "lucide-react";
+import { LogOut, BarChart3, Plus, LayoutGrid, Phone } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+
+const BROKER_PHONE = "50344187";
+const BROKER_PHONE_DISPLAY = "50 344 187";
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" className={className} fill="currentColor">
@@ -15,6 +25,7 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 export default function Navbar() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
 
   const { data: authStatus } = useQuery<{ isAuthenticated: boolean }>({
     queryKey: ['/api/broker/auth-status'],
@@ -68,75 +79,137 @@ export default function Navbar() {
           </Link>
 
           {/* Navigation Links & Actions */}
-          <div className="flex items-center gap-1 sm:gap-4">
+          <div className="flex items-center gap-3 sm:gap-6">
             
-            {/* Desktop Navigation Links */}
-            <div className="hidden md:flex items-center gap-6 mr-2">
+            {/* Main Navigation Links (Text only as requested) */}
+            <div className="flex items-center gap-4 sm:gap-8">
               <Link href="/">
-                <span className="text-sm font-semibold text-foreground hover:text-primary transition-colors cursor-pointer drop-shadow-sm">
+                <span className={`text-sm font-black transition-all duration-200 cursor-pointer drop-shadow-md ${
+                  isTransparent 
+                    ? "text-white hover:text-white/80" 
+                    : location === "/" ? "text-primary" : "text-foreground/70 hover:text-primary"
+                }`}>
                   Accueil
                 </span>
               </Link>
-              <Link href="/about">
-                <span className="text-sm font-semibold text-foreground hover:text-primary transition-colors cursor-pointer drop-shadow-sm">
+              
+              <Link href="/about" className="hidden sm:inline">
+                <span className={`text-sm font-bold transition-colors cursor-pointer ${
+                  location === "/about" ? "text-primary" : "text-foreground/70 hover:text-primary"
+                }`}>
                   À Propos
                 </span>
               </Link>
             </div>
 
-            {/* Creative WhatsApp Button */}
-            <a 
-              href="https://wa.me/21650344187"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-full font-bold text-xs sm:text-sm shadow-md transition-transform active:scale-95"
+            {/* Professional Contact Button */}
+            <Button 
+              variant={isTransparent ? "default" : "outline"}
+              size="sm"
+              className={`h-9 sm:h-11 px-4 sm:px-6 rounded-full font-black text-xs sm:text-sm shadow-md transition-all active:scale-[0.98] ${
+                isTransparent 
+                  ? "bg-white text-primary hover:bg-white/90 border-0" 
+                  : "border-primary/20 text-primary hover:bg-primary/5 bg-primary/5"
+              }`}
+              onClick={() => setContactDialogOpen(true)}
             >
-              <WhatsAppIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="hidden sm:inline">Contactez-nous</span>
-              <span className="sm:hidden">Contact</span>
-            </a>
-            {isAdmin && location !== "/admin/analytics" && (
-              <Link href="/admin/analytics">
-                <Button variant="ghost" size="sm" className="h-8 w-8 sm:w-auto sm:h-9 sm:px-3 rounded-xl p-0 sm:p-2">
-                  <BarChart3 className="h-4 w-4 sm:mr-1.5" />
-                  <span className="hidden sm:inline text-xs">Analytique</span>
-                </Button>
-              </Link>
-            )}
+              Contactez-nous
+            </Button>
 
-            {isAdmin && location !== "/admin/browse" && (
-              <Link href="/admin/browse">
-                <Button variant="ghost" size="sm" className="h-8 w-8 sm:w-auto sm:h-9 sm:px-3 rounded-xl p-0 sm:p-2">
-                  <LayoutGrid className="h-4 w-4 sm:mr-1.5" />
-                  <span className="hidden sm:inline text-xs">Admin</span>
-                </Button>
-              </Link>
-            )}
+            {/* Admin Controls (Separate or Balanced) */}
+            <div className="flex items-center gap-1 sm:gap-2">
+              {isAdmin && location !== "/admin/analytics" && (
+                <Link href="/admin/analytics">
+                  <Button variant="ghost" size="sm" className="h-8 w-8 sm:w-auto sm:h-9 sm:px-3 rounded-xl p-0 sm:p-2">
+                    <BarChart3 className="h-4 w-4 sm:mr-1.5" />
+                    <span className="hidden sm:inline text-xs">Stats</span>
+                  </Button>
+                </Link>
+              )}
 
-            {isAdmin && location !== "/admin/list-property" && (
-              <Link href="/admin/list-property">
-                <Button size="sm" className="h-8 w-8 sm:w-auto sm:h-9 sm:px-3 rounded-xl p-0 sm:p-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm">
-                  <Plus className="h-4 w-4 sm:mr-1.5" />
-                  <span className="hidden sm:inline text-xs">Publier</span>
-                </Button>
-              </Link>
-            )}
+              {isAdmin && location !== "/admin/browse" && (
+                <Link href="/admin/browse">
+                  <Button variant="ghost" size="sm" className="h-8 w-8 sm:w-auto sm:h-9 sm:px-3 rounded-xl p-0 sm:p-2">
+                    <LayoutGrid className="h-4 w-4 sm:mr-1.5" />
+                    <span className="hidden sm:inline text-xs">Admin</span>
+                  </Button>
+                </Link>
+              )}
 
-            {isAdmin && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => logoutMutation.mutate()}
-                disabled={logoutMutation.isPending}
-                className="h-8 w-8 sm:w-auto sm:h-9 sm:px-3 rounded-xl p-0 sm:p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-              >
-                <LogOut className="h-4 w-4 sm:mr-1.5" />
-                <span className="hidden sm:inline text-xs">
-                  {logoutMutation.isPending ? "..." : "Quitter"}
-                </span>
-              </Button>
-            )}
+              {isAdmin && location !== "/admin/list-property" && (
+                <Link href="/admin/list-property">
+                  <Button size="sm" className="h-8 w-8 sm:w-auto sm:h-9 sm:px-3 rounded-xl p-0 sm:p-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm">
+                    <Plus className="h-4 w-4 sm:mr-1.5" />
+                    <span className="hidden sm:inline text-xs font-bold">Publier</span>
+                  </Button>
+                </Link>
+              )}
+
+              {isAdmin && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => logoutMutation.mutate()}
+                  disabled={logoutMutation.isPending}
+                  className="h-8 w-8 sm:w-auto sm:h-9 sm:px-3 rounded-xl p-0 sm:p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                >
+                  <LogOut className="h-4 w-4 sm:mr-1.5" />
+                  <span className="hidden sm:inline text-xs">Quitter</span>
+                </Button>
+              )}
+            </div>
           </div>
+
+          {/* Unified Contact Modal in Navbar */}
+          <Dialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
+            <DialogContent className="sm:max-w-md mx-auto w-[90vw] rounded-3xl border-0 shadow-2xl overflow-hidden p-0">
+              <div className="bg-gradient-to-br from-primary/10 via-background to-background p-6 pt-8">
+                <DialogHeader className="mb-6">
+                  <DialogTitle className="text-center text-2xl font-black tracking-tight text-foreground">
+                    Contactez-nous
+                  </DialogTitle>
+                  <DialogDescription className="text-center text-muted-foreground font-medium">
+                    Choisissez votre mode de communication préféré
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="flex flex-col gap-4 py-2">
+                  <Button
+                    className="w-full justify-between text-lg py-8 h-auto rounded-2xl shadow-lg transition-all active:scale-[0.98] bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-90 text-white border-0"
+                    onClick={() => window.location.href = `tel:${BROKER_PHONE}`}
+                  >
+                    <div className="flex flex-col items-start">
+                      <span className="font-bold text-base">Appeler par Téléphone</span>
+                      <span className="text-sm opacity-90 font-medium">{BROKER_PHONE_DISPLAY}</span>
+                    </div>
+                    <div className="bg-white/20 p-2 rounded-full">
+                      <Phone className="w-6 h-6" />
+                    </div>
+                  </Button>
+
+                  <Button
+                    className="w-full justify-between text-lg py-8 h-auto rounded-2xl shadow-lg transition-all active:scale-[0.98] bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:opacity-90 text-white border-0"
+                    onClick={() => window.open(`https://wa.me/216${BROKER_PHONE}`, '_blank')}
+                  >
+                    <div className="flex flex-col items-start">
+                      <span className="font-bold text-base">Contactez-nous par WhatsApp</span>
+                      <span className="text-sm opacity-90 font-medium">{BROKER_PHONE_DISPLAY}</span>
+                    </div>
+                    <div className="bg-white/20 p-2 rounded-full">
+                      <WhatsAppIcon className="w-7 h-7" />
+                    </div>
+                  </Button>
+                </div>
+
+                <div className="mt-8 text-center">
+                  <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">
+                    Laith Kelibia • Agence Immobilière
+                  </p>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
         </div>
       </div>
     </nav>

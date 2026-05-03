@@ -139,6 +139,9 @@ export default function BrowsePropertiesPage() {
         
         {/* Subtle Dark overlay for text readability (between image and blending gradient) */}
         <div className="absolute inset-0 bg-black/15 z-0" />
+        
+        {/* Top-to-bottom dark gradient for header visibility */}
+        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/40 to-transparent z-10 pointer-events-none" />
       </div>
 
       {/* Hero Content */}
@@ -155,7 +158,7 @@ export default function BrowsePropertiesPage() {
         <div className="w-full bg-background rounded-[2rem] p-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.2)] flex flex-col sm:flex-row items-center gap-2 sm:gap-0 max-w-4xl mx-auto border border-border/40 text-left">
             {/* Arrivée */}
             <div className="w-full sm:w-1/2 px-5 py-3 hover:bg-gray-100 rounded-[1.5rem] cursor-pointer transition-colors border-b sm:border-b-0 sm:border-r border-border">
-              <label className="block text-[11px] font-extrabold uppercase tracking-wider text-foreground mb-1">
+              <label className="block text-[11px] font-black uppercase tracking-wider text-foreground mb-1">
                 Arrivée
               </label>
               <div className="flex items-center gap-1.5">
@@ -189,7 +192,7 @@ export default function BrowsePropertiesPage() {
             {/* Départ */}
             <div className="w-full sm:w-1/2 px-5 py-3 hover:bg-gray-100 rounded-[1.5rem] cursor-pointer transition-colors flex items-center justify-between">
               <div className="flex-1">
-                <label className="block text-[11px] font-extrabold uppercase tracking-wider text-foreground mb-1">
+                <label className="block text-[11px] font-black uppercase tracking-wider text-foreground mb-1">
                   Départ
                 </label>
                 <div className="flex items-center gap-1.5">
@@ -226,9 +229,9 @@ export default function BrowsePropertiesPage() {
                 onClick={() => {
                   window.scrollBy({ top: 500, behavior: 'smooth' });
                 }}
-                className="rounded-full w-full sm:w-auto h-12 sm:px-8 bg-primary hover:bg-primary/90 transition-colors text-primary-foreground font-bold flex items-center justify-center shadow-md"
+                className="rounded-full w-full sm:w-auto px-10 py-4 sm:px-14 bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-90 transition-all text-white font-bold flex items-center justify-center shadow-lg active:scale-[0.98]"
               >
-                <span className="inline font-bold text-base">Rechercher</span>
+                <span className="inline font-black text-lg">Rechercher</span>
               </button>
             </div>
           </div>
@@ -240,16 +243,16 @@ export default function BrowsePropertiesPage() {
         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
           <button
             onClick={() => setMobileFiltersOpen(true)}
-            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium border transition-all ${
+            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold border transition-all ${
               hasActiveFilters
-                ? "bg-primary text-primary-foreground border-primary"
+                ? "bg-[#E6F7F7] text-primary border-primary/30"
                 : "bg-card border-border/60 text-foreground"
             }`}
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
             Filtres
             {activeFilterCount > 0 && (
-              <span className="bg-white/20 rounded-full px-1.5 text-[10px]">{activeFilterCount}</span>
+              <span className="bg-primary/20 text-primary rounded-full px-1.5 text-[10px]">{activeFilterCount}</span>
             )}
           </button>
           
@@ -258,9 +261,9 @@ export default function BrowsePropertiesPage() {
             <button
               key={type}
               onClick={() => setFurnishedFilter(furnishedFilter === type && type !== "all" ? "all" : type)}
-              className={`flex-shrink-0 px-3 py-2 rounded-full text-xs font-medium border transition-all ${
+              className={`flex-shrink-0 px-3 py-2 rounded-full text-xs font-bold border transition-all ${
                 furnishedFilter === type
-                  ? "bg-primary text-primary-foreground border-primary"
+                  ? "bg-[#E6F7F7] text-primary border-primary/30 shadow-sm"
                   : "bg-card border-border/60 text-muted-foreground"
               }`}
             >
@@ -273,9 +276,9 @@ export default function BrowsePropertiesPage() {
             <button
               key={`room-${num}`}
               onClick={() => setSelectedRooms(selectedRooms === num ? null : num)}
-              className={`flex-shrink-0 px-3 py-2 rounded-full text-xs font-medium border transition-all ${
+              className={`flex-shrink-0 px-3 py-2 rounded-full text-xs font-bold border transition-all ${
                 selectedRooms === num
-                  ? "bg-primary text-primary-foreground border-primary"
+                  ? "bg-[#E6F7F7] text-primary border-primary/30 shadow-sm"
                   : "bg-card border-border/60 text-muted-foreground"
               }`}
             >

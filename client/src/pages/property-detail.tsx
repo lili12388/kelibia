@@ -144,16 +144,18 @@ export default function PropertyDetailPage() {
   });
 
   // Booking states
+  const currentMonthNum = new Date().getMonth() + 1;
+  const initialMonth = currentMonthNum.toString().padStart(2, '0');
+  
   const [startDay, setStartDay] = useState<string>('');
-  const [startMonth, setStartMonth] = useState<string>('06');
+  const [startMonth, setStartMonth] = useState<string>(initialMonth);
   const [endDay, setEndDay] = useState<string>('');
-  const [endMonth, setEndMonth] = useState<string>('06');
+  const [endMonth, setEndMonth] = useState<string>(initialMonth);
   const [reserveDays, setReserveDays] = useState<number | ''>('');
   const [hasInterference, setHasInterference] = useState<boolean>(false);
 
   // Computed values
   const currentYear = new Date().getFullYear();
-  const currentMonthNum = new Date().getMonth() + 1;
   const bookingYear = currentMonthNum > 9 ? currentYear + 1 : currentYear;
 
   const startDate = (startDay && startMonth) ? `${bookingYear}-${startMonth}-${startDay.padStart(2, '0')}` : '';
@@ -167,6 +169,38 @@ export default function PropertyDetailPage() {
       }
     }
     return false;
+  };
+
+  const handleWhatsAppReserve = () => {
+    if (!property) return;
+
+    // Check for interference first
+    if (startDate && endDate) {
+      if (checkInterference(startDate, endDate)) {
+        setHasInterference(true);
+        document.getElementById('booking-widget')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+    }
+
+    const ref = property.referenceCode || "N/A";
+    let message = `Bonjour, je souhaite réserver la propriété [${ref}] : ${property.title}.`;
+
+    if (startDay && endDay) {
+      const monthNames: { [key: string]: string } = {
+        "05": "Mai", "06": "Juin", "07": "Juillet", "08": "Août", "09": "Septembre"
+      };
+      const mStart = monthNames[startMonth] || "Juin";
+      const mEnd = monthNames[endMonth] || "Juin";
+      message += `\nDu ${startDay} ${mStart} au ${endDay} ${mEnd}.`;
+      if (reserveDays) message += ` (${reserveDays} nuits)`;
+    } else {
+      message += `\nJe n'ai pas encore choisi mes dates.`;
+    }
+
+    message += `\nLien: ${window.location.href}`;
+
+    window.open(`https://wa.me/216${BROKER_PHONE}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   const handleReserveDaysChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -435,7 +469,7 @@ export default function PropertyDetailPage() {
 
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 pb-32 lg:pb-10">
 
         {/* Title & Location at the top (Airbnb style) */}
         <div className="mb-6 animate-fade-in-up">
@@ -466,7 +500,7 @@ export default function PropertyDetailPage() {
         </div>
 
         {/* Hero Image Gallery (Airbnb Style) */}
-        <div className="mb-10 animate-fade-in-up" style={{ animationDelay: '50ms' }}>
+        <div className="mb-4 animate-fade-in-up" style={{ animationDelay: '50ms' }}>
           {property.media.length > 0 ? (
             <>
               {/* Desktop Hero Grid (Hidden on mobile) */}
@@ -611,8 +645,8 @@ export default function PropertyDetailPage() {
                           key={media.id}
                           onClick={() => setCurrentImageIndex(idx)}
                           className={`relative flex-shrink-0 w-[72px] h-[72px] rounded-lg overflow-hidden transition-all active:scale-95 ${isActive
-                              ? 'ring-2 ring-primary ring-offset-1 opacity-100'
-                              : 'opacity-55 hover:opacity-80'
+                            ? 'ring-2 ring-primary ring-offset-1 opacity-100'
+                            : 'opacity-55 hover:opacity-80'
                             }`}
                         >
                           {/* Thumbnail image */}
@@ -661,19 +695,19 @@ export default function PropertyDetailPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Left Column - Details */}
-          <div className="lg:col-span-2 space-y-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+          <div className="lg:col-span-2 space-y-4 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
 
             {/* Quick Summary Row */}
-            <div className="flex flex-wrap items-center gap-4 pb-6 border-b border-border">
-              {(isAdmin || property.showRooms) && (
+            <div className="flex flex-wrap items-center gap-4 pb-2 border-b border-border">
+              {isAdmin && (
                 <div className="flex items-center gap-2">
                   <Users className="w-5 h-5 text-muted-foreground" />
                   <span className="font-medium">{property.maxGuests || 1} voyageurs</span>
+                  <span className="text-muted-foreground/30 hidden sm:inline ml-2">•</span>
                 </div>
               )}
-              <span className="text-muted-foreground/30 hidden sm:inline">•</span>
               {(isAdmin || property.showRooms) && (
                 <div className="flex items-center gap-2">
                   <BedDouble className="w-5 h-5 text-muted-foreground" />
@@ -690,8 +724,8 @@ export default function PropertyDetailPage() {
             </div>
 
             {/* Availability Timeline */}
-            <div className="pt-6 pb-6 border-b border-border">
-              <h2 className="text-xl font-semibold mb-6 text-foreground">Disponibilités</h2>
+            <div className="pt-2 pb-6 border-b border-border">
+              <h2 className="text-xl font-semibold mb-2 text-foreground">Disponibilités</h2>
               <AvailabilityTimeline
                 propertyId={property.id}
                 isAdmin={isAdmin}
@@ -786,36 +820,36 @@ export default function PropertyDetailPage() {
           {/* Right Column - Booking / Contact Card (Sticky) */}
           <div className="lg:col-span-1 animate-fade-in-up" style={{ animationDelay: '150ms' }}>
             <Card className="sticky top-24 shadow-xl border-border/60 overflow-hidden">
-              <CardContent className="p-6">
+              <CardContent className="p-3 sm:p-6">
                 <div>
                   {(isAdmin || property.showPrice) && (
-                    <div className="mb-6 flex items-baseline gap-1">
-                      <span className="text-3xl font-bold text-foreground">
+                    <div className="mb-6 flex items-baseline gap-1.5">
+                      <span className="text-3xl font-black text-foreground">
                         {parseFloat(property.price).toLocaleString()} TND
                       </span>
-                      <span className="text-base text-muted-foreground font-medium">/ nuit</span>
+                      <span className="text-base text-muted-foreground font-semibold">/ nuit</span>
                       {isAdmin && !property.showPrice && (
-                        <Badge variant="secondary" className="text-[9px] ml-2">Admin</Badge>
+                        <Badge variant="secondary" className="text-[10px] ml-2">Admin</Badge>
                       )}
                     </div>
                   )}
                 </div>
 
-                <div id="booking-widget" className="space-y-4 border rounded-xl p-4 bg-muted/30 mb-6">
+                <div id="booking-widget" className="space-y-4 border rounded-xl p-2 sm:p-4 bg-muted/30 mb-6">
 
                   {/* Booking Widget Inputs */}
                   <div className="border-2 border-border/60 rounded-xl bg-card overflow-hidden shadow-sm transition-all focus-within:border-primary/30 focus-within:ring-2 focus-within:ring-primary/10">
                     <div className="flex items-center">
-                      {/* Arrivée */}
-                      <div className="flex-1 p-3.5 border-r border-border/60 bg-transparent relative group">
-                        <label className="block text-[10px] font-extrabold uppercase text-primary/80 mb-2 tracking-widest">
-                          Arrivée
+                      {/* Arrivée -> Du */}
+                      <div className="flex-1 p-2 sm:p-4 border-r border-border/60 bg-transparent relative group">
+                        <label className="block text-[10px] font-black uppercase text-primary mb-2 tracking-widest">
+                          Du
                         </label>
-                        <div className="flex items-center gap-1.5">
+                        <div className="grid grid-cols-2 gap-2">
                           <input
                             type="number"
                             placeholder="Jour"
-                            className="w-16 text-base font-bold bg-muted/30 hover:bg-muted/60 focus:bg-background rounded-md px-2 py-1 outline-none text-center transition-colors [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-full text-base sm:text-lg font-black bg-muted/40 hover:bg-muted/70 focus:bg-background rounded-lg px-2 py-1.5 outline-none text-center transition-all border border-transparent focus:border-primary/30 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             value={startDay}
                             onChange={(e) => {
                               let val = e.target.value;
@@ -827,7 +861,7 @@ export default function PropertyDetailPage() {
                             max="31"
                           />
                           <select
-                            className="flex-1 text-sm font-bold bg-muted/30 hover:bg-muted/60 focus:bg-background rounded-md px-1 py-1.5 outline-none cursor-pointer text-foreground transition-colors"
+                            className="w-full text-base sm:text-lg font-black bg-muted/40 hover:bg-muted/70 focus:bg-background rounded-lg px-1 py-2 outline-none cursor-pointer text-foreground transition-all border border-transparent focus:border-primary/30"
                             value={startMonth}
                             onChange={(e) => {
                               setStartMonth(e.target.value);
@@ -843,16 +877,16 @@ export default function PropertyDetailPage() {
                         </div>
                       </div>
 
-                      {/* Départ */}
-                      <div className="flex-1 p-3.5 bg-transparent relative group">
-                        <label className="block text-[10px] font-extrabold uppercase text-primary/80 mb-2 tracking-widest">
-                          Départ
+                      {/* Départ -> Au */}
+                      <div className="flex-1 p-2 bg-transparent relative group sm:p-4">
+                        <label className="block text-[10px] font-black uppercase text-primary mb-2 tracking-widest">
+                          Au
                         </label>
-                        <div className="flex items-center gap-1.5">
+                        <div className="grid grid-cols-2 gap-2">
                           <input
                             type="number"
                             placeholder="Jour"
-                            className="w-16 text-base font-bold bg-muted/30 hover:bg-muted/60 focus:bg-background rounded-md px-2 py-1 outline-none text-center transition-colors [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-full text-base sm:text-lg font-black bg-muted/40 hover:bg-muted/70 focus:bg-background rounded-lg px-2 py-1.5 outline-none text-center transition-all border border-transparent focus:border-primary/30 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             value={endDay}
                             onChange={(e) => {
                               let val = e.target.value;
@@ -864,7 +898,7 @@ export default function PropertyDetailPage() {
                             max="31"
                           />
                           <select
-                            className="flex-1 text-sm font-bold bg-muted/30 hover:bg-muted/60 focus:bg-background rounded-md px-1 py-1.5 outline-none cursor-pointer text-foreground transition-colors"
+                            className="w-full text-base sm:text-lg font-black bg-muted/40 hover:bg-muted/70 focus:bg-background rounded-lg px-1 py-2 outline-none cursor-pointer text-foreground transition-all border border-transparent focus:border-primary/30"
                             value={endMonth}
                             onChange={(e) => {
                               setEndMonth(e.target.value);
@@ -918,7 +952,7 @@ export default function PropertyDetailPage() {
 
                   <div className="pt-2">
                     <Button
-                      className="w-full py-6 text-lg font-bold rounded-xl shadow-md transition-transform active:scale-[0.98] bg-primary hover:bg-primary/90 text-primary-foreground border-0"
+                      className="w-full py-6 text-lg font-black rounded-xl shadow-lg transition-all active:scale-[0.98] bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-95 text-white border-0"
                       onClick={onReserveClick}
                     >
                       Réserver
@@ -1117,24 +1151,76 @@ export default function PropertyDetailPage() {
         </Dialog>
       )}
 
-      {/* Mobile Floating Booking Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-background border-t p-4 flex items-center justify-between z-50 shadow-[0_-4px_10px_-1px_rgba(0,0,0,0.1)]">
-        <div>
-          <div className="flex items-baseline gap-1">
-            <span className="text-lg font-bold text-foreground">
-              {parseFloat(property.price).toLocaleString()} TND
-            </span>
-            <span className="text-sm text-muted-foreground font-medium">/ nuit</span>
+      {/* Mobile Floating Booking Bar - Balanced & Refined */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-background/98 backdrop-blur-lg border-t border-border/40 p-4 pb-6 flex flex-col gap-3 z-50 shadow-[0_-8px_25px_-5px_rgba(0,0,0,0.12)] animate-slide-up">
+
+        {/* Row 1: Price and Date Selection (Expanded) */}
+        <div className="flex items-center justify-between gap-6">
+          <div className="flex flex-col flex-shrink-0">
+            <div className="flex items-baseline gap-1">
+              <span className="text-xl font-black text-foreground tracking-tighter">
+                {parseFloat(property.price).toLocaleString()} TND
+              </span>
+              <span className="text-[10px] text-muted-foreground font-bold uppercase">/ nuit</span>
+            </div>
           </div>
-          <a
-            href={`tel:${BROKER_PHONE}`}
-            className="text-sm font-semibold text-primary underline underline-offset-2"
-          >
-            {BROKER_PHONE_DISPLAY}
-          </a>
+
+          {/* Date Picker (Expanded to fill space) */}
+          <div className="flex-1 flex gap-2">
+            {/* Du */}
+            <div className="flex-1 bg-muted/40 rounded-xl p-2 border border-border/60 shadow-sm transition-all active:bg-muted/60">
+              <span className="block text-[9px] font-black uppercase text-primary/70 mb-1 text-center leading-none">Du</span>
+              <div className="flex gap-2 items-center justify-center">
+                <input
+                  type="number"
+                  placeholder="--"
+                  className="w-8 text-base font-bold bg-transparent text-center outline-none focus:ring-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  value={startDay}
+                  onChange={(e) => setStartDay(e.target.value.slice(0, 2))}
+                />
+                <select
+                  className="bg-transparent text-xs font-bold outline-none cursor-pointer"
+                  value={startMonth}
+                  onChange={(e) => setStartMonth(e.target.value)}
+                >
+                  <option value="05">Mai</option>
+                  <option value="06">Juin</option>
+                  <option value="07">Juil.</option>
+                  <option value="08">Août</option>
+                  <option value="09">Sep.</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Au */}
+            <div className="flex-1 bg-muted/40 rounded-xl p-2 border border-border/60 shadow-sm transition-all active:bg-muted/60">
+              <span className="block text-[9px] font-black uppercase text-primary/70 mb-1 text-center leading-none">Au</span>
+              <div className="flex gap-2 items-center justify-center">
+                <input
+                  type="number"
+                  placeholder="--"
+                  className="w-8 text-base font-bold bg-transparent text-center outline-none focus:ring-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  value={endDay}
+                  onChange={(e) => setEndDay(e.target.value.slice(0, 2))}
+                />
+                <select
+                  className="bg-transparent text-xs font-bold outline-none cursor-pointer"
+                  value={endMonth}
+                  onChange={(e) => setEndMonth(e.target.value)}
+                >
+                  <option value="05">Mai</option>
+                  <option value="06">Juin</option>
+                  <option value="07">Juil.</option>
+                  <option value="08">Août</option>
+                  <option value="09">Sep.</option>
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
+
         <Button
-          className="bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-90 text-white font-bold px-8 py-6 rounded-xl shadow-md transition-transform active:scale-[0.98] border-0"
+          className="w-full bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-95 text-white font-black py-7 rounded-2xl shadow-lg transition-all active:scale-[0.98] border-0 text-lg"
           onClick={onReserveClick}
         >
           Réserver
@@ -1147,38 +1233,30 @@ export default function PropertyDetailPage() {
           <DialogHeader>
             <DialogTitle className="text-center text-xl font-bold">Options de contact</DialogTitle>
             <DialogDescription className="text-center">
-              Comment préférez-vous nous contacter ?
+
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col gap-4 py-4">
+          <div className="flex flex-col gap-3 py-4">
             <Button
-              variant="outline"
-              className="w-full justify-between text-lg py-6 h-auto border-2 hover:bg-slate-50"
+              className="w-full justify-between text-lg py-7 h-auto rounded-2xl shadow-md transition-transform active:scale-[0.98] bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-90 text-white border-0"
               onClick={() => window.location.href = `tel:${BROKER_PHONE}`}
             >
-              <span>Nous appeler</span>
-              <span className="text-2xl">📞</span>
+              <div className="flex flex-col items-start">
+                <span className="font-bold">Appeler par Téléphone</span>
+                <span className="text-xs opacity-90">{BROKER_PHONE_DISPLAY}</span>
+              </div>
+              <Phone className="w-6 h-6" />
             </Button>
 
             <Button
-              variant="outline"
-              className="w-full justify-between text-lg py-6 h-auto border-2 border-[#25D366]/20 hover:bg-[#25D366]/5 text-[#075E54] hover:text-[#128C7E]"
-              onClick={() => window.open(`https://wa.me/216${BROKER_PHONE}`, '_blank')}
+              className="w-full justify-between text-lg py-7 h-auto rounded-2xl shadow-md transition-transform active:scale-[0.98] bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:opacity-90 text-white border-0"
+              onClick={handleWhatsAppReserve}
             >
-              <span>Nous appeler sur WhatsApp</span>
-              <WhatsAppIcon className="w-8 h-8 text-[#25D366]" />
-            </Button>
-
-            <Button
-              variant="outline"
-              className="w-full justify-between text-lg py-6 h-auto border-2 border-[#25D366]/20 hover:bg-[#25D366]/5 text-[#075E54] hover:text-[#128C7E]"
-              onClick={() => {
-                const datesText = (startDate && endDate) ? `\nJ'aimerais réserver du ${startDate} au ${endDate} (${reserveDays} nuits).` : '';
-                window.open(`https://wa.me/216${BROKER_PHONE}?text=${encodeURIComponent(`Bonjour, je suis intéressé par votre propriété: ${property.title} - ${window.location.href}${datesText}`)}`, '_blank');
-              }}
-            >
-              <span>Nous envoyer un message</span>
-              <WhatsAppIcon className="w-8 h-8 text-[#25D366]" />
+              <div className="flex flex-col items-start">
+                <span className="font-bold">Réserver par WhatsApp</span>
+                <span className="text-xs opacity-90">{BROKER_PHONE_DISPLAY}</span>
+              </div>
+              <WhatsAppIcon className="w-7 h-7" />
             </Button>
           </div>
         </DialogContent>

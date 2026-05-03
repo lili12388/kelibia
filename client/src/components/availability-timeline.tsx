@@ -276,7 +276,7 @@ export default function AvailabilityTimeline({ propertyId, isAdmin = false }: Ti
                 if (tIdx < 0) return null;
                 return (
                   <div className="absolute top-1/2 -translate-y-1/2 z-10" style={{ left: `${tIdx * DAY_W + DAY_W / 2 - 4}px` }}>
-                    <div className="w-[9px] h-[9px] bg-primary rounded-full border-2 border-white shadow-sm" />
+                    <div className="w-[9px] h-[9px] bg-[#16a34a] rounded-full border-2 border-white shadow-sm" />
                   </div>
                 );
               })()}
@@ -334,7 +334,7 @@ export default function AvailabilityTimeline({ propertyId, isAdmin = false }: Ti
         {/* Aujourd'hui button */}
         <div className="flex justify-center py-2 border-t border-border/15">
           <button onClick={scrollToToday} className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary text-[10px] sm:text-xs font-bold transition-all active:scale-95">
-            <CalendarDays className="w-3.5 h-3.5" />
+            <div className="w-2.5 h-2.5 bg-[#16a34a] rounded-full border border-white shadow-sm" />
             Aujourd'hui
           </button>
         </div>
