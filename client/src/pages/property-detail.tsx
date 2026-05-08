@@ -32,6 +32,7 @@ import Navbar from "@/components/navbar";
 import { SEO } from "@/components/seo";
 import { Helmet } from "react-helmet-async";
 import AvailabilityTimeline from "@/components/availability-timeline";
+import { frenchTitle } from "@/lib/utils";
 
 // Broker contact info
 const BROKER_PHONE = "50344187";
@@ -420,7 +421,7 @@ export default function PropertyDetailPage() {
 
   // SEO data
   const primaryImage = property.media.find(m => m.isPrimary) || property.media[0];
-  const seoTitle = `${property.title} — ${property.rooms} Chambres à ${property.location} | Laith Kelibia`;
+  const seoTitle = `${frenchTitle(property.title)} — ${property.rooms} Chambres à ${property.location} | Laith Kelibia`;
   const seoDescription = `${property.isFurnished ? 'Logement meublé' : 'Logement'} S+${property.rooms} avec ${property.bathrooms} salles de bain à ${property.location}, Kelibia. ${property.distanceToBeach ? `À ${property.distanceToBeach} de la plage. ` : ''}Prix: ${parseFloat(property.price).toLocaleString()} TND/nuit. Réservez sur Laith Kelibia.`;
   const seoKeywords = `location ${property.location}, maison s+${property.rooms} kelibia, ${property.title}, ${property.isFurnished ? 'meublé' : 'non meublé'} kelibia, location vacances kelibia, ${parseFloat(property.price).toLocaleString()} TND nuit, dar kelibia, location été cap bon, hébergement kelibia plage`;
 
@@ -510,7 +511,7 @@ export default function PropertyDetailPage() {
         {/* Title & Location at the top (Airbnb style) */}
         <div className="mb-6 animate-fade-in-up">
           <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2 leading-tight">
-            {property.title}
+            {frenchTitle(property.title)}
           </h1>
           <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-sm sm:text-base">
             <span className="flex items-center gap-1 font-medium text-foreground underline decoration-foreground/30 underline-offset-4">

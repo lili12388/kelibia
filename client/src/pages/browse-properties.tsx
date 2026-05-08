@@ -11,7 +11,7 @@ import type { PropertyWithMedia } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import Navbar from "@/components/navbar";
 import { SEO } from "@/components/seo";
-import { generatePropertyUrl } from "@/lib/utils";
+import { generatePropertyUrl, frenchTitle } from "@/lib/utils";
 
 export default function BrowsePropertiesPage() {
   const [minPrice, setMinPrice] = useState<string>("");
@@ -728,7 +728,7 @@ export default function BrowsePropertiesPage() {
                         {/* Info */}
                         <div className="p-2.5 sm:p-3 flex-1 flex flex-col">
                           <h3 className="font-semibold text-foreground text-xs sm:text-sm mb-1 line-clamp-2 group-hover:text-primary transition-colors leading-snug">
-                            {property.title}
+                            {frenchTitle(property.title)}
                           </h3>
                           
                           <div className="flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground mb-2">

@@ -234,8 +234,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (primaryMedia && primaryMedia.mimeType?.startsWith('image/')) {
             xml += `    <image:image>
       <image:loc>${SITE_URL}${primaryMedia.url}</image:loc>
-      <image:title>${(property.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</image:title>
-      <image:caption>Location ${(property.propertyType || 'bien').replace(/&/g, '&amp;')} à ${(property.location || 'Kelibia').replace(/&/g, '&amp;')}</image:caption>
+      <image:title>${(property.title || '').replace(/\bHouse\b/gi, 'Maison').replace(/\bApartment\b/gi, 'Appartement').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</image:title>
+      <image:caption>Location ${(property.propertyType || 'bien').replace(/\bHouse\b/gi, 'Maison').replace(/\bApartment\b/gi, 'Appartement').replace(/&/g, '&amp;')} à ${(property.location || 'Kelibia').replace(/&/g, '&amp;')}</image:caption>
     </image:image>
 `;
           }

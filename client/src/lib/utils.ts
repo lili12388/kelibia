@@ -20,3 +20,37 @@ export function generatePropertyUrl(property: { slug?: string | null; title: str
   
   return `/maisons/${slug}-${property.id}`;
 }
+
+// Translate English property type words to French for display
+const propertyTypeTranslations: Record<string, string> = {
+  'House': 'Maison',
+  'house': 'maison',
+  'Apartment': 'Appartement',
+  'apartment': 'appartement',
+  'Penthouse': 'Penthouse',
+  'Room': 'Chambre',
+  'room': 'chambre',
+  'Duplex': 'Duplex',
+  'Floor': 'Étage',
+  'floor': 'étage',
+  'Furnished': 'Meublé',
+  'furnished': 'meublé',
+  'Unfurnished': 'Non meublé',
+  'unfurnished': 'non meublé',
+  'Living room': 'Salon',
+  'living room': 'salon',
+  'With': 'Avec',
+  'with': 'avec',
+  'Without': 'Sans',
+  'without': 'sans',
+};
+
+export function frenchTitle(title: string): string {
+  let result = title;
+  // Replace whole words only (longest first to avoid partial replacements)
+  const entries = Object.entries(propertyTypeTranslations).sort((a, b) => b[0].length - a[0].length);
+  for (const [eng, fr] of entries) {
+    result = result.replace(new RegExp(`\\b${eng}\\b`, 'g'), fr);
+  }
+  return result;
+}
