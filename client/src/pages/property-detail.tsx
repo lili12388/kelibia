@@ -70,6 +70,8 @@ export default function PropertyDetailPage() {
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   const [neighborhoodMapFile, setNeighborhoodMapFile] = useState<File | null>(null);
   const [neighborhoodMapPreview, setNeighborhoodMapPreview] = useState<string | null>(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   // Swipe controls for mobile
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -384,6 +386,31 @@ export default function PropertyDetailPage() {
     }
   };
 
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setLightboxOpen(true);
+  };
+
+  const lightboxNext = () => {
+    if (property) setLightboxIndex((prev) => (prev + 1) % property.media.length);
+  };
+
+  const lightboxPrev = () => {
+    if (property) setLightboxIndex((prev) => (prev - 1 + property.media.length) % property.media.length);
+  };
+
+  // Keyboard navigation for lightbox
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLightboxOpen(false);
+      if (e.key === 'ArrowRight') lightboxNext();
+      if (e.key === 'ArrowLeft') lightboxPrev();
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [lightboxOpen, property]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -536,95 +563,70 @@ export default function PropertyDetailPage() {
           </div>
         </div>
 
-        {/* Hero Image Gallery (Airbnb Style) */}
+        {/* Image Gallery — Horizontal Slider + Fullscreen Lightbox */}
         <div className="mb-4 animate-fade-in-up" style={{ animationDelay: '50ms' }}>
           {property.media.length > 0 ? (
             <>
-              {/* Desktop Hero Grid (Hidden on mobile) */}
-              <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-2 h-[50vh] min-h-[400px] max-h-[500px] rounded-xl overflow-hidden">
-                {/* Main large image */}
-                <div
-                  className={`col-span-2 row-span-2 relative ${property.media[0].mimeType.startsWith('image/') ? 'cursor-pointer' : ''} group`}
-                  onClick={() => property.media[0].mimeType.startsWith('image/') && setCurrentImageIndex(0)}
+              {/* Desktop: Horizontal scrollable strip showing ALL images */}
+              <div className="hidden md:block relative">
+                <div 
+                  className="flex gap-2 overflow-x-auto no-scrollbar rounded-xl"
+                  style={{ scrollSnapType: 'x mandatory' }}
                 >
-                  {property.media[0].mimeType.startsWith('image/') ? (
-                    <img
-                      src={property.media[0].url}
-                      alt={property.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  ) : (
-                    <video
-                      src={property.media[0].url}
-                      className="w-full h-full object-cover"
-                      controls
-                      playsInline
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  )}
-                  {property.media[0].mimeType.startsWith('image/') && (
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
-                  )}
+                  {property.media.map((media, idx) => (
+                    <div
+                      key={media.id}
+                      className={`relative flex-shrink-0 cursor-pointer group overflow-hidden rounded-xl ${
+                        idx === 0 ? 'w-[55%] h-[420px]' : 'w-[28%] h-[420px]'
+                      }`}
+                      style={{ scrollSnapAlign: 'start' }}
+                      onClick={() => media.mimeType.startsWith('image/') && openLightbox(idx)}
+                    >
+                      {media.mimeType.startsWith('image/') ? (
+                        <img
+                          src={media.url}
+                          alt={`Photo ${idx + 1}`}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          loading={idx < 3 ? 'eager' : 'lazy'}
+                        />
+                      ) : (
+                        <video
+                          src={media.url}
+                          className="w-full h-full object-cover"
+                          controls
+                          playsInline
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      )}
+                      {media.mimeType.startsWith('image/') && (
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
+                      )}
+                    </div>
+                  ))}
                 </div>
-
-                {/* Smaller images (up to 4) */}
-                {property.media.slice(1, 5).map((media, idx) => (
-                  <div
-                    key={media.id}
-                    className={`relative ${media.mimeType.startsWith('image/') ? 'cursor-pointer' : ''} group overflow-hidden`}
-                    onClick={() => media.mimeType.startsWith('image/') && setCurrentImageIndex(idx + 1)}
-                  >
-                    {media.mimeType.startsWith('image/') ? (
-                      <img
-                        src={media.url}
-                        alt={`Aperçu ${idx + 2}`}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    ) : (
-                      <video
-                        src={media.url}
-                        className="w-full h-full object-cover"
-                        controls
-                        playsInline
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    )}
-                    {media.mimeType.startsWith('image/') && (
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
-                    )}
-
-                    {/* Overlay for the last image if there are more than 5 */}
-                    {idx === 3 && property.media.length > 5 && (
-                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center hover:bg-black/40 transition-colors">
-                        <span className="text-white font-semibold text-lg flex items-center gap-2">
-                          Voir toutes les photos ({property.media.length})
-                        </span>
-                      </div>
-                    )}
+                {/* Photo count badge */}
+                {property.media.length > 2 && (
+                  <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full z-10 pointer-events-none">
+                    {property.media.length} photos — glissez →
                   </div>
-                ))}
-
-                {/* Fill empty spots if less than 5 images */}
-                {Array.from({ length: Math.max(0, 4 - (property.media.length - 1)) }).map((_, i) => (
-                  <div key={`empty-${i}`} className="bg-muted w-full h-full"></div>
-                ))}
+                )}
               </div>
 
-              {/* Mobile Gallery: Main Viewer + Thumbnails (Hidden on desktop) */}
+              {/* Mobile Gallery: Main Viewer + Thumbnails */}
               <div className="md:hidden flex flex-col gap-2">
-
-                {/* ── Main Viewer ── */}
+                {/* Main Viewer */}
                 <div
                   className="relative aspect-[4/3] rounded-xl overflow-hidden bg-black"
                   onTouchStart={onTouchStart}
                   onTouchMove={onTouchMove}
                   onTouchEnd={onTouchEnd}
+                  onClick={() => currentMedia.mimeType.startsWith('image/') && openLightbox(currentImageIndex)}
                 >
                   {currentMedia.mimeType.startsWith('image/') ? (
                     <img
                       key={currentImageIndex}
                       src={currentMedia.url}
-                      alt={property.title}
+                      alt={frenchTitle(property.title)}
                       className="w-full h-full object-cover animate-fade-in"
                     />
                   ) : (
@@ -634,6 +636,7 @@ export default function PropertyDetailPage() {
                       controls
                       playsInline
                       className="w-full h-full object-contain bg-black"
+                      onClick={(e) => e.stopPropagation()}
                     />
                   )}
 
@@ -671,7 +674,7 @@ export default function PropertyDetailPage() {
                   )}
                 </div>
 
-                {/* ── Thumbnail Strip ── */}
+                {/* Thumbnail Strip */}
                 {property.media.length > 1 && (
                   <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 px-0.5">
                     {property.media.map((media, idx) => {
@@ -686,7 +689,6 @@ export default function PropertyDetailPage() {
                             : 'opacity-55 hover:opacity-80'
                             }`}
                         >
-                          {/* Thumbnail image */}
                           {isVideo ? (
                             media.thumbnailUrl ? (
                               <img
@@ -707,8 +709,6 @@ export default function PropertyDetailPage() {
                               loading="lazy"
                             />
                           )}
-
-                          {/* Play overlay for videos */}
                           {isVideo && (
                             <div className="absolute inset-0 flex items-center justify-center">
                               <div className="w-7 h-7 rounded-full bg-black/50 flex items-center justify-center">
@@ -721,7 +721,6 @@ export default function PropertyDetailPage() {
                     })}
                   </div>
                 )}
-
               </div>
             </>
           ) : (
@@ -731,6 +730,72 @@ export default function PropertyDetailPage() {
             </div>
           )}
         </div>
+
+        {/* Fullscreen Lightbox */}
+        {lightboxOpen && property.media.length > 0 && (
+          <div 
+            className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center animate-fade-in"
+            onClick={() => setLightboxOpen(false)}
+          >
+            {/* Close button */}
+            <button 
+              className="absolute top-4 right-4 z-[110] w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors text-white"
+              onClick={() => setLightboxOpen(false)}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+
+            {/* Counter */}
+            <div className="absolute top-4 left-4 z-[110] text-white/80 text-sm font-medium">
+              {lightboxIndex + 1} / {property.media.length}
+            </div>
+
+            {/* Left arrow */}
+            {property.media.length > 1 && (
+              <button
+                className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 z-[110] w-12 h-12 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center transition-all text-white active:scale-90"
+                onClick={(e) => { e.stopPropagation(); lightboxPrev(); }}
+              >
+                <ChevronLeft className="w-7 h-7" />
+              </button>
+            )}
+
+            {/* Right arrow */}
+            {property.media.length > 1 && (
+              <button
+                className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 z-[110] w-12 h-12 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center transition-all text-white active:scale-90"
+                onClick={(e) => { e.stopPropagation(); lightboxNext(); }}
+              >
+                <ChevronRight className="w-7 h-7" />
+              </button>
+            )}
+
+            {/* Image */}
+            <div 
+              className="max-w-[90vw] max-h-[85vh] flex items-center justify-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {property.media[lightboxIndex].mimeType.startsWith('image/') ? (
+                <img
+                  key={lightboxIndex}
+                  src={property.media[lightboxIndex].url}
+                  alt={`Photo ${lightboxIndex + 1}`}
+                  className="max-w-full max-h-[85vh] object-contain rounded-lg animate-fade-in select-none"
+                  draggable={false}
+                />
+              ) : (
+                <video
+                  key={lightboxIndex}
+                  src={property.media[lightboxIndex].url}
+                  controls
+                  autoPlay
+                  playsInline
+                  className="max-w-full max-h-[85vh] object-contain rounded-lg"
+                />
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Left Column - Details */}
