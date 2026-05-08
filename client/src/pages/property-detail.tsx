@@ -592,40 +592,85 @@ export default function PropertyDetailPage() {
         <div className="mb-4 animate-fade-in-up" style={{ animationDelay: '50ms' }}>
           {property.media.length > 0 ? (
             <>
-              {/* Desktop: Horizontal scrollable image list */}
+              {/* Desktop: Main image + 2x2 grid blocks, horizontally scrollable */}
               <div
                 className="hidden md:flex gap-2 rounded-xl overflow-x-auto pb-2"
                 style={{ scrollbarWidth: 'thin', scrollbarColor: 'hsl(var(--primary)) transparent' }}
               >
-                {property.media.map((media, idx) => (
-                  <div
-                    key={media.id}
-                    className={`relative flex-shrink-0 cursor-pointer group overflow-hidden rounded-xl ${
-                      idx === 0 ? 'w-[50%] h-[420px]' : 'w-[26%] h-[420px]'
-                    }`}
-                    onClick={() => media.mimeType.startsWith('image/') && openLightbox(idx)}
-                  >
-                    {media.mimeType.startsWith('image/') ? (
-                      <img
-                        src={media.url}
-                        alt={idx === 0 ? frenchTitle(property.title) : `Photo ${idx + 1}`}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        loading={idx < 3 ? 'eager' : 'lazy'}
-                      />
-                    ) : (
-                      <video
-                        src={media.url}
-                        className="w-full h-full object-cover"
-                        controls
-                        playsInline
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    )}
-                    {media.mimeType.startsWith('image/') && (
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
-                    )}
-                  </div>
-                ))}
+                {/* Main image — large */}
+                <div
+                  className="relative flex-shrink-0 cursor-pointer group overflow-hidden rounded-xl w-[50%] h-[420px]"
+                  onClick={() => property.media[0].mimeType.startsWith('image/') && openLightbox(0)}
+                >
+                  {property.media[0].mimeType.startsWith('image/') ? (
+                    <img
+                      src={property.media[0].url}
+                      alt={frenchTitle(property.title)}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <video
+                      src={property.media[0].url}
+                      className="w-full h-full object-cover"
+                      controls
+                      playsInline
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  )}
+                  {property.media[0].mimeType.startsWith('image/') && (
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
+                  )}
+                </div>
+
+                {/* 2x2 grid blocks of remaining images */}
+                {(() => {
+                  const rest = property.media.slice(1);
+                  const blocks: typeof rest[] = [];
+                  for (let i = 0; i < rest.length; i += 4) {
+                    blocks.push(rest.slice(i, i + 4));
+                  }
+                  return blocks.map((block, blockIdx) => (
+                    <div
+                      key={`block-${blockIdx}`}
+                      className="flex-shrink-0 grid grid-cols-2 grid-rows-2 gap-2 w-[50%] h-[420px]"
+                    >
+                      {block.map((media, idx) => {
+                        const globalIdx = 1 + blockIdx * 4 + idx;
+                        return (
+                          <div
+                            key={media.id}
+                            className="relative cursor-pointer group overflow-hidden rounded-xl"
+                            onClick={() => media.mimeType.startsWith('image/') && openLightbox(globalIdx)}
+                          >
+                            {media.mimeType.startsWith('image/') ? (
+                              <img
+                                src={media.url}
+                                alt={`Photo ${globalIdx + 1}`}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <video
+                                src={media.url}
+                                className="w-full h-full object-cover"
+                                controls
+                                playsInline
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            )}
+                            {media.mimeType.startsWith('image/') && (
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
+                            )}
+                          </div>
+                        );
+                      })}
+                      {/* Fill empty cells if block has fewer than 4 */}
+                      {Array.from({ length: Math.max(0, 4 - block.length) }).map((_, i) => (
+                        <div key={`empty-${blockIdx}-${i}`} className="bg-muted rounded-xl"></div>
+                      ))}
+                    </div>
+                  ));
+                })()}
               </div>
 
               {/* Mobile Gallery: Main Viewer + Thumbnails */}
