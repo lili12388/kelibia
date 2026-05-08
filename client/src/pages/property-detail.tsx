@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useRoute } from "wouter";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -73,6 +73,30 @@ export default function PropertyDetailPage() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [galleryPage, setGalleryPage] = useState(0);
+
+  // Drag-to-scroll refs for desktop thumbnail strip
+  const stripRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+  const dragStartX = useRef(0);
+  const dragScrollLeft = useRef(0);
+
+  const onStripMouseDown = (e: React.MouseEvent) => {
+    isDragging.current = true;
+    dragStartX.current = e.pageX - (stripRef.current?.offsetLeft || 0);
+    dragScrollLeft.current = stripRef.current?.scrollLeft || 0;
+    if (stripRef.current) stripRef.current.style.cursor = 'grabbing';
+  };
+  const onStripMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging.current || !stripRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - (stripRef.current.offsetLeft || 0);
+    const walk = (x - dragStartX.current) * 1.5;
+    stripRef.current.scrollLeft = dragScrollLeft.current - walk;
+  };
+  const onStripMouseUp = () => {
+    isDragging.current = false;
+    if (stripRef.current) stripRef.current.style.cursor = 'grab';
+  };
 
   // Swipe controls for mobile
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -693,6 +717,54 @@ export default function PropertyDetailPage() {
                   </div>
                 );
               })()}
+
+              {/* Desktop: Draggable thumbnail filmstrip */}
+              {property.media.length > 5 && (
+                <div
+                  ref={stripRef}
+                  className="hidden md:flex gap-2 mt-2 overflow-x-auto no-scrollbar pb-1 px-0.5 select-none"
+                  style={{ cursor: 'grab' }}
+                  onMouseDown={onStripMouseDown}
+                  onMouseMove={onStripMouseMove}
+                  onMouseUp={onStripMouseUp}
+                  onMouseLeave={onStripMouseUp}
+                >
+                  {property.media.map((media, idx) => {
+                    const isVideo = media.mimeType.startsWith('video/');
+                    // Highlight thumbnails belonging to the current gallery page
+                    const pageStart = galleryPage * 5;
+                    const pageEnd = pageStart + 5;
+                    const isOnCurrentPage = idx >= pageStart && idx < pageEnd;
+                    return (
+                      <button
+                        key={media.id}
+                        onClick={() => {
+                          if (!isDragging.current) {
+                            openLightbox(idx);
+                          }
+                        }}
+                        className={`relative flex-shrink-0 w-[80px] h-[56px] rounded-lg overflow-hidden transition-all ${
+                          isOnCurrentPage
+                            ? 'ring-2 ring-primary ring-offset-1 opacity-100'
+                            : 'opacity-50 hover:opacity-80'
+                        }`}
+                      >
+                        {isVideo ? (
+                          media.thumbnailUrl ? (
+                            <img src={media.thumbnailUrl} alt={`Vidéo ${idx + 1}`} className="w-full h-full object-cover" draggable={false} />
+                          ) : (
+                            <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                              <div className="w-0 h-0 border-l-[6px] border-l-white border-y-[4px] border-y-transparent ml-0.5" />
+                            </div>
+                          )
+                        ) : (
+                          <img src={media.url} alt={`Photo ${idx + 1}`} className="w-full h-full object-cover" loading="lazy" draggable={false} />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
 
               {/* Mobile Gallery: Main Viewer + Thumbnails */}
               <div className="md:hidden flex flex-col gap-2">
