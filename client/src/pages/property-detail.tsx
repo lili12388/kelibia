@@ -72,6 +72,7 @@ export default function PropertyDetailPage() {
   const [neighborhoodMapPreview, setNeighborhoodMapPreview] = useState<string | null>(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [galleryPage, setGalleryPage] = useState(0);
 
   // Swipe controls for mobile
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -567,50 +568,131 @@ export default function PropertyDetailPage() {
         <div className="mb-4 animate-fade-in-up" style={{ animationDelay: '50ms' }}>
           {property.media.length > 0 ? (
             <>
-              {/* Desktop: Horizontal scrollable strip showing ALL images */}
-              <div className="hidden md:block relative">
-                <div 
-                  className="flex gap-2 overflow-x-auto no-scrollbar rounded-xl"
-                  style={{ scrollSnapType: 'x mandatory' }}
-                >
-                  {property.media.map((media, idx) => (
-                    <div
-                      key={media.id}
-                      className={`relative flex-shrink-0 cursor-pointer group overflow-hidden rounded-xl ${
-                        idx === 0 ? 'w-[55%] h-[420px]' : 'w-[28%] h-[420px]'
-                      }`}
-                      style={{ scrollSnapAlign: 'start' }}
-                      onClick={() => media.mimeType.startsWith('image/') && openLightbox(idx)}
-                    >
-                      {media.mimeType.startsWith('image/') ? (
-                        <img
-                          src={media.url}
-                          alt={`Photo ${idx + 1}`}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          loading={idx < 3 ? 'eager' : 'lazy'}
-                        />
-                      ) : (
-                        <video
-                          src={media.url}
-                          className="w-full h-full object-cover"
-                          controls
-                          playsInline
-                          onClick={(e) => e.stopPropagation()}
-                        />
+              {/* Desktop: Airbnb-style grid with carousel pagination */}
+              {(() => {
+                const pageSize = 5;
+                const totalPages = Math.ceil(property.media.length / pageSize);
+                const pageMedia = property.media.slice(galleryPage * pageSize, galleryPage * pageSize + pageSize);
+                const hasNextPage = galleryPage < totalPages - 1;
+                const hasPrevPage = galleryPage > 0;
+
+                return (
+                  <div className="hidden md:block relative">
+                    <div className="grid grid-cols-4 grid-rows-2 gap-2 h-[50vh] min-h-[400px] max-h-[500px] rounded-xl overflow-hidden">
+                      {/* Main large image (first of current page) */}
+                      {pageMedia[0] && (
+                        <div
+                          className={`col-span-2 row-span-2 relative ${pageMedia[0].mimeType.startsWith('image/') ? 'cursor-pointer' : ''} group`}
+                          onClick={() => pageMedia[0].mimeType.startsWith('image/') && openLightbox(galleryPage * pageSize)}
+                        >
+                          {pageMedia[0].mimeType.startsWith('image/') ? (
+                            <img
+                              src={pageMedia[0].url}
+                              alt={frenchTitle(property.title)}
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            />
+                          ) : (
+                            <video
+                              src={pageMedia[0].url}
+                              className="w-full h-full object-cover"
+                              controls
+                              playsInline
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          )}
+                          {pageMedia[0].mimeType.startsWith('image/') && (
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
+                          )}
+                        </div>
                       )}
-                      {media.mimeType.startsWith('image/') && (
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
-                      )}
+
+                      {/* Smaller images (up to 4 from current page) */}
+                      {pageMedia.slice(1, 5).map((media, idx) => {
+                        const globalIdx = galleryPage * pageSize + idx + 1;
+                        const isLastSlot = idx === 3;
+                        return (
+                          <div
+                            key={media.id}
+                            className={`relative ${media.mimeType.startsWith('image/') ? 'cursor-pointer' : ''} group overflow-hidden`}
+                            onClick={() => {
+                              if (isLastSlot && hasNextPage) {
+                                setGalleryPage(p => p + 1);
+                              } else {
+                                media.mimeType.startsWith('image/') && openLightbox(globalIdx);
+                              }
+                            }}
+                          >
+                            {media.mimeType.startsWith('image/') ? (
+                              <img
+                                src={media.url}
+                                alt={`Photo ${globalIdx + 1}`}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <video
+                                src={media.url}
+                                className="w-full h-full object-cover"
+                                controls
+                                playsInline
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            )}
+                            {media.mimeType.startsWith('image/') && (
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
+                            )}
+
+                            {/* "More photos" overlay on last slot if there are more pages */}
+                            {isLastSlot && hasNextPage && (
+                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center hover:bg-black/40 transition-colors cursor-pointer">
+                                <span className="text-white font-semibold text-lg flex items-center gap-2">
+                                  +{property.media.length - (galleryPage * pageSize + 5)} photos →
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+
+                      {/* Fill empty spots if fewer than 5 images on this page */}
+                      {Array.from({ length: Math.max(0, 4 - (pageMedia.length - 1)) }).map((_, i) => (
+                        <div key={`empty-${i}`} className="bg-muted w-full h-full"></div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-                {/* Photo count badge */}
-                {property.media.length > 2 && (
-                  <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full z-10 pointer-events-none">
-                    {property.media.length} photos — glissez →
+
+                    {/* Carousel navigation arrows */}
+                    {hasPrevPage && (
+                      <button
+                        className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 shadow-lg flex items-center justify-center hover:bg-white transition-all active:scale-90"
+                        onClick={() => setGalleryPage(p => p - 1)}
+                      >
+                        <ChevronLeft className="w-5 h-5 text-foreground" />
+                      </button>
+                    )}
+                    {hasNextPage && (
+                      <button
+                        className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 shadow-lg flex items-center justify-center hover:bg-white transition-all active:scale-90"
+                        onClick={() => setGalleryPage(p => p + 1)}
+                      >
+                        <ChevronRight className="w-5 h-5 text-foreground" />
+                      </button>
+                    )}
+
+                    {/* Page indicator */}
+                    {totalPages > 1 && (
+                      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
+                        {Array.from({ length: totalPages }).map((_, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setGalleryPage(i)}
+                            className={`w-2 h-2 rounded-full transition-all ${i === galleryPage ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/75'}`}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                );
+              })()}
 
               {/* Mobile Gallery: Main Viewer + Thumbnails */}
               <div className="md:hidden flex flex-col gap-2">
