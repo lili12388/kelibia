@@ -423,32 +423,57 @@ export default function PropertyDetailPage() {
 
   // SEO data
   const primaryImage = property.media.find(m => m.isPrimary) || property.media[0];
-  const seoTitle = `${property.title} - ${property.rooms} Ch, ${property.bathrooms} Salles de bain | Edarna`;
-  const seoDescription = `${property.isFurnished ? 'Appartement meublé' : 'Appartement'} avec ${property.rooms} chambres et ${property.bathrooms} salles de bain à ${property.location}. Prix: ${parseFloat(property.price).toLocaleString()} TND/nuit. ${property.description.substring(0, 100)}...`;
+  const seoTitle = `${property.title} — ${property.rooms} Chambres à ${property.location} | Laith Kelibia`;
+  const seoDescription = `${property.isFurnished ? 'Logement meublé' : 'Logement'} avec ${property.rooms} chambres et ${property.bathrooms} salles de bain à ${property.location}. ${property.distanceToBeach ? `À ${property.distanceToBeach} de la plage. ` : ''}Prix: ${parseFloat(property.price).toLocaleString()} TND/nuit. Réservez sur Laith Kelibia.`;
+  const seoKeywords = `location ${property.location}, ${property.title}, ${property.rooms} chambres kelibia, ${property.isFurnished ? 'meublé' : 'non meublé'} kelibia, location vacances kelibia, ${parseFloat(property.price).toLocaleString()} TND nuit`;
 
   // Structured Data (Schema.org) for Google rich snippets
   const structuredData = {
     "@context": "https://schema.org",
-    "@type": "RealEstateListing",
+    "@type": "VacationRental",
     "name": property.title,
     "description": property.description,
+    "url": `https://laith-kelibia.tn/maisons/${property.id}`,
     "address": {
       "@type": "PostalAddress",
       "addressLocality": property.location,
+      "addressRegion": "Nabeul",
       "addressCountry": "TN"
     },
-    "price": parseFloat(property.price),
-    "priceCurrency": "TND",
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 36.8465,
+      "longitude": 11.0942
+    },
     "numberOfRooms": property.rooms,
     "numberOfBathroomsTotal": property.bathrooms,
-    "image": primaryImage?.url || "",
-    "availableAtOrFrom": {
-      "@type": "Place",
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": property.location,
-        "addressCountry": "Tunisia"
-      }
+    "occupancy": {
+      "@type": "QuantitativeValue",
+      "maxValue": property.maxGuests || 1
+    },
+    "amenityFeature": [
+      ...(property.hasAC ? [{ "@type": "LocationFeatureSpecification", "name": "Climatisation", "value": true }] : []),
+      ...(property.hasWiFi ? [{ "@type": "LocationFeatureSpecification", "name": "WiFi", "value": true }] : []),
+      ...(property.hasParking ? [{ "@type": "LocationFeatureSpecification", "name": "Parking", "value": true }] : []),
+      ...(property.hasSeaView ? [{ "@type": "LocationFeatureSpecification", "name": "Vue mer", "value": true }] : []),
+      ...(property.isFurnished ? [{ "@type": "LocationFeatureSpecification", "name": "Meublé", "value": true }] : []),
+    ],
+    "image": property.media
+      .filter((m: any) => m.mimeType?.startsWith('image/'))
+      .slice(0, 5)
+      .map((m: any) => `https://laith-kelibia.tn${m.url}`),
+    "offers": {
+      "@type": "Offer",
+      "price": parseFloat(property.price),
+      "priceCurrency": "TND",
+      "availability": "https://schema.org/InStock",
+      "priceValidUntil": new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+    },
+    "provider": {
+      "@type": "RealEstateAgent",
+      "name": "Laith Kelibia",
+      "url": "https://laith-kelibia.tn",
+      "telephone": "+21650344187"
     }
   };
 
@@ -458,8 +483,9 @@ export default function PropertyDetailPage() {
       <SEO
         title={seoTitle}
         description={seoDescription}
-        keywords={`${property.title}, location ${property.location}, ${property.rooms} chambres, ${property.isFurnished ? 'meublé' : 'non meublé'}, ${parseFloat(property.price).toLocaleString()} TND`}
+        keywords={seoKeywords}
         image={primaryImage?.url}
+        url={`https://laith-kelibia.tn/maisons/${property.id}`}
         type="article"
       />
 

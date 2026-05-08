@@ -9,9 +9,10 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       <SEO 
-        title="Edarna - Location d'Appartements à Hay Khadhra & Cité Olympique"
-        description="Trouvez votre logement idéal à Hay Khadhra et Cité Olympique, Tunis. Appartements meublés et non meublés vérifiés. Propriétaires, publiez gratuitement vos annonces."
-        keywords="location appartement Hay Khadhra, location Cité Olympique, appartement meublé Tunis, immobilier Tunis, location logement, appartement à louer Tunis"
+        title="Laith Kelibia — Location Maisons, Appartements & Villas à Kelibia, Tunisie"
+        description="Votre agence immobilière de confiance à Kelibia. Location saisonnière d'appartements meublés, villas vue mer et maisons de vacances près de la plage. Réservation facile et rapide."
+        keywords="location kelibia, location appartement kelibia, location villa kelibia, maison vacances kelibia, location saisonnière kelibia, appartement meublé kelibia, location été tunisie, kelibia plage, agence immobilière kelibia"
+        url="https://laith-kelibia.tn/"
       />
       <Navbar />
 

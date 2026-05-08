@@ -105,6 +105,107 @@ async function generateVideoThumbnailFile(): Promise<string> {
 const isProduction = process.env.NODE_ENV === 'production';
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // ============================================
+  // SEO: Dynamic Sitemap.xml
+  // ============================================
+  app.get('/sitemap.xml', async (req, res) => {
+    try {
+      const SITE_URL = 'https://laith-kelibia.tn';
+      const today = new Date().toISOString().split('T')[0];
+
+      // Fetch all published properties from database
+      const allProperties = await storage.getAllProperties();
+
+      // Static pages with SEO-optimized priorities
+      const staticPages = [
+        { url: '/', changefreq: 'daily', priority: '1.0' },
+        { url: '/browse-properties', changefreq: 'daily', priority: '0.9' },
+        { url: '/about', changefreq: 'monthly', priority: '0.7' },
+        { url: '/list-property', changefreq: 'monthly', priority: '0.6' },
+      ];
+
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+`;
+
+      // Add static pages
+      for (const page of staticPages) {
+        xml += `  <url>
+    <loc>${SITE_URL}${page.url}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${page.priority}</priority>
+  </url>
+`;
+      }
+
+      // Add dynamic property pages
+      for (const property of allProperties) {
+        const propertyDate = today;
+
+        // Primary URL using SEO-friendly /maisons/ path
+        xml += `  <url>
+    <loc>${SITE_URL}/maisons/${property.id}</loc>
+    <lastmod>${propertyDate}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+`;
+        // Add property image to sitemap if available
+        if (property.media && property.media.length > 0) {
+          const primaryMedia = property.media.find((m: any) => m.isPrimary) || property.media[0];
+          if (primaryMedia && primaryMedia.mimeType?.startsWith('image/')) {
+            xml += `    <image:image>
+      <image:loc>${SITE_URL}${primaryMedia.url}</image:loc>
+      <image:title>${(property.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</image:title>
+      <image:caption>Location ${(property.propertyType || 'bien').replace(/&/g, '&amp;')} à ${(property.location || 'Kelibia').replace(/&/g, '&amp;')}</image:caption>
+    </image:image>
+`;
+          }
+        }
+        xml += `  </url>
+`;
+      }
+
+      xml += `</urlset>`;
+
+      res.set('Content-Type', 'application/xml');
+      res.set('Cache-Control', 'public, max-age=3600'); // Cache 1 hour
+      res.send(xml);
+    } catch (error) {
+      console.error('[SITEMAP] Error generating sitemap:', error);
+      res.status(500).send('Error generating sitemap');
+    }
+  });
+
+  // ============================================
+  // SEO: Robots.txt (server-side fallback)
+  // ============================================
+  app.get('/robots.txt', (req, res) => {
+    const robotsTxt = `# Robots.txt pour laith-kelibia.tn
+# Agence immobilière - Location à Kelibia, Tunisie
+
+User-agent: *
+Allow: /
+Allow: /about
+Allow: /browse-properties
+Allow: /maisons/
+Allow: /property/
+Allow: /list-property
+
+Disallow: /admin/
+Disallow: /broker/
+Disallow: /api/
+
+Sitemap: https://laith-kelibia.tn/sitemap.xml
+
+Crawl-delay: 2
+`;
+    res.set('Content-Type', 'text/plain');
+    res.set('Cache-Control', 'public, max-age=86400'); // Cache 24 hours
+    res.send(robotsTxt);
+  });
+
   // Broker login endpoint
   app.post('/api/broker/login', async (req, res) => {
     try {

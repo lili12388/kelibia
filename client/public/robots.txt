@@ -1,0 +1,21 @@
+# Robots.txt pour laith-kelibia.tn
+# Agence immobilière - Location à Kelibia, Tunisie
+
+User-agent: *
+Allow: /
+Allow: /about
+Allow: /browse-properties
+Allow: /maisons/
+Allow: /property/
+Allow: /list-property
+
+# Bloquer les pages d'administration et les pages privées
+Disallow: /admin/
+Disallow: /broker/
+Disallow: /api/
+
+# Sitemap dynamique
+Sitemap: https://laith-kelibia.tn/sitemap.xml
+
+# Délai de crawl
+Crawl-delay: 2

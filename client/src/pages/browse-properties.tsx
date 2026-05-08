@@ -109,9 +109,10 @@ export default function BrowsePropertiesPage() {
   return (
     <div className="min-h-screen bg-background">
       <SEO 
-        title={`${filteredProperties.length} Logements à Kelibia | laith-kelibia`}
-        description={seoDescription}
-        keywords="location appartement Kelibia, appartement meublé, location Tunisie"
+        title={`${filteredProperties.length} Logements Disponibles à Kelibia | Location Vacances | Laith Kelibia`}
+        description={`Découvrez ${filteredProperties.length} logements vérifiés à louer à Kelibia : appartements meublés, villas vue mer, maisons de vacances près de la plage. Réservation facile et rapide.`}
+        keywords="location kelibia, appartement meublé kelibia, villa à louer kelibia, maison vacances kelibia, location saisonnière kelibia, location été kelibia, logement kelibia plage, hébergement kelibia nabeul, location courte durée tunisie"
+        url="https://laith-kelibia.tn/browse-properties"
       />
       <Navbar />
       
