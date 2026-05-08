@@ -25,7 +25,7 @@ import type { PropertyWithMedia, PropertySubmissionWithMedia } from "@shared/sch
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/navbar";
-import { generatePropertyUrl } from "@/lib/utils";
+import { generatePropertyUrl, frenchTitle } from "@/lib/utils";
 
 interface PropertyAnalytics {
   propertyId: string;
@@ -485,7 +485,7 @@ export default function BrokerBrowsePage() {
                             <div className="relative w-full h-full">
                               <img
                                 src={primaryMedia.thumbnailUrl}
-                                alt={property.title}
+                                alt={frenchTitle(property.title, property.rooms)}
                                 className="w-full h-full object-cover transition-transform group-hover:scale-105"
                                 loading="lazy"
                               />
@@ -511,7 +511,7 @@ export default function BrokerBrowsePage() {
                           // Regular image
                           <img
                             src={primaryMedia.url}
-                            alt={property.title}
+                            alt={frenchTitle(property.title, property.rooms)}
                             className="w-full h-full object-cover transition-transform group-hover:scale-105"
                             loading="lazy"
                           />
@@ -543,7 +543,7 @@ export default function BrokerBrowsePage() {
                   <CardContent className="p-4 flex-1 flex flex-col">
                     <Link href={generatePropertyUrl(property)}>
                       <h3 className="font-semibold text-foreground text-lg mb-2 line-clamp-2 hover:text-primary transition-colors cursor-pointer">
-                        {property.title}
+                        {frenchTitle(property.title, property.rooms)}
                       </h3>
                     </Link>
 

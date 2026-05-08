@@ -473,7 +473,7 @@ export default function PropertyDetailPage() {
 
   // SEO data
   const primaryImage = property.media.find(m => m.isPrimary) || property.media[0];
-  const seoTitle = `${frenchTitle(property.title)} — ${property.rooms} Chambres à ${property.location} | Laith Kelibia`;
+  const seoTitle = `${frenchTitle(property.title, property.rooms)} — ${property.rooms} Chambres à ${property.location} | Laith Kelibia`;
   const seoDescription = `${property.isFurnished ? 'Logement meublé' : 'Logement'} S+${property.rooms} avec ${property.bathrooms} salles de bain à ${property.location}, Kelibia. ${property.distanceToBeach ? `À ${property.distanceToBeach} de la plage. ` : ''}Prix: ${parseFloat(property.price).toLocaleString()} TND/nuit. Réservez sur Laith Kelibia.`;
   const seoKeywords = `location ${property.location}, maison s+${property.rooms} kelibia, ${property.title}, ${property.isFurnished ? 'meublé' : 'non meublé'} kelibia, location vacances kelibia, ${parseFloat(property.price).toLocaleString()} TND nuit, dar kelibia, location été cap bon, hébergement kelibia plage`;
 
@@ -563,7 +563,7 @@ export default function PropertyDetailPage() {
         {/* Title & Location at the top (Airbnb style) */}
         <div className="mb-3 animate-fade-in-up">
           <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2 leading-tight">
-            {frenchTitle(property.title)}
+            {frenchTitle(property.title, property.rooms)}
           </h1>
           <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-sm sm:text-base">
             <span className="flex items-center gap-1 font-medium text-foreground underline decoration-foreground/30 underline-offset-4">
@@ -605,7 +605,7 @@ export default function PropertyDetailPage() {
                   {property.media[0].mimeType.startsWith('image/') ? (
                     <img
                       src={property.media[0].url}
-                      alt={frenchTitle(property.title)}
+                      alt={frenchTitle(property.title, property.rooms)}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
@@ -683,7 +683,7 @@ export default function PropertyDetailPage() {
                     <img
                       key={currentImageIndex}
                       src={currentMedia.url}
-                      alt={frenchTitle(property.title)}
+                      alt={frenchTitle(property.title, property.rooms)}
                       className="w-full h-full object-cover animate-fade-in"
                     />
                   ) : (

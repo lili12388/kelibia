@@ -8,6 +8,7 @@ import { Users, Eye, MousePointer, Activity, Monitor, Smartphone, ArrowLeft, Bui
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { frenchTitle } from "@/lib/utils";
 
 interface AnalyticsSummary {
   totalVisitors: number;
@@ -457,7 +458,7 @@ export default function AdminAnalytics() {
                     </div>
                     <div>
                       <div className="font-medium text-gray-900">
-                        {property.title}
+                        {frenchTitle(property.title)}
                       </div>
                       <div className="text-sm text-gray-500">
                         Dernière vue: {formatRelativeTime(property.lastViewedAt)}
@@ -495,7 +496,7 @@ export default function AdminAnalytics() {
                         <AlertDialogHeader>
                           <AlertDialogTitle>Supprimer les statistiques ?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Voulez-vous supprimer les statistiques de "{property.title}" ?
+                            Voulez-vous supprimer les statistiques de "{frenchTitle(property.title)}" ?
                             Cela supprimera définitivement toutes les données analytiques de cette propriété.
                           </AlertDialogDescription>
                         </AlertDialogHeader>

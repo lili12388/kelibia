@@ -45,12 +45,29 @@ const propertyTypeTranslations: Record<string, string> = {
   'without': 'sans',
 };
 
-export function frenchTitle(title: string): string {
+export function frenchTitle(title: string, rooms?: number): string {
   let result = title;
+  
+  // Clean up legacy formatting (remove "Avec salon" and dashes)
+  result = result.replace(/\s*-\s*Avec salon\b/gi, '');
+  result = result.replace(/\bAvec salon\b/gi, '');
+  result = result.replace(/\s*-\s*/g, ' ');
+
   // Replace whole words only (longest first to avoid partial replacements)
   const entries = Object.entries(propertyTypeTranslations).sort((a, b) => b[0].length - a[0].length);
   for (const [eng, fr] of entries) {
     result = result.replace(new RegExp(`\\b${eng}\\b`, 'g'), fr);
   }
+
+  // Insert "s+X" after the property type if it's not already there and rooms is provided
+  if (rooms !== undefined && rooms > 0 && !result.toLowerCase().includes(`s+`)) {
+    // We assume the first word is the property type (e.g. Appartement, Maison, Studio)
+    // Find the first word and insert " s+X" after it
+    result = result.replace(/^(\S+)/, `$1 s+${rooms}`);
+  }
+
+  // Clean up extra spaces
+  result = result.replace(/\s+/g, ' ').trim();
+  
   return result;
 }

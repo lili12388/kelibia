@@ -470,9 +470,10 @@ export default function ListPropertyPage() {
 
     // Auto-generate title from property details
     const furni = data.isFurnished ? "Meublé" : "Non meublé";
-    const floor = data.floorLevel ? ` - ${data.floorLevel}` : "";
-    const salon = data.hasLivingRoom ? " - Avec salon" : "";
-    const autoTitle = `${data.propertyType}${floor}${salon} - ${furni}`;
+    const floor = data.floorLevel ? ` au ${data.floorLevel}` : "";
+    const roomsText = data.rooms > 0 ? ` s+${data.rooms}` : "";
+    const propType = data.propertyType === "House" ? "Maison" : data.propertyType === "Apartment" ? "Appartement" : data.propertyType;
+    const autoTitle = `${propType}${roomsText}${floor} ${furni}`;
 
     // Generate bedDetails JSON for room-specific bed configurations
     const roomsCount = data.rooms || 0;
