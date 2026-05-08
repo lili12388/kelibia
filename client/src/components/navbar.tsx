@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { LogOut, BarChart3, Plus, LayoutGrid, Phone } from "lucide-react";
+import { LogOut, BarChart3, Plus, LayoutGrid, Phone, Menu, X } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +34,7 @@ export default function Navbar() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { data: authStatus } = useQuery<{ isAuthenticated: boolean }>({
     queryKey: ['/api/broker/auth-status'],
@@ -50,6 +51,11 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location]);
 
   const isHome = location === "/";
   const isTransparent = isHome && !scrolled;
@@ -74,33 +80,34 @@ export default function Navbar() {
     <nav className={`w-full z-50 transition-all duration-300 ${
       isHome ? 'fixed top-0' : 'sticky top-0'
     } ${isTransparent ? 'bg-transparent border-transparent' : 'glass border-b border-border/30 bg-background/95 shadow-sm'}`}>
-      <div className="px-4 py-2.5 sm:py-3 sm:px-6 xl:px-8 max-w-[1600px] mx-auto">
+      <div className="px-4 py-2 sm:py-3 sm:px-6 xl:px-8 max-w-[1600px] mx-auto">
         <div className="flex items-center justify-between">
+
+          {/* Logo + Brand Name — always visible */}
           <Link href="/">
-            <div className="flex items-center gap-3 cursor-pointer group">
+            <div className="flex items-center gap-2 sm:gap-3 cursor-pointer group">
               <img
                 src="/logo.png"
                 alt="Laith Kelibia"
-                className="h-20 sm:h-24 w-auto object-contain"
+                className="h-12 sm:h-24 w-auto object-contain"
               />
-              <div className={`hidden sm:flex flex-col border-l pl-3 transition-colors duration-300 ${
+              <div className={`flex flex-col border-l pl-2 sm:pl-3 transition-colors duration-300 ${
                 isTransparent ? "border-white/30" : "border-border/50"
               }`}>
-                <span className={`text-sm font-extrabold tracking-tight leading-tight transition-colors duration-300 ${
+                <span className={`text-xs sm:text-sm font-extrabold tracking-tight leading-tight transition-colors duration-300 ${
                   isTransparent ? "text-white" : "text-foreground"
                 }`}>Laith Kelibia</span>
-                <span className={`text-[10px] font-semibold uppercase tracking-[0.15em] leading-tight transition-colors duration-300 ${
-                  isTransparent ? "text-white/70" : "text-primary/70"
-                }`}>Agence Immobilière</span>
+                <span className={`text-[8px] sm:text-[10px] font-semibold uppercase tracking-[0.15em] leading-tight transition-colors duration-300 ${
+                  isTransparent ? "text-white/60" : "text-primary/60"
+                }`}>Immobilière</span>
               </div>
             </div>
           </Link>
 
-          {/* Navigation Links & Actions */}
-          <div className="flex items-center gap-3 sm:gap-6">
-            
-            {/* Main Navigation Links (Text only as requested) */}
-            <div className="flex items-center gap-4 sm:gap-8">
+          {/* ===== DESKTOP NAV (sm+) ===== */}
+          <div className="hidden sm:flex items-center gap-6">
+            {/* Nav Links */}
+            <div className="flex items-center gap-8">
               <Link href="/">
                 <span className={`text-sm font-black transition-all duration-200 cursor-pointer drop-shadow-md ${
                   isTransparent 
@@ -111,7 +118,7 @@ export default function Navbar() {
                 </span>
               </Link>
               
-              <Link href="/about" className="hidden sm:inline">
+              <Link href="/about">
                 <span className={`text-sm font-black transition-all duration-200 cursor-pointer drop-shadow-md ${
                   isTransparent 
                     ? "text-white hover:text-white/80" 
@@ -122,12 +129,12 @@ export default function Navbar() {
               </Link>
             </div>
 
-            {/* Facebook Page Button */}
+            {/* Facebook Button */}
             <a
               href={FACEBOOK_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className={`group hidden sm:flex items-center gap-2 h-9 sm:h-11 px-4 sm:px-5 rounded-full font-black text-xs sm:text-sm shadow-md transition-all duration-300 active:scale-[0.98] border ${
+              className={`group flex items-center gap-2 h-11 px-5 rounded-full font-black text-sm shadow-md transition-all duration-300 active:scale-[0.98] border ${
                 isTransparent
                   ? "bg-white/15 backdrop-blur-sm text-white border-white/30 hover:bg-[#1877F2] hover:border-[#1877F2] hover:text-white hover:shadow-lg hover:shadow-[#1877F2]/25"
                   : "border-primary/20 text-primary bg-primary/5 hover:bg-[#1877F2] hover:border-[#1877F2] hover:text-white hover:shadow-lg hover:shadow-[#1877F2]/20"
@@ -145,11 +152,11 @@ export default function Navbar() {
               <span>Kelibia Annonces</span>
             </a>
 
-            {/* Professional Contact Button */}
+            {/* Contact Button */}
             <Button 
               variant={isTransparent ? "default" : "outline"}
               size="sm"
-              className={`h-9 sm:h-11 px-4 sm:px-6 rounded-full font-black text-xs sm:text-sm shadow-md transition-all duration-300 active:scale-[0.98] hover:bg-[#32CD32] hover:border-[#32CD32] hover:text-white hover:shadow-lg hover:shadow-[#32CD32]/25 ${
+              className={`h-11 px-6 rounded-full font-black text-sm shadow-md transition-all duration-300 active:scale-[0.98] hover:bg-[#32CD32] hover:border-[#32CD32] hover:text-white hover:shadow-lg hover:shadow-[#32CD32]/25 ${
                 isTransparent 
                   ? "bg-white text-primary border-0" 
                   : "border-primary/20 text-primary bg-primary/5"
@@ -159,102 +166,236 @@ export default function Navbar() {
               Contactez-nous
             </Button>
 
-            {/* Admin Controls (Separate or Balanced) */}
-            <div className="flex items-center gap-1 sm:gap-2">
+            {/* Admin Controls — Desktop */}
+            <div className="flex items-center gap-2">
               {isAdmin && location !== "/admin/analytics" && (
                 <Link href="/admin/analytics">
-                  <Button variant="ghost" size="sm" className="h-8 w-8 sm:w-auto sm:h-9 sm:px-3 rounded-xl p-0 sm:p-2">
-                    <BarChart3 className="h-4 w-4 sm:mr-1.5" />
-                    <span className="hidden sm:inline text-xs">Stats</span>
+                  <Button variant="ghost" size="sm" className="h-9 px-3 rounded-xl">
+                    <BarChart3 className="h-4 w-4 mr-1.5" />
+                    <span className="text-xs">Stats</span>
                   </Button>
                 </Link>
               )}
-
               {isAdmin && location !== "/admin/browse" && (
                 <Link href="/admin/browse">
-                  <Button variant="ghost" size="sm" className="h-8 w-8 sm:w-auto sm:h-9 sm:px-3 rounded-xl p-0 sm:p-2">
-                    <LayoutGrid className="h-4 w-4 sm:mr-1.5" />
-                    <span className="hidden sm:inline text-xs">Admin</span>
+                  <Button variant="ghost" size="sm" className="h-9 px-3 rounded-xl">
+                    <LayoutGrid className="h-4 w-4 mr-1.5" />
+                    <span className="text-xs">Admin</span>
                   </Button>
                 </Link>
               )}
-
               {isAdmin && location !== "/admin/list-property" && (
                 <Link href="/admin/list-property">
-                  <Button size="sm" className="h-8 w-8 sm:w-auto sm:h-9 sm:px-3 rounded-xl p-0 sm:p-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm">
-                    <Plus className="h-4 w-4 sm:mr-1.5" />
-                    <span className="hidden sm:inline text-xs font-bold">Publier</span>
+                  <Button size="sm" className="h-9 px-3 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm">
+                    <Plus className="h-4 w-4 mr-1.5" />
+                    <span className="text-xs font-bold">Publier</span>
                   </Button>
                 </Link>
               )}
-
               {isAdmin && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => logoutMutation.mutate()}
                   disabled={logoutMutation.isPending}
-                  className="h-8 w-8 sm:w-auto sm:h-9 sm:px-3 rounded-xl p-0 sm:p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                  className="h-9 px-3 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                 >
-                  <LogOut className="h-4 w-4 sm:mr-1.5" />
-                  <span className="hidden sm:inline text-xs">Quitter</span>
+                  <LogOut className="h-4 w-4 mr-1.5" />
+                  <span className="text-xs">Quitter</span>
                 </Button>
               )}
             </div>
           </div>
 
-          {/* Unified Contact Modal in Navbar */}
-          <Dialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
-            <DialogContent className="sm:max-w-md mx-auto w-[90vw] rounded-3xl border-0 shadow-2xl overflow-hidden p-0">
-              <div className="bg-gradient-to-br from-primary/10 via-background to-background p-6 pt-8">
-                <DialogHeader className="mb-6">
-                  <DialogTitle className="text-center text-2xl font-black tracking-tight text-foreground">
-                    Contactez-nous
-                  </DialogTitle>
-                  <DialogDescription className="text-center text-muted-foreground font-medium">
-                    Choisissez votre mode de communication préféré
-                  </DialogDescription>
-                </DialogHeader>
+          {/* ===== MOBILE: Contact + Hamburger (sm:hidden) ===== */}
+          <div className="flex sm:hidden items-center gap-2">
+            {/* Contact button — always visible on mobile as CTA */}
+            <Button 
+              size="sm"
+              className={`h-8 px-3 rounded-full font-bold text-[11px] shadow-md transition-all duration-300 active:scale-[0.98] ${
+                isTransparent 
+                  ? "bg-white text-primary border-0" 
+                  : "border-primary/20 text-primary bg-primary/5 border"
+              }`}
+              onClick={() => setContactDialogOpen(true)}
+            >
+              Contactez-nous
+            </Button>
 
-                <div className="flex flex-col gap-4 py-2">
-                  <Button
-                    className="w-full justify-between text-lg py-8 h-auto rounded-2xl shadow-lg transition-all active:scale-[0.98] bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-90 text-white border-0"
-                    onClick={() => window.location.href = `tel:${BROKER_PHONE}`}
-                  >
-                    <div className="flex flex-col items-start">
-                      <span className="font-bold text-base">Appeler par Téléphone</span>
-                      <span className="text-sm opacity-90 font-medium">{BROKER_PHONE_DISPLAY}</span>
-                    </div>
-                    <div className="bg-white/20 p-2 rounded-full">
-                      <Phone className="w-6 h-6" />
-                    </div>
-                  </Button>
-
-                  <Button
-                    className="w-full justify-between text-lg py-8 h-auto rounded-2xl shadow-lg transition-all active:scale-[0.98] bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:opacity-90 text-white border-0"
-                    onClick={() => window.open(`https://wa.me/216${BROKER_PHONE}`, '_blank')}
-                  >
-                    <div className="flex flex-col items-start">
-                      <span className="font-bold text-base">Contactez-nous par WhatsApp</span>
-                      <span className="text-sm opacity-90 font-medium">{BROKER_PHONE_DISPLAY}</span>
-                    </div>
-                    <div className="bg-white/20 p-2 rounded-full">
-                      <WhatsAppIcon className="w-7 h-7" />
-                    </div>
-                  </Button>
-                </div>
-
-                <div className="mt-8 text-center">
-                  <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">
-                    Laith Kelibia • Agence Immobilière
-                  </p>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+            {/* Hamburger Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className={`flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-200 active:scale-95 ${
+                isTransparent
+                  ? "text-white bg-white/15 backdrop-blur-sm border border-white/20"
+                  : "text-foreground bg-muted/50 border border-border/40"
+              }`}
+              aria-label="Menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
 
         </div>
       </div>
+
+      {/* ===== MOBILE MENU PANEL ===== */}
+      <div className={`sm:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+        mobileMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+      }`}>
+        <div className={`px-4 pb-4 pt-2 border-t ${
+          isTransparent 
+            ? "bg-black/40 backdrop-blur-xl border-white/10" 
+            : "bg-background/98 backdrop-blur-sm border-border/30"
+        }`}>
+          {/* Navigation Links */}
+          <div className="flex flex-col gap-1 mb-3">
+            <Link href="/">
+              <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
+                location === "/" 
+                  ? isTransparent ? "bg-white/15 text-white" : "bg-primary/10 text-primary"
+                  : isTransparent ? "text-white/80 hover:bg-white/10" : "text-foreground/70 hover:bg-muted/50"
+              }`}>
+                <span className="text-sm font-bold">Accueil</span>
+              </div>
+            </Link>
+            
+            <Link href="/about">
+              <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
+                location === "/about" 
+                  ? isTransparent ? "bg-white/15 text-white" : "bg-primary/10 text-primary"
+                  : isTransparent ? "text-white/80 hover:bg-white/10" : "text-foreground/70 hover:bg-muted/50"
+              }`}>
+                <span className="text-sm font-bold">À Propos</span>
+              </div>
+            </Link>
+          </div>
+
+          {/* Facebook Link */}
+          <a
+            href={FACEBOOK_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-3 transition-all ${
+              isTransparent 
+                ? "text-white/80 hover:bg-white/10" 
+                : "text-foreground/70 hover:bg-muted/50"
+            }`}
+          >
+            <div className={`flex items-center justify-center w-7 h-7 rounded-full ${
+              isTransparent ? "bg-white/20" : "bg-[#1877F2]/10"
+            }`}>
+              <FacebookIcon className={`w-3 h-3 ${
+                isTransparent ? "text-white" : "text-[#1877F2]"
+              }`} />
+            </div>
+            <span className="text-sm font-bold">Kelibia Annonces</span>
+            <span className={`text-[10px] ml-auto ${
+              isTransparent ? "text-white/40" : "text-muted-foreground/50"
+            }`}>Facebook →</span>
+          </a>
+
+          {/* Admin Controls — Mobile */}
+          {isAdmin && (
+            <>
+              <div className={`h-px mb-3 ${isTransparent ? "bg-white/10" : "bg-border/30"}`} />
+              <div className="flex flex-col gap-1">
+                {location !== "/admin/analytics" && (
+                  <Link href="/admin/analytics">
+                    <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
+                      isTransparent ? "text-white/80 hover:bg-white/10" : "text-foreground/70 hover:bg-muted/50"
+                    }`}>
+                      <BarChart3 className="h-4 w-4" />
+                      <span className="text-sm font-bold">Statistiques</span>
+                    </div>
+                  </Link>
+                )}
+                {location !== "/admin/browse" && (
+                  <Link href="/admin/browse">
+                    <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
+                      isTransparent ? "text-white/80 hover:bg-white/10" : "text-foreground/70 hover:bg-muted/50"
+                    }`}>
+                      <LayoutGrid className="h-4 w-4" />
+                      <span className="text-sm font-bold">Admin Panel</span>
+                    </div>
+                  </Link>
+                )}
+                {location !== "/admin/list-property" && (
+                  <Link href="/admin/list-property">
+                    <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
+                      isTransparent ? "text-white/80 hover:bg-white/10 text-white" : "text-primary hover:bg-primary/10"
+                    }`}>
+                      <Plus className="h-4 w-4" />
+                      <span className="text-sm font-bold">Publier une Annonce</span>
+                    </div>
+                  </Link>
+                )}
+                <button
+                  onClick={() => logoutMutation.mutate()}
+                  disabled={logoutMutation.isPending}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left w-full ${
+                    isTransparent ? "text-red-300 hover:bg-white/10" : "text-destructive hover:bg-destructive/10"
+                  }`}
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span className="text-sm font-bold">Déconnexion</span>
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Unified Contact Modal */}
+      <Dialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
+        <DialogContent className="sm:max-w-md mx-auto w-[90vw] rounded-3xl border-0 shadow-2xl overflow-hidden p-0">
+          <div className="bg-gradient-to-br from-primary/10 via-background to-background p-6 pt-8">
+            <DialogHeader className="mb-6">
+              <DialogTitle className="text-center text-2xl font-black tracking-tight text-foreground">
+                Contactez-nous
+              </DialogTitle>
+              <DialogDescription className="text-center text-muted-foreground font-medium">
+                Choisissez votre mode de communication préféré
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="flex flex-col gap-4 py-2">
+              <Button
+                className="w-full justify-between text-lg py-8 h-auto rounded-2xl shadow-lg transition-all active:scale-[0.98] bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-90 text-white border-0"
+                onClick={() => window.location.href = `tel:${BROKER_PHONE}`}
+              >
+                <div className="flex flex-col items-start">
+                  <span className="font-bold text-base">Appeler par Téléphone</span>
+                  <span className="text-sm opacity-90 font-medium">{BROKER_PHONE_DISPLAY}</span>
+                </div>
+                <div className="bg-white/20 p-2 rounded-full">
+                  <Phone className="w-6 h-6" />
+                </div>
+              </Button>
+
+              <Button
+                className="w-full justify-between text-lg py-8 h-auto rounded-2xl shadow-lg transition-all active:scale-[0.98] bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:opacity-90 text-white border-0"
+                onClick={() => window.open(`https://wa.me/216${BROKER_PHONE}`, '_blank')}
+              >
+                <div className="flex flex-col items-start">
+                  <span className="font-bold text-base">Contactez-nous par WhatsApp</span>
+                  <span className="text-sm opacity-90 font-medium">{BROKER_PHONE_DISPLAY}</span>
+                </div>
+                <div className="bg-white/20 p-2 rounded-full">
+                  <WhatsAppIcon className="w-7 h-7" />
+                </div>
+              </Button>
+            </div>
+
+            <div className="mt-8 text-center">
+              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">
+                Laith Kelibia
+              </p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </nav>
   );
 }

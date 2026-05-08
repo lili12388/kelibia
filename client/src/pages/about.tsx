@@ -7,8 +7,8 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-background">
       <SEO 
-        title="À Propos - Laith Kelibia • Agence Immobilière" 
-        description="Laith Kelibia est une agence immobilière spécialisée dans la location et la vente de biens immobiliers à Kelibia. Appartements, villas, maisons de vacances — trouvez votre bien idéal." 
+        title="À Propos - Laith Kelibia" 
+        description="Découvrez Laith Kelibia, votre expert local pour la location de maisons de vacances, appartements et villas à Kelibia. Trouvez votre bien idéal." 
       />
       <Navbar />
       
@@ -19,7 +19,7 @@ export default function AboutPage() {
           {/* Agency badge */}
           <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest mb-6">
             <Home className="w-3.5 h-3.5" />
-            Agence Immobilière — Kelibia
+            Location à Kelibia
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight mb-6">
             Votre Partenaire de Confiance à <span className="text-primary">Kelibia</span>
@@ -36,7 +36,7 @@ export default function AboutPage() {
           <div>
             <h2 className="text-3xl font-bold mb-6 text-foreground">Notre Histoire</h2>
             <p className="text-muted-foreground mb-4 leading-relaxed">
-              <strong className="text-foreground">Laith Kelibia</strong> est une agence immobilière née d'une passion pour Kelibia, son fort historique et ses plages de sable fin considérées parmi les plus belles du bassin méditerranéen.
+              <strong className="text-foreground">Laith Kelibia</strong> est née d'une passion pour Kelibia, son fort historique et ses plages de sable fin considérées parmi les plus belles du bassin méditerranéen.
             </p>
             <p className="text-muted-foreground mb-4 leading-relaxed">
               Spécialisés dans la <strong className="text-foreground">location saisonnière</strong> et la <strong className="text-foreground">location longue durée</strong>, nous gérons une sélection rigoureuse d'appartements, villas et maisons de vacances pour garantir à nos clients un confort irréprochable.
@@ -139,7 +139,7 @@ export default function AboutPage() {
 
         {/* CTA */}
         <div className="bg-primary rounded-3xl p-8 sm:p-12 text-center text-primary-foreground shadow-lg">
-          <div className="text-xs font-bold uppercase tracking-widest opacity-70 mb-3">Laith Kelibia • Agence Immobilière</div>
+          <div className="text-xs font-bold uppercase tracking-widest opacity-70 mb-3">Laith Kelibia</div>
           <h2 className="text-3xl font-bold mb-4">Prêt à concrétiser votre projet ?</h2>
           <p className="text-primary-foreground/80 mb-8 max-w-2xl mx-auto text-lg">
             Contactez-nous sur WhatsApp pour nous faire part de vos besoins. Location, achat ou gestion — nous trouverons la solution idéale.
@@ -162,7 +162,7 @@ export default function AboutPage() {
       <footer className="py-8 border-t border-border/30 bg-card/50 mt-12">
         <div className="text-center">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Laith Kelibia • Agence Immobilière — Tous droits réservés
+            © {new Date().getFullYear()} Laith Kelibia — Tous droits réservés
           </p>
         </div>
       </footer>
