@@ -547,10 +547,10 @@ export default function PropertyDetailPage() {
 
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-32 lg:pb-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 sm:py-3 pb-32 lg:pb-10">
 
         {/* Back Navigation */}
-        <div className="mb-4 animate-fade-in">
+        <div className="mb-2 animate-fade-in">
           <button 
             onClick={() => window.history.length > 1 ? window.history.back() : window.location.href = '/'}
             className="inline-flex items-center gap-1.5 text-primary hover:opacity-70 transition-all py-2 group cursor-pointer"
@@ -561,7 +561,7 @@ export default function PropertyDetailPage() {
         </div>
 
         {/* Title & Location at the top (Airbnb style) */}
-        <div className="mb-6 animate-fade-in-up">
+        <div className="mb-3 animate-fade-in-up">
           <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2 leading-tight">
             {frenchTitle(property.title)}
           </h1>
@@ -664,10 +664,6 @@ export default function PropertyDetailPage() {
                           </div>
                         );
                       })}
-                      {/* Fill empty cells if block has fewer than 4 */}
-                      {Array.from({ length: Math.max(0, 4 - block.length) }).map((_, i) => (
-                        <div key={`empty-${blockIdx}-${i}`} className="bg-muted rounded-xl"></div>
-                      ))}
                     </div>
                   ));
                 })()}
@@ -737,7 +733,7 @@ export default function PropertyDetailPage() {
 
                 {/* Thumbnail Strip */}
                 {property.media.length > 1 && (
-                  <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 px-0.5">
+                  <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1 pb-1 px-0.5">
                     {property.media.map((media, idx) => {
                       const isActive = idx === currentImageIndex;
                       const isVideo = media.mimeType.startsWith('video/');

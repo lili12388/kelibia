@@ -181,7 +181,7 @@ export default function AvailabilityTimeline({ propertyId, isAdmin = false }: Ti
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
         </button>
 
-        <div ref={scrollRef} className="overflow-x-auto mx-8 pb-1" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'thin' }}>
+        <div ref={scrollRef} className="overflow-x-auto mx-8 pb-1" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'thin', scrollbarColor: 'hsl(var(--primary)) transparent' }}>
           <div style={{ width: `${totalW}px` }}>
 
             {/* Month headers */}
