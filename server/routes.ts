@@ -161,6 +161,28 @@ async function ensureUniqueSlug(baseSlug: string, excludePropertyId?: string): P
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // ============================================
+  // SEO: Auto-backfill slugs on startup
+  // ============================================
+  (async () => {
+    try {
+      const allProps = await storage.getAllProperties();
+      let backfilled = 0;
+      for (const prop of allProps) {
+        if (!prop.slug) {
+          const baseSlug = generatePropertySlug(prop.title, prop.price, prop.rooms, prop.location);
+          const slug = await ensureUniqueSlug(baseSlug, prop.id);
+          await db.update(properties).set({ slug }).where(eq(properties.id, prop.id));
+          backfilled++;
+          console.log(`[SEO] Backfilled slug: ${prop.id} → ${slug}`);
+        }
+      }
+      if (backfilled > 0) console.log(`[SEO] Backfilled ${backfilled} property slugs`);
+    } catch (err) {
+      console.error('[SEO] Slug backfill error:', err);
+    }
+  })();
+
+  // ============================================
   // SEO: Dynamic Sitemap.xml
   // ============================================
   app.get('/sitemap.xml', async (req, res) => {
