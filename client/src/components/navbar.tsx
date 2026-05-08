@@ -22,6 +22,14 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const FacebookIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" className={className} fill="currentColor">
+    <path d="M80 299.3V512H196V299.3h86.5l18-97.8H196V166.9c0-51.7 20.3-71.5 72.7-71.5c16.3 0 29.4 .4 37 1.2V7.9C291.4 4 256.4 0 236.2 0C129.3 0 80 50.5 80 159.4v42.1H14v97.8H80z"/>
+  </svg>
+);
+
+const FACEBOOK_URL = "https://www.facebook.com/profile.php?id=100063570427669&locale=fr_FR";
+
 export default function Navbar() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
@@ -69,12 +77,22 @@ export default function Navbar() {
       <div className="px-4 py-2.5 sm:py-3 sm:px-6 xl:px-8 max-w-[1600px] mx-auto">
         <div className="flex items-center justify-between">
           <Link href="/">
-            <div className="flex items-center gap-2 cursor-pointer group">
+            <div className="flex items-center gap-3 cursor-pointer group">
               <img
                 src="/logo.png"
-                alt="laith-kelibia"
-                className="h-16 sm:h-20 w-auto object-contain"
+                alt="Laith Kelibia"
+                className="h-20 sm:h-24 w-auto object-contain"
               />
+              <div className={`hidden sm:flex flex-col border-l pl-3 transition-colors duration-300 ${
+                isTransparent ? "border-white/30" : "border-border/50"
+              }`}>
+                <span className={`text-sm font-extrabold tracking-tight leading-tight transition-colors duration-300 ${
+                  isTransparent ? "text-white" : "text-foreground"
+                }`}>Laith Kelibia</span>
+                <span className={`text-[10px] font-semibold uppercase tracking-[0.15em] leading-tight transition-colors duration-300 ${
+                  isTransparent ? "text-white/70" : "text-primary/70"
+                }`}>Agence Immobilière</span>
+              </div>
             </div>
           </Link>
 
@@ -94,22 +112,47 @@ export default function Navbar() {
               </Link>
               
               <Link href="/about" className="hidden sm:inline">
-                <span className={`text-sm font-bold transition-colors cursor-pointer ${
-                  location === "/about" ? "text-primary" : "text-foreground/70 hover:text-primary"
+                <span className={`text-sm font-black transition-all duration-200 cursor-pointer drop-shadow-md ${
+                  isTransparent 
+                    ? "text-white hover:text-white/80" 
+                    : location === "/about" ? "text-primary" : "text-foreground/70 hover:text-primary"
                 }`}>
                   À Propos
                 </span>
               </Link>
             </div>
 
+            {/* Facebook Page Button */}
+            <a
+              href={FACEBOOK_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`group hidden sm:flex items-center gap-2 h-9 sm:h-11 px-4 sm:px-5 rounded-full font-black text-xs sm:text-sm shadow-md transition-all duration-300 active:scale-[0.98] border ${
+                isTransparent
+                  ? "bg-white/15 backdrop-blur-sm text-white border-white/30 hover:bg-[#1877F2] hover:border-[#1877F2] hover:text-white hover:shadow-lg hover:shadow-[#1877F2]/25"
+                  : "border-primary/20 text-primary bg-primary/5 hover:bg-[#1877F2] hover:border-[#1877F2] hover:text-white hover:shadow-lg hover:shadow-[#1877F2]/20"
+              }`}
+            >
+              <div className={`flex items-center justify-center w-6 h-6 rounded-full transition-all duration-300 ${
+                isTransparent
+                  ? "bg-white/20 group-hover:bg-white/25"
+                  : "bg-primary/15 group-hover:bg-white/25"
+              }`}>
+                <FacebookIcon className={`w-3 h-3 transition-colors duration-300 ${
+                  isTransparent ? "text-white" : "text-primary group-hover:text-white"
+                }`} />
+              </div>
+              <span>Kelibia Annonces</span>
+            </a>
+
             {/* Professional Contact Button */}
             <Button 
               variant={isTransparent ? "default" : "outline"}
               size="sm"
-              className={`h-9 sm:h-11 px-4 sm:px-6 rounded-full font-black text-xs sm:text-sm shadow-md transition-all active:scale-[0.98] ${
+              className={`h-9 sm:h-11 px-4 sm:px-6 rounded-full font-black text-xs sm:text-sm shadow-md transition-all duration-300 active:scale-[0.98] hover:bg-[#32CD32] hover:border-[#32CD32] hover:text-white hover:shadow-lg hover:shadow-[#32CD32]/25 ${
                 isTransparent 
-                  ? "bg-white text-primary hover:bg-white/90 border-0" 
-                  : "border-primary/20 text-primary hover:bg-primary/5 bg-primary/5"
+                  ? "bg-white text-primary border-0" 
+                  : "border-primary/20 text-primary bg-primary/5"
               }`}
               onClick={() => setContactDialogOpen(true)}
             >

@@ -1,14 +1,14 @@
 import Navbar from "@/components/navbar";
 import { SEO } from "@/components/seo";
 import { Button } from "@/components/ui/button";
-import { MapPin, Heart, Shield, Star, MessageCircle } from "lucide-react";
+import { MapPin, Shield, Star, MessageCircle, Home, Key, TrendingUp } from "lucide-react";
 
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-background">
       <SEO 
-        title="À Propos - laith-kelibia" 
-        description="Découvrez l'histoire de laith-kelibia, votre expert local pour la location de maisons de vacances, appartements et villas à Kelibia." 
+        title="À Propos - Laith Kelibia • Agence Immobilière" 
+        description="Laith Kelibia est une agence immobilière spécialisée dans la location et la vente de biens immobiliers à Kelibia. Appartements, villas, maisons de vacances — trouvez votre bien idéal." 
       />
       <Navbar />
       
@@ -16,11 +16,16 @@ export default function AboutPage() {
       <div className="relative pt-32 pb-20 lg:pt-40 lg:pb-28 bg-primary/5 overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full bg-[url('/kelibia%20plage.png')] bg-cover bg-center opacity-10 pointer-events-none" />
         <div className="max-w-4xl mx-auto px-4 relative z-10 text-center">
+          {/* Agency badge */}
+          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest mb-6">
+            <Home className="w-3.5 h-3.5" />
+            Agence Immobilière — Kelibia
+          </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight mb-6">
             Votre Partenaire de Confiance à <span className="text-primary">Kelibia</span>
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Nous sommes passionnés par notre ville et dédiés à vous offrir les meilleures expériences de séjour sur les plus belles plages de la Méditerranée.
+            Spécialistes de l'immobilier à Kelibia — location saisonnière, location longue durée et vente de biens. Nous vous accompagnons à chaque étape de votre projet.
           </p>
         </div>
       </div>
@@ -31,10 +36,13 @@ export default function AboutPage() {
           <div>
             <h2 className="text-3xl font-bold mb-6 text-foreground">Notre Histoire</h2>
             <p className="text-muted-foreground mb-4 leading-relaxed">
-              laith-kelibia est née d'une passion pour Kelibia, son fort historique et ses plages de sable fin considérées parmi les plus belles au monde. Notre objectif a toujours été simple : faciliter la connexion entre les visiteurs en quête d'évasion et les propriétaires locaux.
+              <strong className="text-foreground">Laith Kelibia</strong> est une agence immobilière née d'une passion pour Kelibia, son fort historique et ses plages de sable fin considérées parmi les plus belles du bassin méditerranéen.
+            </p>
+            <p className="text-muted-foreground mb-4 leading-relaxed">
+              Spécialisés dans la <strong className="text-foreground">location saisonnière</strong> et la <strong className="text-foreground">location longue durée</strong>, nous gérons une sélection rigoureuse d'appartements, villas et maisons de vacances pour garantir à nos clients un confort irréprochable.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              Aujourd'hui, nous gérons une sélection rigoureuse d'appartements, de villas et de maisons de vacances pour garantir à nos voyageurs un confort irréprochable et des souvenirs inoubliables.
+              Notre objectif : faciliter la connexion entre les visiteurs en quête d'évasion et les propriétaires locaux, avec transparence et professionnalisme.
             </p>
           </div>
           <div className="relative h-[400px] rounded-2xl overflow-hidden shadow-xl">
@@ -43,12 +51,59 @@ export default function AboutPage() {
               alt="Plage de Kelibia" 
               className="absolute inset-0 w-full h-full object-cover"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+            <div className="absolute bottom-4 left-4 right-4">
+              <div className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2.5 inline-flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
+                <span className="text-sm font-semibold text-foreground">Kelibia, Nabeul — Tunisie</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Services */}
+        <div className="mb-20">
+          <div className="text-center mb-12">
+            <span className="text-xs font-bold uppercase tracking-widest text-primary/70">Ce que nous faisons</span>
+            <h2 className="text-3xl font-bold mt-2 text-foreground">Nos Services Immobiliers</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="flex flex-col items-center p-6 bg-card rounded-2xl border border-border/40 shadow-sm text-center">
+              <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary">
+                <Home className="w-7 h-7" />
+              </div>
+              <h3 className="text-lg font-bold mb-2">Location Saisonnière</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Appartements, villas et maisons de vacances pour des séjours courts ou longs à Kelibia.
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center p-6 bg-card rounded-2xl border border-border/40 shadow-sm text-center">
+              <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary">
+                <Key className="w-7 h-7" />
+              </div>
+              <h3 className="text-lg font-bold mb-2">Location Longue Durée</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Des biens sélectionnés pour une installation durable, avec accompagnement complet.
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center p-6 bg-card rounded-2xl border border-border/40 shadow-sm text-center">
+              <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary">
+                <TrendingUp className="w-7 h-7" />
+              </div>
+              <h3 className="text-lg font-bold mb-2">Gestion de Biens</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Confiez-nous votre bien. Nous gérons la mise en location, la visibilité et les locataires.
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Values */}
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold mb-12 text-foreground">Pourquoi Nous Choisir ?</h2>
+        <div className="text-center mb-20">
+          <span className="text-xs font-bold uppercase tracking-widest text-primary/70">Pourquoi nous</span>
+          <h2 className="text-3xl font-bold mt-2 mb-12 text-foreground">Nos Engagements</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
             <div className="flex flex-col items-center p-6 bg-card rounded-2xl border border-border/40 shadow-sm">
               <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-6 text-primary">
@@ -56,7 +111,7 @@ export default function AboutPage() {
               </div>
               <h3 className="text-xl font-bold mb-3">Qualité Premium</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                Chaque logement est vérifié et sélectionné pour répondre à nos standards de propreté et de confort.
+                Chaque bien est vérifié et sélectionné selon nos standards exigeants de propreté et de confort.
               </p>
             </div>
             
@@ -74,9 +129,9 @@ export default function AboutPage() {
               <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-6 text-primary">
                 <Shield className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold mb-3">Réservation Sécurisée</h3>
+              <h3 className="text-xl font-bold mb-3">Transparence Totale</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                Un contact direct et transparent. Pas de frais cachés, juste une communication honnête et rapide.
+                Contact direct, pas de frais cachés. Une communication honnête et rapide à chaque étape.
               </p>
             </div>
           </div>
@@ -84,9 +139,10 @@ export default function AboutPage() {
 
         {/* CTA */}
         <div className="bg-primary rounded-3xl p-8 sm:p-12 text-center text-primary-foreground shadow-lg">
-          <h2 className="text-3xl font-bold mb-4">Prêt à planifier vos vacances ?</h2>
+          <div className="text-xs font-bold uppercase tracking-widest opacity-70 mb-3">Laith Kelibia • Agence Immobilière</div>
+          <h2 className="text-3xl font-bold mb-4">Prêt à concrétiser votre projet ?</h2>
           <p className="text-primary-foreground/80 mb-8 max-w-2xl mx-auto text-lg">
-            Contactez-nous directement sur WhatsApp pour nous faire part de vos dates et de vos besoins. Nous trouverons la perle rare pour vous.
+            Contactez-nous sur WhatsApp pour nous faire part de vos besoins. Location, achat ou gestion — nous trouverons la solution idéale.
           </p>
           <a 
             href="https://wa.me/21650344187"
@@ -106,7 +162,7 @@ export default function AboutPage() {
       <footer className="py-8 border-t border-border/30 bg-card/50 mt-12">
         <div className="text-center">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} laith-kelibia - Tous droits réservés
+            © {new Date().getFullYear()} Laith Kelibia • Agence Immobilière — Tous droits réservés
           </p>
         </div>
       </footer>

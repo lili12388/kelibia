@@ -9,10 +9,6 @@ export function usePageView() {
     // Send page view to server
     const trackPageView = async () => {
       try {
-        console.log('🔵 CLIENT: Tracking page view for:', location);
-        console.log('🔵 CLIENT: Current URL:', window.location.href);
-        console.log('🔵 CLIENT: Referrer:', document.referrer);
-        
         const response = await fetch('/api/analytics/pageview', {
           method: 'POST',
           headers: {
@@ -25,23 +21,13 @@ export function usePageView() {
           }),
         });
         
-        console.log('📡 CLIENT: Response status:', response.status);
-        console.log('📡 CLIENT: Response ok:', response.ok);
-        
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error('❌ CLIENT: Server error:', response.status, errorText);
           return;
         }
         
-        const result = await response.json();
-        console.log('✅ CLIENT: Tracking successful:', result);
+        await response.json();
       } catch (error) {
-        console.error('❌ CLIENT: Analytics tracking failed:', error);
-        console.error('❌ CLIENT: Error details:', {
-          message: error instanceof Error ? error.message : 'Unknown error',
-          stack: error instanceof Error ? error.stack : 'No stack trace'
-        });
+        // Silently fail - analytics should never break the app
       }
     };
 
@@ -54,7 +40,6 @@ export function useActiveUserHeartbeat() {
   useEffect(() => {
     const sendHeartbeat = async () => {
       try {
-        console.log('💓 CLIENT: Sending heartbeat...');
         await fetch('/api/analytics/heartbeat', {
           method: 'POST',
           headers: {
@@ -62,10 +47,8 @@ export function useActiveUserHeartbeat() {
           },
           credentials: 'include',
         });
-        console.log('✅ CLIENT: Heartbeat sent');
       } catch (error) {
         // Silently fail
-        console.error('❌ CLIENT: Heartbeat failed:', error);
       }
     };
 

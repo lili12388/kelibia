@@ -17,14 +17,11 @@ export default function BrokerLoginPage() {
 
   const loginMutation = useMutation({
     mutationFn: async (password: string) => {
-      console.log('Attempting login with password:', password);
       const response = await apiRequest('POST', '/api/broker/login', { password });
       const data = await response.json();
-      console.log('Login response:', data);
       return data;
     },
     onSuccess: async (data) => {
-      console.log('Login successful, data:', data);
       // Invalidate auth status to refresh the navbar
       await queryClient.invalidateQueries({ queryKey: ['/api/broker/auth-status'] });
       
@@ -40,7 +37,6 @@ export default function BrokerLoginPage() {
       setLocation('/admin/browse');
     },
     onError: (error: any) => {
-      console.error('Login error:', error);
       toast({
         title: "Login Failed",
         description: error.message || "Invalid password. Please try again.",
