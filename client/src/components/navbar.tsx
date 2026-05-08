@@ -57,7 +57,7 @@ export default function Navbar() {
     setMobileMenuOpen(false);
   }, [location]);
 
-  const isHome = location === "/";
+  const isHome = location === "/" || location === "/browse-properties";
   const isTransparent = isHome && !scrolled;
 
   const logoutMutation = useMutation({

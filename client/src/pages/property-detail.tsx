@@ -51,20 +51,17 @@ export default function PropertyDetailPage() {
 
   const fullId = paramsMaisons?.id || paramsProperty?.id;
 
-  let propertyId = undefined;
+  // Pass the full URL param to the API - server handles resolving UUID vs slug vs refcode
+  let propertyId: string | undefined = undefined;
   if (fullId) {
+    // For backward compat: extract UUID if present in old-format URLs (e.g., title-slug-UUID)
     const uuidRegex = /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
     const uuidMatch = fullId.match(uuidRegex);
-
     if (uuidMatch) {
       propertyId = uuidMatch[0];
     } else {
-      const refMatch = fullId.match(/-(REF-.*)$/i);
-      if (refMatch) {
-        propertyId = refMatch[1];
-      } else {
-        propertyId = fullId;
-      }
+      // It's a slug or refcode - pass as-is, server resolves
+      propertyId = fullId;
     }
   }
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -433,7 +430,7 @@ export default function PropertyDetailPage() {
     "@type": "VacationRental",
     "name": property.title,
     "description": property.description,
-    "url": `https://laith-kelibia.tn/maisons/${property.id}`,
+    "url": `https://laith-kelibia.tn/maisons/${property.slug || property.id}`,
     "address": {
       "@type": "PostalAddress",
       "addressLocality": property.location,
@@ -485,7 +482,7 @@ export default function PropertyDetailPage() {
         description={seoDescription}
         keywords={seoKeywords}
         image={primaryImage?.url}
-        url={`https://laith-kelibia.tn/maisons/${property.id}`}
+        url={`https://laith-kelibia.tn/maisons/${property.slug || property.id}`}
         type="article"
       />
 

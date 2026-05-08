@@ -141,37 +141,43 @@ export class DatabaseStorage implements IStorage {
     return property;
   }
 
-  async getProperty(idOrRef: string): Promise<PropertyWithMedia | undefined> {
-    const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(idOrRef);
+  async getProperty(idOrSlugOrRef: string): Promise<PropertyWithMedia | undefined> {
+    const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(idOrSlugOrRef);
     
-    let whereClause;
     if (isUUID) {
-      whereClause = eq(properties.id, idOrRef);
-    } else {
-      // Sometimes reference code is stored with or without 'REF-' prefix
-      // Let's try exact match first
-      whereClause = eq(properties.referenceCode, idOrRef);
+      // Direct UUID lookup
+      const [property] = await db.query.properties.findMany({
+        where: eq(properties.id, idOrSlugOrRef),
+        with: { media: true },
+      });
+      return property;
     }
 
-    const [property] = await db.query.properties.findMany({
-      where: whereClause,
-      with: {
-        media: true,
-      },
+    // Try slug lookup first (most common for new SEO-friendly URLs)
+    const [bySlug] = await db.query.properties.findMany({
+      where: eq(properties.slug, idOrSlugOrRef),
+      with: { media: true },
     });
+    if (bySlug) return bySlug;
 
-    // If not found and we were looking for a reference code that starts with REF-, 
-    // maybe it's stored without the prefix in the DB.
-    if (!property && !isUUID && idOrRef.toUpperCase().startsWith('REF-')) {
-      const withoutPrefix = idOrRef.substring(4);
-      const [propertyWithoutPrefix] = await db.query.properties.findMany({
+    // Fallback to reference code
+    const [byRef] = await db.query.properties.findMany({
+      where: eq(properties.referenceCode, idOrSlugOrRef),
+      with: { media: true },
+    });
+    if (byRef) return byRef;
+    
+    // Try without REF- prefix
+    if (idOrSlugOrRef.toUpperCase().startsWith('REF-')) {
+      const withoutPrefix = idOrSlugOrRef.substring(4);
+      const [byRefNoPfx] = await db.query.properties.findMany({
         where: eq(properties.referenceCode, withoutPrefix),
         with: { media: true },
       });
-      return propertyWithoutPrefix;
+      return byRefNoPfx;
     }
 
-    return property;
+    return undefined;
   }
 
   async getAllProperties(): Promise<PropertyWithMedia[]> {

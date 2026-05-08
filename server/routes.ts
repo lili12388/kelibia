@@ -104,6 +104,61 @@ async function generateVideoThumbnailFile(): Promise<string> {
 
 const isProduction = process.env.NODE_ENV === 'production';
 
+// ============================================
+// SEO: Slug Generation for Clean URLs
+// ============================================
+function generatePropertySlug(title: string, price: string, rooms: number, location: string): string {
+  const parts: string[] = [];
+  
+  // Add title (main keywords)
+  parts.push(title);
+  
+  // Add S+N rooms notation if not already in title
+  const titleLower = title.toLowerCase();
+  const titleNormalized = titleLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (rooms > 0 && !titleNormalized.includes(`s+${rooms}`) && !titleNormalized.includes(`s${rooms}`)) {
+    parts.push(`s${rooms}`);
+  }
+  
+  // Add location if not already in title
+  const locationNormalized = location.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (location && !titleNormalized.includes(locationNormalized)) {
+    parts.push(location);
+  }
+  
+  // Add price
+  const priceNum = Math.round(parseFloat(price));
+  if (priceNum > 0) {
+    parts.push(`${priceNum}-tnd`);
+  }
+  
+  return parts.join(' ')
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove accents
+    .replace(/\bhouse\b/gi, "maison") // French SEO: "house" → "maison"
+    .replace(/[^a-z0-9]+/g, "-") // Replace non-alphanumeric with dash
+    .replace(/^-+|-+$/g, ""); // Trim leading/trailing dashes
+}
+
+async function ensureUniqueSlug(baseSlug: string, excludePropertyId?: string): Promise<string> {
+  let slug = baseSlug;
+  let counter = 1;
+  
+  while (true) {
+    const [existing] = await db.select({ id: properties.id })
+      .from(properties)
+      .where(eq(properties.slug, slug))
+      .limit(1);
+    
+    if (!existing || (excludePropertyId && existing.id === excludePropertyId)) {
+      return slug;
+    }
+    
+    counter++;
+    slug = `${baseSlug}-${counter}`;
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // ============================================
   // SEO: Dynamic Sitemap.xml
@@ -144,8 +199,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const propertyDate = today;
 
         // Primary URL using SEO-friendly /maisons/ path
+        const slugUrl = property.slug || property.id;
         xml += `  <url>
-    <loc>${SITE_URL}/maisons/${property.id}</loc>
+    <loc>${SITE_URL}/maisons/${slugUrl}</loc>
     <lastmod>${propertyDate}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -577,6 +633,15 @@ Crawl-delay: 2
         throw new Error('Failed to retrieve submission after creation');
       }
 
+      // Generate SEO-friendly slug
+      const baseSlug = generatePropertySlug(
+        submissionWithMedia.title,
+        submissionWithMedia.price,
+        submissionWithMedia.rooms,
+        submissionWithMedia.location
+      );
+      const slug = await ensureUniqueSlug(baseSlug);
+
       // Create published property immediately
       const property = await storage.createProperty({
         submissionId: submission.id,
@@ -631,6 +696,7 @@ Crawl-delay: 2
         showDescription: submissionWithMedia.showDescription ?? true,
         hasKitchenUtensils: submissionWithMedia.hasKitchenUtensils ?? false,
         isQuietNeighborhood: submissionWithMedia.isQuietNeighborhood ?? false,
+        slug,
       });
 
       // Copy media to published property
@@ -775,6 +841,15 @@ Crawl-delay: 2
       const now = new Date();
       await storage.updatePropertySubmissionStatus(id, 'approved', now);
 
+      // Generate SEO-friendly slug
+      const baseSlug = generatePropertySlug(
+        submission.title,
+        submission.price,
+        submission.rooms,
+        submission.location
+      );
+      const slug = await ensureUniqueSlug(baseSlug);
+
       // Create published property
       const property = await storage.createProperty({
         submissionId: id,
@@ -829,6 +904,7 @@ Crawl-delay: 2
         showDescription: submission.showDescription ?? true,
         hasKitchenUtensils: submission.hasKitchenUtensils ?? false,
         isQuietNeighborhood: submission.isQuietNeighborhood ?? false,
+        slug,
       });
 
       // Copy media to published property
@@ -940,9 +1016,18 @@ Crawl-delay: 2
           .limit(1);
 
         if (publishedProperty) {
-          // Update the published property with the same data
+          // Regenerate slug when title/price/location changes
+          const newBaseSlug = generatePropertySlug(
+            updateData.title,
+            updateData.price,
+            updateData.rooms,
+            updateData.location
+          );
+          const newSlug = await ensureUniqueSlug(newBaseSlug, publishedProperty.id);
+          
+          // Update the published property with the same data + new slug
           await db.update(properties)
-            .set(updateData)
+            .set({ ...updateData, slug: newSlug })
             .where(eq(properties.submissionId, id));
         }
       }
@@ -1734,7 +1819,39 @@ Crawl-delay: 2
     }
   });
 
-
+  // ============================================
+  // SEO: Backfill slugs for existing properties
+  // ============================================
+  app.post('/api/broker/backfill-slugs', requireBrokerAuth, async (req, res) => {
+    try {
+      const allProperties = await storage.getAllProperties();
+      let updated = 0;
+      
+      for (const property of allProperties) {
+        if (!property.slug) {
+          const baseSlug = generatePropertySlug(
+            property.title,
+            property.price,
+            property.rooms,
+            property.location
+          );
+          const slug = await ensureUniqueSlug(baseSlug, property.id);
+          
+          await db.update(properties)
+            .set({ slug })
+            .where(eq(properties.id, property.id));
+          
+          updated++;
+          console.log(`[BACKFILL] ${property.id} → ${slug}`);
+        }
+      }
+      
+      res.json({ success: true, updated, total: allProperties.length });
+    } catch (error) {
+      console.error('[BACKFILL] Error backfilling slugs:', error);
+      res.status(500).json({ error: 'Failed to backfill slugs' });
+    }
+  });
 
   const httpServer = createServer(app);
 

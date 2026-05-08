@@ -5,17 +5,18 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function generatePropertyUrl(title: string, id: string, referenceCode?: string | null) {
-  const slug = title
-    .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove accents
-    .replace(/[^a-z0-9]+/g, "-") // Replace non-alphanumeric with dash
-    .replace(/^-+|-+$/g, ""); // Trim dashes
-    
-  let refPart = referenceCode;
-  if (refPart && !refPart.toUpperCase().startsWith('REF-')) {
-    refPart = `REF-${refPart}`;
+export function generatePropertyUrl(property: { slug?: string | null; title: string; id: string; price?: string; rooms?: number; location?: string; referenceCode?: string | null }) {
+  // Use server-generated slug if available (SEO-friendly, no UUID)
+  if (property.slug) {
+    return `/maisons/${property.slug}`;
   }
   
-  return `/maisons/${slug}-${refPart ? refPart : id}`;
+  // Fallback for properties without slugs (legacy/pre-migration)
+  const slug = property.title
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  
+  return `/maisons/${slug}-${property.id}`;
 }

@@ -126,6 +126,7 @@ export const properties = pgTable("properties", {
   showBathrooms: boolean("show_bathrooms").notNull().default(true), // show bathroom count to public users
   showSize: boolean("show_size").notNull().default(true), // show size to public users
   showDescription: boolean("show_description").notNull().default(true), // show full description to public users
+  slug: text("slug").unique(),
   publishedAt: timestamp("published_at").notNull().defaultNow(),
 });
 

@@ -664,7 +664,7 @@ export default function BrowsePropertiesPage() {
                   const views = viewsMap.get(property.id) ?? 0;
                   
                   return (
-                    <Link key={property.id} href={generatePropertyUrl(property.title, property.id, property.referenceCode)}>
+                    <Link key={property.id} href={generatePropertyUrl(property)}>
                       <div className="property-card bg-card rounded-xl overflow-hidden border border-border/30 h-full flex flex-col cursor-pointer group">
                         {/* Image — taller on mobile for thumb-friendly tapping */}
                         <div className="relative aspect-[3/4] sm:aspect-[4/3] overflow-hidden bg-muted/20">
