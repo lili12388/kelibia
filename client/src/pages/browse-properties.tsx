@@ -109,9 +109,9 @@ export default function BrowsePropertiesPage() {
   return (
     <div className="min-h-screen bg-background">
       <SEO 
-        title={`${filteredProperties.length} Logements Disponibles à Kelibia | Location Vacances | Laith Kelibia`}
-        description={`Découvrez ${filteredProperties.length} logements vérifiés à louer à Kelibia : appartements meublés, villas vue mer, maisons de vacances près de la plage. Réservation facile et rapide.`}
-        keywords="location kelibia, appartement meublé kelibia, villa à louer kelibia, maison vacances kelibia, location saisonnière kelibia, location été kelibia, logement kelibia plage, hébergement kelibia nabeul, location courte durée tunisie"
+        title={`${filteredProperties.length} Logements à Louer à Kelibia | Maisons, Appartements, Villas | Laith Kelibia`}
+        description={`Parcourez ${filteredProperties.length} logements vérifiés à Kelibia : maisons S+2, S+3, appartements meublés, villas vue mer, studios. Location vacances été, courte ou longue durée au Cap Bon.`}
+        keywords="location kelibia, maison s+2 kelibia, location appartement meublé kelibia, villa à louer kelibia, maison vacances kelibia, location saisonnière été kelibia, studio kelibia plage, logement kelibia cap bon, location courte durée kelibia, dar kelibia, immobilier kelibia tunisie, maison s+1 kelibia, location bord de mer kelibia"
         url="https://laith-kelibia.tn/browse-properties"
       />
       <Navbar />

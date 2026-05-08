@@ -121,7 +121,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { url: '/', changefreq: 'daily', priority: '1.0' },
         { url: '/browse-properties', changefreq: 'daily', priority: '0.9' },
         { url: '/about', changefreq: 'monthly', priority: '0.7' },
-        { url: '/list-property', changefreq: 'monthly', priority: '0.6' },
       ];
 
       let xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -183,7 +182,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ============================================
   app.get('/robots.txt', (req, res) => {
     const robotsTxt = `# Robots.txt pour laith-kelibia.tn
-# Agence immobilière - Location à Kelibia, Tunisie
+
 
 User-agent: *
 Allow: /
@@ -191,8 +190,8 @@ Allow: /about
 Allow: /browse-properties
 Allow: /maisons/
 Allow: /property/
-Allow: /list-property
 
+Disallow: /list-property
 Disallow: /admin/
 Disallow: /broker/
 Disallow: /api/

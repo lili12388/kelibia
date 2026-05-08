@@ -9,9 +9,9 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       <SEO 
-        title="Laith Kelibia — Location Maisons, Appartements & Villas à Kelibia, Tunisie"
-        description="Votre agence immobilière de confiance à Kelibia. Location saisonnière d'appartements meublés, villas vue mer et maisons de vacances près de la plage. Réservation facile et rapide."
-        keywords="location kelibia, location appartement kelibia, location villa kelibia, maison vacances kelibia, location saisonnière kelibia, appartement meublé kelibia, location été tunisie, kelibia plage, agence immobilière kelibia"
+        title="Laith Kelibia — Location Maisons S+2, Appartements & Villas à Kelibia, Tunisie"
+        description="Location saisonnière à Kelibia : maisons S+1, S+2, S+3, appartements meublés, villas vue mer, studios près de la plage. Vacances d'été au Cap Bon. Réservation facile."
+        keywords="location kelibia, location maison kelibia, maison s+2 kelibia, maison s+3 kelibia, location appartement meublé kelibia, villa kelibia, studio kelibia, location saisonnière kelibia, vacances été kelibia, location bord de mer kelibia, immobilier kelibia, dar kelibia, location cap bon, hébergement kelibia plage, maison à louer kelibia été"
         url="https://laith-kelibia.tn/"
       />
       <Navbar />
@@ -39,16 +39,6 @@ export default function HomePage() {
           
           {/* Two-Choice Gateway */}
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <Link href="/list-property" data-testid="link-list-property">
-              <Button 
-                size="lg"
-                className="w-full sm:w-auto px-12 py-6 text-lg font-semibold bg-primary/90 hover:bg-primary backdrop-blur-sm border border-primary-border"
-                data-testid="button-list-property"
-              >
-                <Building2 className="mr-2 h-6 w-6" />
-                I Have a Property to Rent
-              </Button>
-            </Link>
             
             <Link href="/browse-properties" data-testid="link-browse-properties">
               <Button 

@@ -424,8 +424,8 @@ export default function PropertyDetailPage() {
   // SEO data
   const primaryImage = property.media.find(m => m.isPrimary) || property.media[0];
   const seoTitle = `${property.title} — ${property.rooms} Chambres à ${property.location} | Laith Kelibia`;
-  const seoDescription = `${property.isFurnished ? 'Logement meublé' : 'Logement'} avec ${property.rooms} chambres et ${property.bathrooms} salles de bain à ${property.location}. ${property.distanceToBeach ? `À ${property.distanceToBeach} de la plage. ` : ''}Prix: ${parseFloat(property.price).toLocaleString()} TND/nuit. Réservez sur Laith Kelibia.`;
-  const seoKeywords = `location ${property.location}, ${property.title}, ${property.rooms} chambres kelibia, ${property.isFurnished ? 'meublé' : 'non meublé'} kelibia, location vacances kelibia, ${parseFloat(property.price).toLocaleString()} TND nuit`;
+  const seoDescription = `${property.isFurnished ? 'Logement meublé' : 'Logement'} S+${property.rooms} avec ${property.bathrooms} salles de bain à ${property.location}, Kelibia. ${property.distanceToBeach ? `À ${property.distanceToBeach} de la plage. ` : ''}Prix: ${parseFloat(property.price).toLocaleString()} TND/nuit. Réservez sur Laith Kelibia.`;
+  const seoKeywords = `location ${property.location}, maison s+${property.rooms} kelibia, ${property.title}, ${property.isFurnished ? 'meublé' : 'non meublé'} kelibia, location vacances kelibia, ${parseFloat(property.price).toLocaleString()} TND nuit, dar kelibia, location été cap bon, hébergement kelibia plage`;
 
   // Structured Data (Schema.org) for Google rich snippets
   const structuredData = {

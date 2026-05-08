@@ -1,6 +1,6 @@
 /**
  * SEO Component for Laith Kelibia
- * Agence immobilière - Location à Kelibia, Tunisie
+ * Location immobilière à Kelibia, Tunisie
  */
 
 import { Helmet } from 'react-helmet-async';
@@ -20,8 +20,8 @@ const DEFAULT_IMAGE = `${SITE_URL}/logo.png`;
 
 export function SEO({
   title = 'Laith Kelibia — Location Maisons & Appartements à Kelibia',
-  description = 'Votre agence immobilière de confiance à Kelibia. Trouvez votre location saisonnière idéale : appartements meublés, villas avec vue mer, maisons de vacances près de la plage.',
-  keywords = 'location kelibia, location appartement kelibia, location villa kelibia, maison vacances kelibia, location saisonnière kelibia, appartement meublé kelibia, agence immobilière kelibia, hébergement kelibia, location bord de mer tunisie',
+  description = 'Location saisonnière à Kelibia : maisons S+2, S+3, appartements meublés, villas vue mer, studios près de la plage. Idéal vacances été au Cap Bon, Tunisie. Réservation facile.',
+  keywords = 'location kelibia, location maison kelibia, location appartement kelibia, location villa kelibia, maison vacances kelibia, location saisonnière kelibia, appartement meublé kelibia, location été kelibia, location s+2 kelibia, maison s+1 kelibia, studio kelibia, immobilier kelibia, location cap bon, hébergement kelibia, maison à louer kelibia, vacances kelibia été, dar kelibia',
   image = DEFAULT_IMAGE,
   url,
   type = 'website',

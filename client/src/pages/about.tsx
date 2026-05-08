@@ -7,9 +7,9 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-background">
       <SEO 
-        title="À Propos — Laith Kelibia | Agence Immobilière à Kelibia, Tunisie" 
-        description="Laith Kelibia, votre agence immobilière locale à Kelibia. Spécialistes en location saisonnière, location longue durée et gestion de biens. Appartements, villas et maisons de vacances vérifiés près de la plage."
-        keywords="agence immobilière kelibia, location saisonnière kelibia, gestion locative kelibia, location longue durée kelibia, agence location tunisie, expert immobilier nabeul, louer maison kelibia"
+        title="À Propos — Laith Kelibia | Location Immobilière à Kelibia, Cap Bon" 
+        description="Laith Kelibia, votre spécialiste en location saisonnière à Kelibia. Maisons S+2, S+3, appartements meublés et villas vue mer. Location vacances été au Cap Bon, Tunisie."
+        keywords="location saisonnière kelibia, gestion locative kelibia, location été cap bon, immobilier kelibia, expert immobilier nabeul, louer maison s+2 kelibia, location villa kelibia été, dar kelibia vacances"
         url="https://laith-kelibia.tn/about"
       />
       <Navbar />

@@ -7,9 +7,8 @@ Allow: /about
 Allow: /browse-properties
 Allow: /maisons/
 Allow: /property/
-Allow: /list-property
 
-# Bloquer les pages d'administration et les pages privées
+Disallow: /list-property
 Disallow: /admin/
 Disallow: /broker/
 Disallow: /api/
