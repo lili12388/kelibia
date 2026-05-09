@@ -530,12 +530,6 @@ export default function BrokerBrowsePage() {
                         </Badge>
                       </div>
 
-                      {/* Price Badge - Bottom Right with semi-transparent background */}
-                      <div className="absolute bottom-3 right-3">
-                        <Badge className="bg-gradient-to-r from-[#1a5f3f] to-[#2d8659] text-white border-0 font-bold text-base px-4 py-2 shadow-xl backdrop-blur-sm">
-                          {parseFloat(property.price).toLocaleString()} TND
-                        </Badge>
-                      </div>
                     </div>
                   </Link>
 
@@ -553,28 +547,38 @@ export default function BrokerBrowsePage() {
                     </div>
 
                     {/* Metadata */}
-                    <div className="flex items-center gap-3 mb-4 text-sm flex-wrap">
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <BedDouble className="w-4 h-4" />
-                        <span>{property.rooms}</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <Bath className="w-4 h-4" />
-                        <span>{property.bathrooms}</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <ChefHat className="w-4 h-4" />
-                      </div>
-                      {property.hasFridge && (
+                    <div className="flex items-center justify-between mb-4 mt-auto">
+                      <div className="flex items-center gap-3 text-sm flex-wrap">
                         <div className="flex items-center gap-1 text-muted-foreground">
-                          <Refrigerator className="w-4 h-4" />
+                          <BedDouble className="w-4 h-4" />
+                          <span>{property.rooms}</span>
                         </div>
-                      )}
-                      {property.hasGasStove && (
                         <div className="flex items-center gap-1 text-muted-foreground">
-                          <Flame className="w-4 h-4" />
+                          <Bath className="w-4 h-4" />
+                          <span>{property.bathrooms}</span>
                         </div>
-                      )}
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <ChefHat className="w-4 h-4" />
+                        </div>
+                        {property.hasFridge && (
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <Refrigerator className="w-4 h-4" />
+                          </div>
+                        )}
+                        {property.hasGasStove && (
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <Flame className="w-4 h-4" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-baseline gap-1">
+                        <span className="font-black text-xl text-foreground tracking-tight">
+                          {parseFloat(property.price).toLocaleString()}
+                        </span>
+                        <span className="font-bold text-xs text-muted-foreground uppercase tracking-wider">
+                          TND
+                        </span>
+                      </div>
                     </div>
 
                     {/* Action Buttons - Admin Only */}

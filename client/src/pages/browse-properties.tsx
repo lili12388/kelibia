@@ -717,12 +717,6 @@ export default function BrowsePropertiesPage() {
                             )}
                           </div>
 
-                          {/* Price — bottom of image */}
-                          <div className="absolute bottom-2 left-2">
-                            <div className="bg-white/95 backdrop-blur-sm text-foreground font-bold text-xs sm:text-sm px-2 py-1 rounded-lg shadow-sm">
-                              {price.toLocaleString()} <span className="text-[10px] font-normal text-muted-foreground">TND</span>
-                            </div>
-                          </div>
                         </div>
 
                         {/* Info */}
@@ -736,15 +730,25 @@ export default function BrowsePropertiesPage() {
                             <span className="truncate">{property.location}</span>
                           </div>
                           
-                          {/* Room/Bath pills */}
-                          <div className="mt-auto flex items-center gap-1.5">
-                            <div className="flex items-center gap-0.5 text-[10px] sm:text-xs font-medium text-muted-foreground bg-muted/40 px-2 py-1 rounded-md">
-                              <BedDouble className="w-3 h-3" />
-                              <span>{property.rooms}</span>
+                          {/* Room/Bath pills & Price */}
+                          <div className="mt-auto flex items-center justify-between">
+                            <div className="flex items-center gap-1.5">
+                              <div className="flex items-center gap-0.5 text-[10px] sm:text-xs font-medium text-muted-foreground bg-muted/40 px-2 py-1 rounded-md">
+                                <BedDouble className="w-3 h-3" />
+                                <span>{property.rooms}</span>
+                              </div>
+                              <div className="flex items-center gap-0.5 text-[10px] sm:text-xs font-medium text-muted-foreground bg-muted/40 px-2 py-1 rounded-md">
+                                <Bath className="w-3 h-3" />
+                                <span>{property.bathrooms}</span>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-0.5 text-[10px] sm:text-xs font-medium text-muted-foreground bg-muted/40 px-2 py-1 rounded-md">
-                              <Bath className="w-3 h-3" />
-                              <span>{property.bathrooms}</span>
+                            <div className="flex items-baseline gap-1">
+                              <span className="font-black text-lg sm:text-xl text-foreground tracking-tight">
+                                {price.toLocaleString()}
+                              </span>
+                              <span className="font-bold text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">
+                                TND
+                              </span>
                             </div>
                           </div>
                         </div>
