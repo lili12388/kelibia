@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MapPin, BedDouble, Bath, SlidersHorizontal, X, Eye, Sofa, Building2, ChevronDown, Waves, Wind, Wifi, Car, Users, Flame } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { PropertyWithMedia } from "@shared/schema";
@@ -23,7 +24,7 @@ export default function BrowsePropertiesPage() {
   const [reqAC, setReqAC] = useState(false);
   const [reqWiFi, setReqWiFi] = useState(false);
   const [reqParking, setReqParking] = useState(false);
-  const [distanceSearch, setDistanceSearch] = useState("");
+  const [distanceSearch, setDistanceSearch] = useState<string>("all");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   
   // Hero section search states
@@ -83,7 +84,7 @@ export default function BrowsePropertiesPage() {
       if (reqAC && !property.hasAC) return false;
       if (reqWiFi && !property.hasWiFi) return false;
       if (reqParking && !property.hasParking) return false;
-      if (distanceSearch && (!property.distanceToBeach || !property.distanceToBeach.toLowerCase().includes(distanceSearch.toLowerCase()))) return false;
+      if (distanceSearch && distanceSearch !== "all" && property.distanceToBeach !== distanceSearch) return false;
       return true;
     });
   }, [properties, minPrice, maxPrice, selectedRooms, selectedBathrooms, selectedGuests, furnishedFilter, reqAC, reqWiFi, reqParking, distanceSearch]);
@@ -98,11 +99,11 @@ export default function BrowsePropertiesPage() {
     setReqAC(false);
     setReqWiFi(false);
     setReqParking(false);
-    setDistanceSearch("");
+    setDistanceSearch("all");
   };
 
-  const hasActiveFilters = minPrice || maxPrice || selectedRooms !== null || selectedBathrooms !== null || furnishedFilter !== "all" || selectedGuests !== null || reqAC || reqWiFi || reqParking || distanceSearch;
-  const activeFilterCount = [minPrice, maxPrice, selectedRooms !== null, selectedBathrooms !== null, furnishedFilter !== "all", selectedGuests !== null, reqAC, reqWiFi, reqParking, !!distanceSearch].filter(Boolean).length;
+  const hasActiveFilters = minPrice || maxPrice || selectedRooms !== null || selectedBathrooms !== null || furnishedFilter !== "all" || selectedGuests !== null || reqAC || reqWiFi || reqParking || (distanceSearch !== "all" && distanceSearch !== "");
+  const activeFilterCount = [minPrice, maxPrice, selectedRooms !== null, selectedBathrooms !== null, furnishedFilter !== "all", selectedGuests !== null, reqAC, reqWiFi, reqParking, distanceSearch !== "all" && distanceSearch !== ""].filter(Boolean).length;
 
   const seoDescription = `${filteredProperties.length} logements disponibles à Kelibia. Trouvez votre appartement idéal.`;
 
@@ -433,17 +434,28 @@ export default function BrowsePropertiesPage() {
 
             {/* Distance to beach */}
             <div className="space-y-2 mb-6">
-              <Label className="text-sm font-semibold">Distance de la plage</Label>
-              <div className="relative">
-                <Waves className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Ex: 5 min, pied..."
-                  value={distanceSearch}
-                  onChange={(e) => setDistanceSearch(e.target.value)}
-                  className="h-11 pl-9 text-base rounded-xl"
-                />
-              </div>
+              <Label className="text-sm font-semibold">Distance à la plage sur pieds</Label>
+              <Select value={distanceSearch} onValueChange={setDistanceSearch}>
+                <SelectTrigger className="h-11 text-base rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <Waves className="h-4 w-4 text-muted-foreground" />
+                    <SelectValue placeholder="Toutes distances" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toutes distances</SelectItem>
+                  <SelectItem value="3 minutes">3 minutes</SelectItem>
+                  <SelectItem value="5 minutes">5 minutes</SelectItem>
+                  <SelectItem value="7 minutes">7 minutes</SelectItem>
+                  <SelectItem value="10 minutes">10 minutes</SelectItem>
+                  <SelectItem value="15 minutes">15 minutes</SelectItem>
+                  <SelectItem value="20 minutes">20 minutes</SelectItem>
+                  <SelectItem value="25 minutes">25 minutes</SelectItem>
+                  <SelectItem value="30 minutes">30 minutes</SelectItem>
+                  <SelectItem value="35 minutes">35 minutes</SelectItem>
+                  <SelectItem value="40 minutes">40 minutes</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Apply button */}
@@ -583,17 +595,28 @@ export default function BrowsePropertiesPage() {
               <Separator className="bg-border/30" />
 
               <div className="space-y-2 pb-2">
-                <Label className="text-xs font-semibold">Distance de la plage</Label>
-                <div className="relative">
-                  <Waves className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                  <Input
-                    type="text"
-                    placeholder="Ex: 5 min..."
-                    value={distanceSearch}
-                    onChange={(e) => setDistanceSearch(e.target.value)}
-                    className="h-8 pl-8 text-xs rounded-lg"
-                  />
-                </div>
+                <Label className="text-xs font-semibold">Distance à la plage sur pieds</Label>
+                <Select value={distanceSearch} onValueChange={setDistanceSearch}>
+                  <SelectTrigger className="h-8 text-xs rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Waves className="h-3.5 w-3.5 text-muted-foreground" />
+                      <SelectValue placeholder="Toutes distances" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes distances</SelectItem>
+                    <SelectItem value="3 minutes">3 minutes</SelectItem>
+                    <SelectItem value="5 minutes">5 minutes</SelectItem>
+                    <SelectItem value="7 minutes">7 minutes</SelectItem>
+                    <SelectItem value="10 minutes">10 minutes</SelectItem>
+                    <SelectItem value="15 minutes">15 minutes</SelectItem>
+                    <SelectItem value="20 minutes">20 minutes</SelectItem>
+                    <SelectItem value="25 minutes">25 minutes</SelectItem>
+                    <SelectItem value="30 minutes">30 minutes</SelectItem>
+                    <SelectItem value="35 minutes">35 minutes</SelectItem>
+                    <SelectItem value="40 minutes">40 minutes</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {hasActiveFilters && (

@@ -142,7 +142,7 @@ export default function ListPropertyPage() {
     },
   });
 
-  const [roomBeds, setRoomBeds] = useState<{double: number, single: number}[]>(
+  const [roomBeds, setRoomBeds] = useState<{ double: number, single: number }[]>(
     Array.from({ length: 10 }, () => ({ double: 0, single: 0 }))
   );
 
@@ -478,7 +478,7 @@ export default function ListPropertyPage() {
     // Generate bedDetails JSON for room-specific bed configurations
     const roomsCount = data.rooms || 0;
     const finalRoomBeds = roomBeds.slice(0, roomsCount);
-    
+
     // For schema compatibility, we calculate totals for legacy fields
     data.numDoubleBeds = finalRoomBeds.reduce((acc, r) => acc + r.double, 0);
     data.numSingleBeds = finalRoomBeds.reduce((acc, r) => acc + r.single, 0);
@@ -691,65 +691,65 @@ export default function ListPropertyPage() {
 
                   <div className="md:col-span-3 space-y-4">
                     <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-2">Configuration des couchages</h3>
-                    
+
                     {Array.from({ length: form.watch("rooms") || 0 }).map((_, idx) => (
                       <div key={idx} className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-xl border border-border/50 items-center">
                         <div className="font-bold text-primary">
                           🛏️ Chambre {idx + 1}
                         </div>
-                        
+
                         <div className="space-y-2">
                           <Label className="text-xs">Lits doubles</Label>
-                          <Input 
-                            type="number" 
-                            min={0} 
+                          <Input
+                            type="number"
+                            min={0}
                             value={roomBeds[idx]?.double || 0}
-                            onChange={e => updateRoomBed(idx, 'double', parseInt(e.target.value) || 0)} 
+                            onChange={e => updateRoomBed(idx, 'double', parseInt(e.target.value) || 0)}
                           />
                         </div>
-                        
+
                         <div className="space-y-2">
                           <Label className="text-xs">Lits simples</Label>
-                          <Input 
-                            type="number" 
-                            min={0} 
+                          <Input
+                            type="number"
+                            min={0}
                             value={roomBeds[idx]?.single || 0}
-                            onChange={e => updateRoomBed(idx, 'single', parseInt(e.target.value) || 0)} 
+                            onChange={e => updateRoomBed(idx, 'single', parseInt(e.target.value) || 0)}
                           />
                         </div>
                       </div>
                     ))}
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-xl border border-border/50 items-center mt-2">
                       <div className="font-bold text-primary">
                         🛋️ Salon
                       </div>
                       <div className="md:col-span-2">
-                    <FormField
-                      control={form.control}
-                      name="hasSofaBed"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Canapé-lit (Salon)?</FormLabel>
-                          <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Choisir" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="false">Non</SelectItem>
-                              <SelectItem value="true">Oui</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                        <FormField
+                          control={form.control}
+                          name="hasSofaBed"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Canapé-lit (Salon)?</FormLabel>
+                              <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Choisir" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="false">Non</SelectItem>
+                                  <SelectItem value="true">Oui</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
 
                 {/* Kitchen Amenities & Logistics */}
                 <div className="space-y-4 pt-4 border-t border-border/50">
@@ -1231,14 +1231,26 @@ export default function ListPropertyPage() {
                     name="distanceToBeach"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Distance à la plage (Optionnel)</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="ex: À 5 minutes à pied"
-                            {...field}
-                            value={field.value ?? ''}
-                          />
-                        </FormControl>
+                        <FormLabel>Distance à la plage sur pieds</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choisir une distance" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="3 minutes">3 minutes</SelectItem>
+                            <SelectItem value="5 minutes">5 minutes</SelectItem>
+                            <SelectItem value="7 minutes">7 minutes</SelectItem>
+                            <SelectItem value="10 minutes">10 minutes</SelectItem>
+                            <SelectItem value="15 minutes">15 minutes</SelectItem>
+                            <SelectItem value="20 minutes">20 minutes</SelectItem>
+                            <SelectItem value="25 minutes">25 minutes</SelectItem>
+                            <SelectItem value="30 minutes">30 minutes</SelectItem>
+                            <SelectItem value="35 minutes">35 minutes</SelectItem>
+                            <SelectItem value="40 minutes">40 minutes</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -1273,7 +1285,7 @@ export default function ListPropertyPage() {
                       <FormItem>
                         <FormLabel>Point de repère</FormLabel>
                         <FormControl>
-                          <Input placeholder="ex: 5 min à pieds de la plage de Kelibia" {...field} value={field.value ?? ""} />
+                          <Input placeholder="ex: À côté du Fort de Kelibia, près du café X..." {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1296,11 +1308,10 @@ export default function ListPropertyPage() {
                                     key={opt}
                                     type="button"
                                     onClick={() => toggleNearby(opt, field.value || "")}
-                                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all border flex items-center gap-1.5 ${
-                                      isSelected 
-                                        ? "bg-primary text-primary-foreground border-primary" 
+                                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all border flex items-center gap-1.5 ${isSelected
+                                        ? "bg-primary text-primary-foreground border-primary"
                                         : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
-                                    }`}
+                                      }`}
                                   >
                                     {opt}
                                     {isSelected ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
@@ -1308,9 +1319,9 @@ export default function ListPropertyPage() {
                                 );
                               })}
                             </div>
-                            <Input 
-                              placeholder="Ou tapez d'autres services (ex: Cinéma, Salle de sport)" 
-                              {...field} 
+                            <Input
+                              placeholder="Ou tapez d'autres services (ex: Cinéma, Salle de sport)"
+                              {...field}
                               value={field.value || ""}
                             />
                           </div>
