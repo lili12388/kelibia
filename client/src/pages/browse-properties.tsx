@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, BedDouble, Bath, SlidersHorizontal, X, Eye, Sofa, Building2, ChevronDown, Waves, Wind, Wifi, Car, Users, Flame } from "lucide-react";
+import { MapPin, BedDouble, Bath, SlidersHorizontal, X, Eye, Sofa, Building2, ChevronDown, Waves, Wind, Wifi, Car, Users, Flame, ArrowUpDown, TrendingUp } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { PropertyWithMedia } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,6 +26,7 @@ export default function BrowsePropertiesPage() {
   const [reqParking, setReqParking] = useState(false);
   const [distanceSearch, setDistanceSearch] = useState<string>("all");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<"default" | "cheapest" | "expensive" | "beach" | "most_viewed">("default");
   
   // Hero section search states
   const [startDay, setStartDay] = useState("");
@@ -70,9 +71,16 @@ export default function BrowsePropertiesPage() {
     return map;
   }, [propertyViews]);
 
+  // Helper: parse "X minutes" string to a number for sorting
+  const parseBeachDistance = (dist: string | null | undefined): number => {
+    if (!dist) return 9999;
+    const match = dist.match(/(\d+)/);
+    return match ? parseInt(match[1]) : 9999;
+  };
+
   const filteredProperties = useMemo(() => {
     if (!properties) return [];
-    return properties.filter((property) => {
+    let result = properties.filter((property) => {
       const price = parseFloat(property.price);
       if (minPrice && price < parseFloat(minPrice)) return false;
       if (maxPrice && price > parseFloat(maxPrice)) return false;
@@ -87,7 +95,20 @@ export default function BrowsePropertiesPage() {
       if (distanceSearch && distanceSearch !== "all" && property.distanceToBeach !== distanceSearch) return false;
       return true;
     });
-  }, [properties, minPrice, maxPrice, selectedRooms, selectedBathrooms, selectedGuests, furnishedFilter, reqAC, reqWiFi, reqParking, distanceSearch]);
+
+    // Apply sorting
+    if (sortBy === "cheapest") {
+      result = [...result].sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+    } else if (sortBy === "expensive") {
+      result = [...result].sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+    } else if (sortBy === "beach") {
+      result = [...result].sort((a, b) => parseBeachDistance(a.distanceToBeach) - parseBeachDistance(b.distanceToBeach));
+    } else if (sortBy === "most_viewed") {
+      result = [...result].sort((a, b) => (viewsMap.get(b.id) ?? 0) - (viewsMap.get(a.id) ?? 0));
+    }
+
+    return result;
+  }, [properties, minPrice, maxPrice, selectedRooms, selectedBathrooms, selectedGuests, furnishedFilter, reqAC, reqWiFi, reqParking, distanceSearch, sortBy, viewsMap]);
 
   const clearFilters = () => {
     setMinPrice("");
@@ -100,6 +121,7 @@ export default function BrowsePropertiesPage() {
     setReqWiFi(false);
     setReqParking(false);
     setDistanceSearch("all");
+    setSortBy("default");
   };
 
   const hasActiveFilters = minPrice || maxPrice || selectedRooms !== null || selectedBathrooms !== null || furnishedFilter !== "all" || selectedGuests !== null || reqAC || reqWiFi || reqParking || (distanceSearch !== "all" && distanceSearch !== "");
@@ -458,6 +480,26 @@ export default function BrowsePropertiesPage() {
               </Select>
             </div>
 
+            {/* Sorting */}
+            <div className="space-y-2 mb-6">
+              <Label className="text-sm font-semibold">Trier par</Label>
+              <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+                <SelectTrigger className="h-11 text-base rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                    <SelectValue placeholder="Par défaut" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">Par défaut</SelectItem>
+                  <SelectItem value="cheapest">Prix croissant</SelectItem>
+                  <SelectItem value="expensive">Prix décroissant</SelectItem>
+                  <SelectItem value="beach">Plus proche de la plage</SelectItem>
+                  <SelectItem value="most_viewed">Les plus consultés</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Apply button */}
             <button
               onClick={() => setMobileFiltersOpen(false)}
@@ -619,6 +661,27 @@ export default function BrowsePropertiesPage() {
                 </Select>
               </div>
 
+              <Separator className="bg-border/30" />
+
+              <div className="space-y-2 pb-2">
+                <Label className="text-xs font-semibold">Trier par</Label>
+                <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+                  <SelectTrigger className="h-8 text-xs rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+                      <SelectValue placeholder="Par défaut" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">Par défaut</SelectItem>
+                    <SelectItem value="cheapest">Prix croissant</SelectItem>
+                    <SelectItem value="expensive">Prix décroissant</SelectItem>
+                    <SelectItem value="beach">Plus proche de la plage</SelectItem>
+                    <SelectItem value="most_viewed">Les plus consultés</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {hasActiveFilters && (
                 <>
                   <Separator className="bg-border/30" />
@@ -632,11 +695,23 @@ export default function BrowsePropertiesPage() {
 
           {/* Properties */}
           <main className="flex-1 min-w-0">
-            {/* Results count — mobile */}
+            {/* Results count + sort badge — mobile */}
             {!isLoading && (
-              <p className="text-xs text-muted-foreground mb-3">
-                <span className="font-semibold text-foreground">{filteredProperties.length}</span> logement{filteredProperties.length !== 1 ? 's' : ''}
-              </p>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-semibold text-foreground">{filteredProperties.length}</span> logement{filteredProperties.length !== 1 ? 's' : ''}
+                </p>
+                {sortBy !== "default" && (
+                  <button 
+                    onClick={() => setSortBy("default")}
+                    className="text-[10px] text-primary bg-primary/10 px-2 py-1 rounded-full font-medium flex items-center gap-1"
+                  >
+                    <ArrowUpDown className="w-3 h-3" />
+                    {sortBy === "cheapest" ? "Prix ↑" : sortBy === "expensive" ? "Prix ↓" : sortBy === "beach" ? "Plage" : "Vues"}
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
             )}
 
             {/* Loading */}
@@ -732,12 +807,9 @@ export default function BrowsePropertiesPage() {
                               )}
                             </div>
                             
-                            {views > 0 && (
-                              <span className="glass-dark text-white/90 text-[10px] font-medium px-1.5 py-1 rounded-md flex items-center gap-1">
-                                <Eye className="w-3 h-3" />
-                                {views}
-                              </span>
-                            )}
+                            <span className="bg-black/60 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-1 rounded-md flex items-center gap-1 shadow-sm">
+                              👁 {views}
+                            </span>
                           </div>
 
                         </div>

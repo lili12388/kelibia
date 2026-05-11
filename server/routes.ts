@@ -1208,15 +1208,15 @@ Crawl-delay: 2
         })
         .from(propertyAnalytics);
       
-      // Get active visitors RIGHT NOW (last 6 seconds - heartbeat is every 3 seconds)
-      const sixSecondsAgo = new Date(Date.now() - 6 * 1000);
+      // Get active visitors RIGHT NOW (last 15 seconds — heartbeat is every 3s, 15s gives 5x buffer)
+      const fifteenSecondsAgo = new Date(Date.now() - 15 * 1000);
       const { gt } = await import("drizzle-orm");
       const activeVisitors = await db
         .select({
-          count: sql<number>`COUNT(DISTINCT ${visitorLogs.sessionId})::int`,
+          count: sql<number>`COUNT(DISTINCT COALESCE(${visitorLogs.visitorIp}, ${visitorLogs.sessionId}))::int`,
         })
         .from(visitorLogs)
-        .where(gt(visitorLogs.timestamp, sixSecondsAgo));
+        .where(gt(visitorLogs.timestamp, fifteenSecondsAgo));
       
       // Get top 10 most viewed properties
       const topPropertiesData = await db
@@ -1372,18 +1372,19 @@ Crawl-delay: 2
   app.get('/api/admin/analytics/real-time', requireBrokerAuth, async (req, res) => {
     try {
       const { visitorLogs } = await import("../shared/schema.js");
-      const { sql, desc } = await import("drizzle-orm");
+      const { sql } = await import("drizzle-orm");
       
-      // Get active visitors RIGHT NOW (last 6 seconds - heartbeat is every 3 seconds)
-      const sixSecondsAgo = new Date(Date.now() - 6 * 1000);
+      // Get active visitors RIGHT NOW (last 15 seconds — heartbeat is every 3s, 15s gives 5x buffer)
+      const fifteenSecondsAgo = new Date(Date.now() - 15 * 1000);
       
       const { gt } = await import("drizzle-orm");
+      // Use COALESCE to count by IP hash (unique visitors), falling back to sessionId for older entries
       const activeVisitors = await db
         .select({
-          count: sql<number>`COUNT(DISTINCT ${visitorLogs.sessionId})::int`,
+          count: sql<number>`COUNT(DISTINCT COALESCE(${visitorLogs.visitorIp}, ${visitorLogs.sessionId}))::int`,
         })
         .from(visitorLogs)
-        .where(gt(visitorLogs.timestamp, sixSecondsAgo));
+        .where(gt(visitorLogs.timestamp, fifteenSecondsAgo));
       
       res.json({
         activeVisitors: activeVisitors[0]?.count || 0,
@@ -1394,7 +1395,7 @@ Crawl-delay: 2
     }
   });
 
-  // Track page view from client-side navigation
+  // Track page view from client-side navigation (IP-based unique tracking)
   app.post('/api/analytics/pageview', async (req, res) => {
     try {
       // Skip if user is authenticated admin/broker
@@ -1414,7 +1415,7 @@ Crawl-delay: 2
         return;
       }
       
-      // Get or create session ID
+      // Get or create session ID (kept for heartbeat compatibility)
       if (!req.session.visitorId) {
         req.session.visitorId = uuidv4();
         await new Promise<void>((resolve, reject) => {
@@ -1429,21 +1430,45 @@ Crawl-delay: 2
       const userAgent = req.headers['user-agent'] || '';
       const deviceType = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent) ? 'mobile' : 'desktop';
       
-      // Extract property ID from URL
-      const propertyMatch = pageUrl.match(/\/property\/([^/?]+)/);
+      // --- IP-based unique visitor fingerprint ---
+      // Get the real client IP (supports reverse proxies like nginx/Caddy)
+      const rawIp = req.headers['x-forwarded-for']
+        ? (req.headers['x-forwarded-for'] as string).split(',')[0].trim()
+        : req.headers['x-real-ip'] as string || req.socket.remoteAddress || 'unknown';
+      
+      // Create a privacy-safe hash: SHA-256(IP + daily salt)
+      // Using daily salt means old hashes can't be correlated across days
+      const today = new Date().toISOString().split('T')[0];
+      const visitorHash = crypto
+        .createHash('sha256')
+        .update(`${rawIp}:${userAgent}:${today}`)
+        .digest('hex')
+        .substring(0, 16); // truncate to 16 chars — enough for uniqueness, privacy-friendly
+      
+      // Extract property ID from URL (support both /property/ and /maisons/ routes)
+      const propertyMatch = pageUrl.match(/\/(?:property|maisons)\/([^/?]+)/);
       const propertyId = propertyMatch ? propertyMatch[1] : undefined;
       
-      // Check if this session visited today BEFORE inserting the new log
-      const today = new Date().toISOString().split('T')[0];
-      const existingVisit = await db.query.visitorLogs.findFirst({
-        where: sql`${visitorLogs.sessionId} = ${sessionId} AND DATE(${visitorLogs.timestamp}) = ${today}`,
+      // --- Deduplicate: check if this IP already visited today ---
+      const existingVisitToday = await db.query.visitorLogs.findFirst({
+        where: sql`${visitorLogs.visitorIp} = ${visitorHash} AND DATE(${visitorLogs.timestamp}) = ${today}`,
       });
       
-      const isNewVisitor = !existingVisit;
+      const isNewVisitor = !existingVisitToday;
       
-      // Insert visitor log
+      // --- Deduplicate property views: check if this IP already viewed this property today ---
+      let isNewPropertyView = false;
+      if (propertyId) {
+        const existingPropertyView = await db.query.visitorLogs.findFirst({
+          where: sql`${visitorLogs.visitorIp} = ${visitorHash} AND ${visitorLogs.propertyId} = ${propertyId} AND DATE(${visitorLogs.timestamp}) = ${today}`,
+        });
+        isNewPropertyView = !existingPropertyView;
+      }
+      
+      // Insert visitor log (always log for audit trail, but counters only update for unique visits)
       await db.insert(visitorLogs).values({
         sessionId,
+        visitorIp: visitorHash,
         pageUrl,
         propertyId,
         deviceType,
@@ -1451,8 +1476,7 @@ Crawl-delay: 2
         referrer,
       });
       
-      // Update site analytics
-      
+      // Update site analytics (unique visitors by IP, page views always count)
       await db.execute(sql`
         INSERT INTO site_analytics (date, total_visitors, total_page_views, unique_sessions, desktop_visitors, mobile_visitors, city_breakdown)
         VALUES (
@@ -1473,8 +1497,8 @@ Crawl-delay: 2
           mobile_visitors = site_analytics.mobile_visitors + ${deviceType === 'mobile' && isNewVisitor ? 1 : 0}
       `);
       
-      // Update property analytics if viewing a property
-      if (propertyId) {
+      // Update property analytics ONLY if this is a new unique view for this property today
+      if (propertyId && isNewPropertyView) {
         const existing = await db.query.propertyAnalytics.findFirst({
           where: eq(propertyAnalytics.propertyId, propertyId),
         });
@@ -1510,6 +1534,8 @@ Crawl-delay: 2
         success: true, 
         tracked: true,
         propertyId,
+        isNewVisitor,
+        isNewPropertyView,
       });
     } catch (error) {
       console.error('Error tracking page view:', error instanceof Error ? error.message : error);
@@ -1517,7 +1543,7 @@ Crawl-delay: 2
     }
   });
 
-  // Heartbeat endpoint to track active users
+  // Heartbeat endpoint to track active users (only updates existing entries, never creates new ones)
   app.post('/api/analytics/heartbeat', async (req, res) => {
     try {
       // Skip if user is authenticated admin/broker (no logging to reduce spam)
@@ -1526,28 +1552,17 @@ Crawl-delay: 2
         return;
       }
 
-      const { v4: uuidv4 } = await import("uuid");
       const { visitorLogs } = await import("../shared/schema.js");
-      const { eq, sql, lt } = await import("drizzle-orm");
+      const { eq, sql, lt, desc } = await import("drizzle-orm");
       
-      // Get or create session ID
-      if (!req.session.visitorId) {
-        req.session.visitorId = uuidv4();
-        await new Promise<void>((resolve, reject) => {
-          req.session.save((err) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve();
-            }
-          });
-        });
+      // No session = no visitor to track (pageview must happen first)
+      const sessionId = req.session?.visitorId;
+      if (!sessionId) {
+        res.json({ success: true, tracked: false });
+        return;
       }
       
-      const sessionId = req.session.visitorId;
-      const { desc } = await import("drizzle-orm");
-      
-      // Clean up old logs (older than 24 hours) every 100 requests to prevent DB bloat
+      // Clean up old logs (older than 24 hours) every ~100 requests to prevent DB bloat
       if (Math.random() < 0.01) {
         const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
         await db.delete(visitorLogs).where(lt(visitorLogs.timestamp, yesterday)).execute();
@@ -1562,28 +1577,16 @@ Crawl-delay: 2
         .limit(1);
       
       if (mostRecentLog.length > 0) {
-        // Update the most recent log entry timestamp (silently)
-        const now = new Date();
+        // Update the most recent log entry timestamp (keeps this user "active")
         await db
           .update(visitorLogs)
-          .set({ timestamp: now })
+          .set({ timestamp: new Date() })
           .where(eq(visitorLogs.id, mostRecentLog[0].id));
-      } else {
-        // No existing log found, create a basic one
-        const userAgent = req.headers['user-agent'] || 'Unknown';
-        const deviceType = /Android|webOS|iPhone|iPad|iPod/i.test(userAgent) ? 'mobile' : 'desktop';
-        
-        await db.insert(visitorLogs).values({
-          sessionId,
-          pageUrl: '/',
-          deviceType,
-          userAgent,
-          referrer: null,
-          timestamp: new Date(),
-        });
       }
+      // If no existing log found, do NOT create a phantom entry.
+      // The user must have a pageview first to be tracked.
       
-      res.json({ success: true, tracked: true });
+      res.json({ success: true, tracked: mostRecentLog.length > 0 });
     } catch (error) {
       // Silently handle errors for heartbeat to reduce log spam
       res.status(500).json({ error: 'Failed to process heartbeat' });

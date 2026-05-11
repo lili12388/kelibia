@@ -189,6 +189,7 @@ export const propertyMediaRelations = relations(propertyMedia, ({ one }) => ({
 export const visitorLogs = pgTable("visitor_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   sessionId: varchar("session_id").notNull(),
+  visitorIp: varchar("visitor_ip"), // hashed IP for unique visitor tracking
   timestamp: timestamp("timestamp").notNull().defaultNow(),
   pageUrl: text("page_url").notNull(),
   propertyId: varchar("property_id"),
