@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, BedDouble, Bath, SlidersHorizontal, X, Eye, Sofa, Building2, ChevronDown, Waves, Wind, Wifi, Car, Users, Flame, ArrowUpDown, TrendingUp } from "lucide-react";
+import { MapPin, BedDouble, Bath, SlidersHorizontal, X, Eye, Sofa, Building2, ChevronDown, Waves, Wind, Wifi, Car, Users, Flame, ArrowUpDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { PropertyWithMedia } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";

@@ -1207,6 +1207,14 @@ Crawl-delay: 2
           count: sql<number>`COUNT(*)::int`,
         })
         .from(propertyAnalytics);
+
+      // Sum of all property views
+      const totalPropertyViewsResult = await db
+        .select({
+          total: sql<number>`SUM(${propertyAnalytics.totalViews})::int`,
+        })
+        .from(propertyAnalytics);
+      const totalPropertyViews = totalPropertyViewsResult[0]?.total || 0;
       
       // Get active visitors RIGHT NOW (last 15 seconds — heartbeat is every 3s, 15s gives 5x buffer)
       const fifteenSecondsAgo = new Date(Date.now() - 15 * 1000);
@@ -1243,6 +1251,7 @@ Crawl-delay: 2
       res.json({
         totalVisitors: periodVisitors, // Unique visitors for selected period
         totalPageViews: periodPageViews, // Page views for selected period
+        totalPropertyViews, // Sum of all property views
         todayVisitors: todayVisitors, // Visitors specifically today
         todayPageViews: todayPageViews, // Page views specifically today
         activeVisitors: activeVisitors[0]?.count || 0,
@@ -1445,9 +1454,21 @@ Crawl-delay: 2
         .digest('hex')
         .substring(0, 16); // truncate to 16 chars — enough for uniqueness, privacy-friendly
       
-      // Extract property ID from URL (support both /property/ and /maisons/ routes)
+      // Extract property slug/id from URL (support both /property/ and /maisons/ routes)
       const propertyMatch = pageUrl.match(/\/(?:property|maisons)\/([^/?]+)/);
-      const propertyId = propertyMatch ? propertyMatch[1] : undefined;
+      const propertySlugOrId = propertyMatch ? propertyMatch[1] : undefined;
+      
+      // CRITICAL: Resolve slug to actual UUID so property_analytics uses the real property ID
+      // Without this, views are stored under the slug but looked up by UUID → they never match
+      let resolvedPropertyId: string | undefined = undefined;
+      if (propertySlugOrId) {
+        try {
+          const resolvedProperty = await storage.getProperty(propertySlugOrId);
+          resolvedPropertyId = resolvedProperty?.id;
+        } catch (e) {
+          // Property not found — skip property tracking
+        }
+      }
       
       // --- Deduplicate: check if this IP already visited today ---
       const existingVisitToday = await db.query.visitorLogs.findFirst({
@@ -1458,9 +1479,9 @@ Crawl-delay: 2
       
       // --- Deduplicate property views: check if this IP already viewed this property today ---
       let isNewPropertyView = false;
-      if (propertyId) {
+      if (resolvedPropertyId) {
         const existingPropertyView = await db.query.visitorLogs.findFirst({
-          where: sql`${visitorLogs.visitorIp} = ${visitorHash} AND ${visitorLogs.propertyId} = ${propertyId} AND DATE(${visitorLogs.timestamp}) = ${today}`,
+          where: sql`${visitorLogs.visitorIp} = ${visitorHash} AND ${visitorLogs.propertyId} = ${resolvedPropertyId} AND DATE(${visitorLogs.timestamp}) = ${today}`,
         });
         isNewPropertyView = !existingPropertyView;
       }
@@ -1470,7 +1491,7 @@ Crawl-delay: 2
         sessionId,
         visitorIp: visitorHash,
         pageUrl,
-        propertyId,
+        propertyId: resolvedPropertyId, // store the real UUID, not the slug
         deviceType,
         userAgent,
         referrer,
@@ -1498,9 +1519,9 @@ Crawl-delay: 2
       `);
       
       // Update property analytics ONLY if this is a new unique view for this property today
-      if (propertyId && isNewPropertyView) {
+      if (resolvedPropertyId && isNewPropertyView) {
         const existing = await db.query.propertyAnalytics.findFirst({
-          where: eq(propertyAnalytics.propertyId, propertyId),
+          where: eq(propertyAnalytics.propertyId, resolvedPropertyId),
         });
 
         if (existing) {
@@ -1516,10 +1537,10 @@ Crawl-delay: 2
               lastViewedAt: new Date(),
               updatedAt: new Date(),
             })
-            .where(eq(propertyAnalytics.propertyId, propertyId));
+            .where(eq(propertyAnalytics.propertyId, resolvedPropertyId));
         } else {
           await db.insert(propertyAnalytics).values({
-            propertyId,
+            propertyId: resolvedPropertyId,
             totalViews: 1,
             totalClicks: 0,
             desktopViews: deviceType === 'desktop' ? 1 : 0,
@@ -1533,7 +1554,7 @@ Crawl-delay: 2
       res.json({ 
         success: true, 
         tracked: true,
-        propertyId,
+        propertyId: resolvedPropertyId || propertySlugOrId,
         isNewVisitor,
         isNewPropertyView,
       });

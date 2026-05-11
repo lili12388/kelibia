@@ -13,6 +13,7 @@ import { frenchTitle } from "@/lib/utils";
 interface AnalyticsSummary {
   totalVisitors: number;
   totalPageViews: number;
+  totalPropertyViews: number;
   todayVisitors: number;
   todayPageViews: number;
   activeVisitors: number;
@@ -373,10 +374,10 @@ export default function AdminAnalytics() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-blue-600">
-                    {summary?.totalPageViews.toLocaleString() || 0}
+                    {summary?.totalPropertyViews.toLocaleString() || 0}
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    Pages consultées
+                    Vues totales des propriétés
                   </p>
                 </CardContent>
               </Card>
