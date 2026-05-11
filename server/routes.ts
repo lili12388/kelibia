@@ -490,7 +490,8 @@ Crawl-delay: 2
               finalMimetype,
               url,
               i === 0, // First media is primary
-              thumbnailUrl
+              thumbnailUrl,
+              new Date(Date.now() + i) // Offset timestamp to guarantee sort order
             );
           } catch (dbError) {
             console.error('[SUBMIT] Database save failed for media:', dbError);
@@ -644,7 +645,8 @@ Crawl-delay: 2
             finalMimetype,
             url,
             i === 0, // First media is primary
-            thumbnailUrl
+            thumbnailUrl,
+            new Date(Date.now() + i) // Offset timestamp to guarantee sort order
           );
         }
       }
@@ -722,14 +724,16 @@ Crawl-delay: 2
       });
 
       // Copy media to published property
-      for (const media of submissionWithMedia.media) {
+      for (let i = 0; i < submissionWithMedia.media.length; i++) {
+        const media = submissionWithMedia.media[i];
         await storage.createPropertyMedia(
           property.id,
           media.filename,
           media.mimeType,
           media.url,
           media.isPrimary,
-          media.thumbnailUrl
+          media.thumbnailUrl,
+          media.uploadedAt
         );
       }
 
@@ -930,14 +934,16 @@ Crawl-delay: 2
       });
 
       // Copy media to published property
-      for (const media of submission.media) {
+      for (let i = 0; i < submission.media.length; i++) {
+        const media = submission.media[i];
         await storage.createPropertyMedia(
           property.id,
           media.filename,
           media.mimeType,
           media.url,
           media.isPrimary,
-          media.thumbnailUrl
+          media.thumbnailUrl,
+          media.uploadedAt
         );
       }
 

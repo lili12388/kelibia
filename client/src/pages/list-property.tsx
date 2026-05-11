@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { Upload, X, Image as ImageIcon, Video, Plus } from "lucide-react";
+import { Upload, X, Image as ImageIcon, Video, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -456,6 +456,32 @@ export default function ListPropertyPage() {
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
     setPreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const moveFile = (index: number, direction: 'left' | 'right') => {
+    if (direction === 'left' && index > 0) {
+      setFiles(prev => {
+        const newFiles = [...prev];
+        [newFiles[index - 1], newFiles[index]] = [newFiles[index], newFiles[index - 1]];
+        return newFiles;
+      });
+      setPreviews(prev => {
+        const newPreviews = [...prev];
+        [newPreviews[index - 1], newPreviews[index]] = [newPreviews[index], newPreviews[index - 1]];
+        return newPreviews;
+      });
+    } else if (direction === 'right' && index < files.length - 1) {
+      setFiles(prev => {
+        const newFiles = [...prev];
+        [newFiles[index], newFiles[index + 1]] = [newFiles[index + 1], newFiles[index]];
+        return newFiles;
+      });
+      setPreviews(prev => {
+        const newPreviews = [...prev];
+        [newPreviews[index], newPreviews[index + 1]] = [newPreviews[index + 1], newPreviews[index]];
+        return newPreviews;
+      });
+    }
   };
 
   const onSubmit = (data: InsertPropertySubmission) => {
@@ -1412,9 +1438,31 @@ export default function ListPropertyPage() {
                         </button>
                         {index === 0 && (
                           <div className="absolute bottom-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
-                            Primary
+                            Couverture
                           </div>
                         )}
+                        <div className="absolute bottom-2 right-2 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                          {index > 0 && (
+                            <button
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); moveFile(index, 'left'); }}
+                              className="bg-black/60 text-white rounded p-1 hover:bg-black/80 backdrop-blur-sm"
+                              title="Déplacer à gauche"
+                            >
+                              <ChevronLeft className="h-4 w-4" />
+                            </button>
+                          )}
+                          {index < previews.length - 1 && (
+                            <button
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); moveFile(index, 'right'); }}
+                              className="bg-black/60 text-white rounded p-1 hover:bg-black/80 backdrop-blur-sm"
+                              title="Déplacer à droite"
+                            >
+                              <ChevronRight className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

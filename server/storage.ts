@@ -92,7 +92,8 @@ export class DatabaseStorage implements IStorage {
     mimeType: string, 
     url: string, 
     isPrimary: boolean,
-    thumbnailUrl?: string | null
+    thumbnailUrl?: string | null,
+    uploadedAt?: Date
   ): Promise<SubmissionMedia> {
     const [media] = await db
       .insert(submissionMedia)
@@ -103,6 +104,7 @@ export class DatabaseStorage implements IStorage {
         url,
         thumbnailUrl,
         isPrimary,
+        ...(uploadedAt ? { uploadedAt } : {})
       })
       .returning();
     return media;
@@ -184,7 +186,10 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (property && property.media) {
-      property.media.sort((a, b) => (a.isPrimary ? -1 : b.isPrimary ? 1 : 0));
+      property.media.sort((a, b) => {
+        if (a.isPrimary !== b.isPrimary) return a.isPrimary ? -1 : 1;
+        return new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime();
+      });
     }
 
     return property;
@@ -198,10 +203,13 @@ export class DatabaseStorage implements IStorage {
       orderBy: (properties, { desc }) => [desc(properties.publishedAt)],
     });
     
-    // Sort media for all properties so primary is first
+    // Sort media for all properties so primary is first, then by upload time
     for (const prop of allProperties) {
       if (prop.media) {
-        prop.media.sort((a, b) => (a.isPrimary ? -1 : b.isPrimary ? 1 : 0));
+        prop.media.sort((a, b) => {
+          if (a.isPrimary !== b.isPrimary) return a.isPrimary ? -1 : 1;
+          return new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime();
+        });
       }
     }
     
@@ -215,7 +223,8 @@ export class DatabaseStorage implements IStorage {
     mimeType: string, 
     url: string, 
     isPrimary: boolean,
-    thumbnailUrl?: string | null
+    thumbnailUrl?: string | null,
+    uploadedAt?: Date
   ): Promise<PropertyMedia> {
     const [media] = await db
       .insert(propertyMedia)
@@ -226,6 +235,7 @@ export class DatabaseStorage implements IStorage {
         url,
         thumbnailUrl,
         isPrimary,
+        ...(uploadedAt ? { uploadedAt } : {})
       })
       .returning();
     return media;

@@ -383,42 +383,95 @@ export default function AvailabilityTimeline({ propertyId, isAdmin = false }: Ti
         </p>
       )}
 
-      {/* Reservation Summary List */}
+      {/* Reservation Summary Lists */}
       {reservations.length > 0 && (
-        <div className="bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm">
-          <div className="px-4 py-2.5 border-b border-border/20 bg-muted/20">
-            <span className="text-xs font-bold text-foreground uppercase tracking-wider">Réservations ({reservations.length})</span>
+        <div className="space-y-4">
+          {/* Confirmed Reservations Box */}
+          <div className="bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm">
+            <div className="px-4 py-2.5 border-b border-border/20 bg-muted/20">
+              <span className="text-xs font-bold text-foreground uppercase tracking-wider">
+                Réservations Confirmées ({reservations.filter(r => r.status === "confirmed").length})
+              </span>
+            </div>
+            <div className="divide-y divide-border/15 max-h-[280px] overflow-y-auto">
+              {reservations.filter(r => r.status === "confirmed").length > 0 ? (
+                reservations.filter(r => r.status === "confirmed").map((r) => (
+                  <div key={r.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/15 transition-colors">
+                    <div className="w-2.5 h-2.5 rounded-full flex-shrink-0 bg-[#16a34a]" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-xs font-bold text-foreground truncate">{r.clientName}</span>
+                        {r.clientPhone && <span className="text-[10px] text-muted-foreground font-medium">· {r.clientPhone}</span>}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5">
+                        de <span className="font-semibold text-foreground/80">{fmtShort(r.startDate)}</span> à <span className="font-semibold text-foreground/80">{fmtShort(r.endDate)}</span>
+                      </div>
+                    </div>
+                    <div className="flex-shrink-0 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400">
+                      Réservé
+                    </div>
+                    {isAdmin && (
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <button onClick={() => toggleM.mutate({ id: r.id, status: r.status })} className="h-6 w-6 flex items-center justify-center rounded-md transition-all bg-green-100 text-green-600 hover:bg-green-200" title="→ Non confirmé">
+                          <Check className="w-3 h-3" />
+                        </button>
+                        <button onClick={() => deleteM.mutate(r.id)} className="h-6 w-6 flex items-center justify-center rounded-md bg-muted/40 text-muted-foreground hover:bg-red-100 hover:text-red-600 transition-all" title="Supprimer">
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="px-4 py-3 text-[10px] text-muted-foreground text-center italic">
+                  Aucune réservation confirmée.
+                </div>
+              )}
+            </div>
           </div>
-          <div className="divide-y divide-border/15 max-h-[280px] overflow-y-auto">
-            {reservations.map((r) => (
-              <div key={r.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/15 transition-colors">
-                <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${r.status === "confirmed" ? "bg-[#16a34a]" : "bg-orange-500"}`} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-xs font-bold text-foreground truncate">{r.clientName}</span>
-                    {r.clientPhone && <span className="text-[10px] text-muted-foreground font-medium">· {r.clientPhone}</span>}
+
+          {/* Pending Reservations Box (Always visible if there's at least one reservation in total) */}
+          <div className="bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm">
+            <div className="px-4 py-2.5 border-b border-border/20 bg-muted/20">
+              <span className="text-xs font-bold text-foreground uppercase tracking-wider">
+                Réservations Non Confirmées ({reservations.filter(r => r.status === "pending").length})
+              </span>
+            </div>
+            <div className="divide-y divide-border/15 max-h-[280px] overflow-y-auto">
+              {reservations.filter(r => r.status === "pending").length > 0 ? (
+                reservations.filter(r => r.status === "pending").map((r) => (
+                  <div key={r.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/15 transition-colors">
+                    <div className="w-2.5 h-2.5 rounded-full flex-shrink-0 bg-orange-500" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-xs font-bold text-foreground truncate">{r.clientName}</span>
+                        {r.clientPhone && <span className="text-[10px] text-muted-foreground font-medium">· {r.clientPhone}</span>}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5">
+                        de <span className="font-semibold text-foreground/80">{fmtShort(r.startDate)}</span> à <span className="font-semibold text-foreground/80">{fmtShort(r.endDate)}</span>
+                      </div>
+                    </div>
+                    <div className="flex-shrink-0 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400">
+                      Non confirmé
+                    </div>
+                    {isAdmin && (
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <button onClick={() => toggleM.mutate({ id: r.id, status: r.status })} className="h-6 w-6 flex items-center justify-center rounded-md transition-all bg-orange-100 text-orange-600 hover:bg-orange-200" title="→ Confirmé">
+                          <Clock className="w-3 h-3" />
+                        </button>
+                        <button onClick={() => deleteM.mutate(r.id)} className="h-6 w-6 flex items-center justify-center rounded-md bg-muted/40 text-muted-foreground hover:bg-red-100 hover:text-red-600 transition-all" title="Supprimer">
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5">
-                    de <span className="font-semibold text-foreground/80">{fmtShort(r.startDate)}</span> à <span className="font-semibold text-foreground/80">{fmtShort(r.endDate)}</span>
-                  </div>
+                ))
+              ) : (
+                <div className="px-4 py-3 text-[10px] text-muted-foreground text-center italic">
+                  Aucune réservation en attente.
                 </div>
-                <div className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
-                  r.status === "confirmed" ? "bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400" : "bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400"
-                }`}>
-                  {r.status === "confirmed" ? "Réservé" : "Non confirmé"}
-                </div>
-                {isAdmin && (
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <button onClick={() => toggleM.mutate({ id: r.id, status: r.status })} className={`h-6 w-6 flex items-center justify-center rounded-md transition-all ${r.status === "confirmed" ? "bg-green-100 text-green-600 hover:bg-green-200" : "bg-orange-100 text-orange-600 hover:bg-orange-200"}`} title={r.status === "confirmed" ? "→ Non confirmé" : "→ Confirmé"}>
-                      {r.status === "confirmed" ? <Check className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                    </button>
-                    <button onClick={() => deleteM.mutate(r.id)} className="h-6 w-6 flex items-center justify-center rounded-md bg-muted/40 text-muted-foreground hover:bg-red-100 hover:text-red-600 transition-all" title="Supprimer">
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
+              )}
+            </div>
           </div>
         </div>
       )}
