@@ -13,21 +13,23 @@ declare global {
 }
 
 // Track contact click
-export async function trackContactClick(propertyId: string, sessionId: string) {
+export async function trackContactClick(propertyId: string, sessionId?: string) {
   try {
-    // Update the most recent visitor log for this session and property
-    await db.execute(sql`
-      UPDATE visitor_logs
-      SET contact_clicked = true
-      WHERE session_id = ${sessionId}
-        AND property_id = ${propertyId}
-        AND id = (
-          SELECT id FROM visitor_logs
-          WHERE session_id = ${sessionId} AND property_id = ${propertyId}
-          ORDER BY timestamp DESC
-          LIMIT 1
-        )
-    `);
+    if (sessionId) {
+      // Update the most recent visitor log for this session and property
+      await db.execute(sql`
+        UPDATE visitor_logs
+        SET contact_clicked = true
+        WHERE session_id = ${sessionId}
+          AND property_id = ${propertyId}
+          AND id = (
+            SELECT id FROM visitor_logs
+            WHERE session_id = ${sessionId} AND property_id = ${propertyId}
+            ORDER BY timestamp DESC
+            LIMIT 1
+          )
+      `);
+    }
 
     // Increment total clicks in property analytics
     await db.update(propertyAnalytics)

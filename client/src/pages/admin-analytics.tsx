@@ -414,7 +414,7 @@ export default function AdminAnalytics() {
                     {summary?.totalContacts.toLocaleString() || 0}
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    Clics sur le bouton WhatsApp
+                    Clics sur le bouton Reserver
                   </p>
                 </CardContent>
               </Card>

@@ -198,11 +198,15 @@ export default function PropertyDetailPage() {
   };
 
   const trackContact = () => {
-    if (!propertyId) return;
+    const idToTrack = property?.id || propertyId;
+    if (!idToTrack) return;
+    
+    // Use keepalive to ensure request completes even if browser navigates away
     fetch('/api/analytics/contact-click', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ propertyId }),
+      body: JSON.stringify({ propertyId: idToTrack }),
+      keepalive: true
     }).catch(console.error);
   };
 

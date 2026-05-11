@@ -1640,12 +1640,22 @@ Crawl-delay: 2
       const { propertyId } = req.body;
       const sessionId = req.sessionId || req.session?.visitorId;
       
-      if (!propertyId || !sessionId) {
-        res.status(400).json({ error: 'Missing propertyId or sessionId' });
+      if (!propertyId) {
+        res.status(400).json({ error: 'Missing propertyId' });
         return;
       }
       
-      await trackContactClick(propertyId, sessionId);
+      let resolvedPropertyId = propertyId;
+      try {
+        const resolvedProperty = await storage.getProperty(propertyId);
+        if (resolvedProperty) {
+          resolvedPropertyId = resolvedProperty.id;
+        }
+      } catch (e) {
+        // Ignore resolution error
+      }
+      
+      await trackContactClick(resolvedPropertyId, sessionId);
       res.json({ success: true });
     } catch (error) {
       console.error('Error tracking contact click:', error);
