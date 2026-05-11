@@ -21,7 +21,7 @@ import {
   ChevronLeft, ChevronRight, User, Pencil, ChefHat,
   Refrigerator, Flame, Wind, Wifi, Car, Waves, Users,
   TriangleAlert, Microwave, Coffee, Home, Utensils, Info, Clock, ShieldCheck,
-  Ban, NotebookText, Tv
+  Ban, NotebookText, Tv, WashingMachine
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -134,6 +134,8 @@ export default function PropertyDetailPage() {
       hasLivingRoom: false,
       hasFridge: false,
       hasGasStove: false,
+      hasMicrowave: false,
+      hasWashingMachine: false,
       hasAC: false,
       hasWiFi: false,
       hasParking: false,
@@ -361,6 +363,8 @@ export default function PropertyDetailPage() {
       hasLivingRoom: submission.hasLivingRoom,
       hasFridge: submission.hasFridge,
       hasGasStove: submission.hasGasStove,
+      hasMicrowave: submission.hasMicrowave ?? false,
+      hasWashingMachine: submission.hasWashingMachine ?? false,
       hasAC: submission.hasAC ?? false,
       hasWiFi: submission.hasWiFi ?? false,
       hasParking: submission.hasParking ?? false,
@@ -1057,6 +1061,12 @@ export default function PropertyDetailPage() {
                     <span className="font-medium">Micro-ondes</span>
                   </div>
                 )}
+                {property.hasWashingMachine && (
+                  <div className="flex items-center gap-3 text-foreground/80">
+                    <WashingMachine className="w-6 h-6 opacity-70" />
+                    <span className="font-medium">Machine à laver</span>
+                  </div>
+                )}
                 {property.hasCoffeeMaker && (
                   <div className="flex items-center gap-3 text-foreground/80">
                     <Coffee className="w-6 h-6 opacity-70" />
@@ -1522,6 +1532,14 @@ export default function PropertyDetailPage() {
                   <div className="flex items-center space-x-2">
                     <Checkbox id="edit-fridge" checked={editForm.watch("hasFridge")} onCheckedChange={(c) => editForm.setValue("hasFridge", !!c)} />
                     <Label htmlFor="edit-fridge" className="cursor-pointer">Réfrigérateur</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="edit-microwave" checked={editForm.watch("hasMicrowave")} onCheckedChange={(c) => editForm.setValue("hasMicrowave", !!c)} />
+                    <Label htmlFor="edit-microwave" className="cursor-pointer">Micro-ondes</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="edit-washing" checked={editForm.watch("hasWashingMachine")} onCheckedChange={(c) => editForm.setValue("hasWashingMachine", !!c)} />
+                    <Label htmlFor="edit-washing" className="cursor-pointer">Machine à laver</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox id="edit-stove" checked={editForm.watch("hasGasStove")} onCheckedChange={(c) => editForm.setValue("hasGasStove", !!c)} />

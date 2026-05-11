@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { MapPin, BedDouble, Bath, Search, Phone, Mail, User, ArrowLeft, Pencil, ChefHat, Refrigerator, Flame, BarChart3, Eye, MousePointer, Monitor, Smartphone, Trash2, Plus, X } from "lucide-react";
+import { MapPin, BedDouble, Bath, Search, Phone, Mail, User, ArrowLeft, Pencil, ChefHat, Refrigerator, Flame, BarChart3, Eye, MousePointer, Monitor, Smartphone, Trash2, Plus, X, WashingMachine } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { PropertyWithMedia, PropertySubmissionWithMedia } from "@shared/schema";
@@ -74,6 +74,7 @@ export default function BrokerBrowsePage() {
       showDescription: true,
       showDeposit: true,
       hasMicrowave: false,
+      hasWashingMachine: false,
       hasCoffeeMaker: false,
       hasBalcony: false,
       hasGarden: false,
@@ -319,6 +320,7 @@ export default function BrokerBrowsePage() {
       showDescription: submission.showDescription ?? true,
       showDeposit: (submission as any).showDeposit ?? true,
       hasMicrowave: submission.hasMicrowave ?? false,
+      hasWashingMachine: submission.hasWashingMachine ?? false,
       hasCoffeeMaker: submission.hasCoffeeMaker ?? false,
       hasBalcony: submission.hasBalcony ?? false,
       hasGarden: submission.hasGarden ?? false,
@@ -568,6 +570,11 @@ export default function BrokerBrowsePage() {
                         {property.hasGasStove && (
                           <div className="flex items-center gap-1 text-muted-foreground">
                             <Flame className="w-4 h-4" />
+                          </div>
+                        )}
+                        {property.hasWashingMachine && (
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <WashingMachine className="w-4 h-4" />
                           </div>
                         )}
                       </div>
@@ -952,6 +959,14 @@ export default function BrokerBrowsePage() {
                       onCheckedChange={(checked) => editForm.setValue("hasMicrowave", !!checked)}
                     />
                     <Label htmlFor="edit-microwave">Micro-ondes</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 p-2 bg-slate-50 rounded-lg border">
+                    <Checkbox
+                      id="edit-washing"
+                      checked={editForm.watch("hasWashingMachine")}
+                      onCheckedChange={(checked) => editForm.setValue("hasWashingMachine", !!checked)}
+                    />
+                    <Label htmlFor="edit-washing">Machine à laver</Label>
                   </div>
                   <div className="flex items-center space-x-2 p-2 bg-slate-50 rounded-lg border">
                     <Checkbox

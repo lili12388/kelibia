@@ -15,6 +15,7 @@ export const propertySubmissions = pgTable("property_submissions", {
   hasFridge: boolean("has_fridge").notNull().default(false), // whether kitchen has a fridge
   hasGasStove: boolean("has_gas_stove").notNull().default(false), // whether house has a gas stove/cooker
   hasMicrowave: boolean("has_microwave").notNull().default(false),
+  hasWashingMachine: boolean("has_washing_machine").notNull().default(false),
   hasCoffeeMaker: boolean("has_coffee_maker").notNull().default(false),
   hasBalcony: boolean("has_balcony").notNull().default(false),
   hasGarden: boolean("has_garden").notNull().default(false),
@@ -82,6 +83,7 @@ export const properties = pgTable("properties", {
   hasFridge: boolean("has_fridge").notNull().default(false), // whether kitchen has a fridge
   hasGasStove: boolean("has_gas_stove").notNull().default(false), // whether house has a gas stove/cooker
   hasMicrowave: boolean("has_microwave").notNull().default(false),
+  hasWashingMachine: boolean("has_washing_machine").notNull().default(false),
   hasCoffeeMaker: boolean("has_coffee_maker").notNull().default(false),
   hasBalcony: boolean("has_balcony").notNull().default(false),
   hasGarden: boolean("has_garden").notNull().default(false),

@@ -25,7 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { MapPin, BedDouble, Bath, CheckCircle2, XCircle, Eye, Pencil, Upload, Search, ChefHat, Refrigerator, Flame } from "lucide-react";
+import { MapPin, BedDouble, Bath, CheckCircle2, XCircle, Eye, Pencil, Upload, Search, ChefHat, Refrigerator, Flame, WashingMachine } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { PropertySubmissionWithMedia } from "@shared/schema";
@@ -71,6 +71,7 @@ export default function BrokerDashboardPage() {
       showDescription: true,
       showDeposit: true,
       hasMicrowave: false,
+      hasWashingMachine: false,
       hasCoffeeMaker: false,
       hasBalcony: false,
       hasGarden: false,
@@ -212,6 +213,7 @@ export default function BrokerDashboardPage() {
       showDescription: submission.showDescription,
       showDeposit: (submission as any).showDeposit ?? true,
       hasMicrowave: submission.hasMicrowave,
+      hasWashingMachine: submission.hasWashingMachine,
       hasCoffeeMaker: submission.hasCoffeeMaker,
       hasBalcony: submission.hasBalcony,
       hasGarden: submission.hasGarden,
@@ -416,6 +418,11 @@ export default function BrokerDashboardPage() {
                               {submission.hasGasStove && (
                                 <div className="flex items-center gap-1">
                                   <Flame className="w-4 h-4 text-muted-foreground" />
+                                </div>
+                              )}
+                              {submission.hasWashingMachine && (
+                                <div className="flex items-center gap-1">
+                                  <WashingMachine className="w-4 h-4 text-muted-foreground" />
                                 </div>
                               )}
                             </div>
@@ -839,6 +846,22 @@ export default function BrokerDashboardPage() {
                     onValueChange={(value) => editForm.setValue("hasMicrowave", value === "true")}
                   >
                     <SelectTrigger id="edit-microwave">
+                      <SelectValue placeholder="Choisir" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="false">Non</SelectItem>
+                      <SelectItem value="true">Oui</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-washing">Machine à laver?</Label>
+                  <Select
+                    value={editForm.watch("hasWashingMachine") ? "true" : "false"}
+                    onValueChange={(value) => editForm.setValue("hasWashingMachine", value === "true")}
+                  >
+                    <SelectTrigger id="edit-washing">
                       <SelectValue placeholder="Choisir" />
                     </SelectTrigger>
                     <SelectContent>

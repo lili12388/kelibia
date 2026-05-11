@@ -105,6 +105,7 @@ export default function ListPropertyPage() {
       hasFridge: false,
       hasGasStove: false,
       hasMicrowave: false,
+      hasWashingMachine: false,
       hasCoffeeMaker: false,
       hasBalcony: false,
       hasGarden: false,
@@ -853,6 +854,28 @@ export default function ListPropertyPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Micro-ondes?</FormLabel>
+                          <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Choisir" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="false">Non</SelectItem>
+                              <SelectItem value="true">Oui</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="hasWashingMachine"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Machine à laver?</FormLabel>
                           <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
                             <FormControl>
                               <SelectTrigger>
