@@ -276,11 +276,13 @@ export default function PropertyDetailPage() {
       if (interferes) {
         setHasInterference(true);
         // Scroll to the booking widget on mobile
+        if (lightboxOpen) setLightboxOpen(false);
         document.getElementById('booking-widget')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
     }
     setHasInterference(false);
+    if (lightboxOpen) setLightboxOpen(false);
     setBookingDialogOpen(true);
   };
 
@@ -1568,16 +1570,16 @@ export default function PropertyDetailPage() {
       )}
 
       {/* Mobile Floating Booking Bar - Balanced & Refined */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-background/98 backdrop-blur-lg border-t border-border/40 p-4 pb-6 flex flex-col gap-3 z-[100] shadow-[0_-12px_40px_-10px_rgba(0,0,0,0.2)] animate-slide-up">
+      <div className={`lg:hidden fixed bottom-0 left-0 right-0 ${lightboxOpen ? 'bg-black/80 border-white/10' : 'bg-background/98 border-border/40'} backdrop-blur-lg border-t p-4 pb-6 flex flex-col gap-3 z-[100] shadow-[0_-12px_40px_-10px_rgba(0,0,0,0.2)] animate-slide-up`}>
 
         {/* Row 1: Price and Date Selection (Expanded) */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex flex-col flex-shrink-0">
             <div className="flex items-baseline gap-1">
-              <span className="text-xl font-black text-foreground tracking-tighter">
+              <span className={`text-xl font-black tracking-tighter ${lightboxOpen ? 'text-white' : 'text-foreground'}`}>
                 {parseFloat(property.price).toLocaleString()} TND
               </span>
-              <span className="text-[10px] text-muted-foreground font-bold uppercase">/ nuit</span>
+              <span className={`text-[10px] font-bold uppercase ${lightboxOpen ? 'text-white/70' : 'text-muted-foreground'}`}>/ nuit</span>
             </div>
           </div>
 

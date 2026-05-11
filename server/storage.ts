@@ -144,40 +144,50 @@ export class DatabaseStorage implements IStorage {
   async getProperty(idOrSlugOrRef: string): Promise<PropertyWithMedia | undefined> {
     const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(idOrSlugOrRef);
     
+    let property: PropertyWithMedia | undefined;
+
     if (isUUID) {
       // Direct UUID lookup
-      const [property] = await db.query.properties.findMany({
+      const [byUuid] = await db.query.properties.findMany({
         where: eq(properties.id, idOrSlugOrRef),
         with: { media: true },
       });
-      return property;
-    }
-
-    // Try slug lookup first (most common for new SEO-friendly URLs)
-    const [bySlug] = await db.query.properties.findMany({
-      where: eq(properties.slug, idOrSlugOrRef),
-      with: { media: true },
-    });
-    if (bySlug) return bySlug;
-
-    // Fallback to reference code
-    const [byRef] = await db.query.properties.findMany({
-      where: eq(properties.referenceCode, idOrSlugOrRef),
-      with: { media: true },
-    });
-    if (byRef) return byRef;
-    
-    // Try without REF- prefix
-    if (idOrSlugOrRef.toUpperCase().startsWith('REF-')) {
-      const withoutPrefix = idOrSlugOrRef.substring(4);
-      const [byRefNoPfx] = await db.query.properties.findMany({
-        where: eq(properties.referenceCode, withoutPrefix),
+      property = byUuid;
+    } else {
+      // Try slug lookup first (most common for new SEO-friendly URLs)
+      const [bySlug] = await db.query.properties.findMany({
+        where: eq(properties.slug, idOrSlugOrRef),
         with: { media: true },
       });
-      return byRefNoPfx;
+      
+      if (bySlug) {
+        property = bySlug;
+      } else {
+        // Fallback to reference code
+        const [byRef] = await db.query.properties.findMany({
+          where: eq(properties.referenceCode, idOrSlugOrRef),
+          with: { media: true },
+        });
+        
+        if (byRef) {
+          property = byRef;
+        } else if (idOrSlugOrRef.toUpperCase().startsWith('REF-')) {
+          // Try without REF- prefix
+          const withoutPrefix = idOrSlugOrRef.substring(4);
+          const [byRefNoPfx] = await db.query.properties.findMany({
+            where: eq(properties.referenceCode, withoutPrefix),
+            with: { media: true },
+          });
+          property = byRefNoPfx;
+        }
+      }
     }
 
-    return undefined;
+    if (property && property.media) {
+      property.media.sort((a, b) => (a.isPrimary ? -1 : b.isPrimary ? 1 : 0));
+    }
+
+    return property;
   }
 
   async getAllProperties(): Promise<PropertyWithMedia[]> {
@@ -187,6 +197,14 @@ export class DatabaseStorage implements IStorage {
       },
       orderBy: (properties, { desc }) => [desc(properties.publishedAt)],
     });
+    
+    // Sort media for all properties so primary is first
+    for (const prop of allProperties) {
+      if (prop.media) {
+        prop.media.sort((a, b) => (a.isPrimary ? -1 : b.isPrimary ? 1 : 0));
+      }
+    }
+    
     return allProperties;
   }
 
