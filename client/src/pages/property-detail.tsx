@@ -222,8 +222,8 @@ export default function PropertyDetailPage() {
       }
     }
 
-    const ref = property.referenceCode || "N/A";
-    let message = `Bonjour, je souhaite réserver la propriété [${ref}] : ${property.title}.`;
+    const refText = property.referenceCode ? `[${property.referenceCode}] ` : "";
+    let message = `Bonjour, je souhaite réserver la propriété ${refText}: ${property.title}.`;
 
     if (startDay && endDay) {
       const monthNames: { [key: string]: string } = {
