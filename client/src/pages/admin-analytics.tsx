@@ -14,6 +14,9 @@ interface AnalyticsSummary {
   totalVisitors: number;
   totalPageViews: number;
   totalPropertyViews: number;
+  totalContacts: number;
+  desktopVisitors: number;
+  mobileVisitors: number;
   todayVisitors: number;
   todayPageViews: number;
   activeVisitors: number;
@@ -396,6 +399,63 @@ export default function AdminAnalytics() {
                   <p className="text-xs text-gray-500 mt-1">
                     Visiteurs actifs
                   </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-l-4 border-purple-500">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                    <MousePointer className="h-4 w-4" />
+                    Contacts / Leads
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-purple-600">
+                    {summary?.totalContacts.toLocaleString() || 0}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Clics sur le bouton WhatsApp
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-l-4 border-orange-500">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                    <Smartphone className="h-4 w-4" />
+                    Appareils (Mobiles vs PC)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <div className="text-2xl font-bold text-orange-600 flex items-center gap-1">
+                        <Smartphone className="h-4 w-4" /> {summary?.mobileVisitors || 0}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Mobiles</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-gray-600 flex items-center gap-1">
+                        <Monitor className="h-4 w-4" /> {summary?.desktopVisitors || 0}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Ordinateurs</p>
+                    </div>
+                  </div>
+                  {/* Percentage bar */}
+                  <div className="w-full h-2 bg-gray-200 rounded-full mt-3 overflow-hidden flex">
+                    <div 
+                      className="h-full bg-orange-500" 
+                      style={{ 
+                        width: `${summary ? (summary.mobileVisitors / ((summary.mobileVisitors + summary.desktopVisitors) || 1)) * 100 : 0}%` 
+                      }}
+                    ></div>
+                    <div 
+                      className="h-full bg-gray-400" 
+                      style={{ 
+                        width: `${summary ? (summary.desktopVisitors / ((summary.mobileVisitors + summary.desktopVisitors) || 1)) * 100 : 0}%` 
+                      }}
+                    ></div>
+                  </div>
                 </CardContent>
               </Card>
             </div>

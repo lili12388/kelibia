@@ -197,6 +197,15 @@ export default function PropertyDetailPage() {
     return false;
   };
 
+  const trackContact = () => {
+    if (!propertyId) return;
+    fetch('/api/analytics/contact-click', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ propertyId }),
+    }).catch(console.error);
+  };
+
   const handleWhatsAppReserve = () => {
     if (!property) return;
 
@@ -226,6 +235,7 @@ export default function PropertyDetailPage() {
 
     message += `\nLien: ${window.location.href}`;
 
+    trackContact();
     window.open(`https://wa.me/216${BROKER_PHONE}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
@@ -1644,7 +1654,10 @@ export default function PropertyDetailPage() {
           <div className="flex flex-col gap-3 py-4">
             <Button
               className="w-full justify-between text-lg py-7 h-auto rounded-2xl shadow-md transition-transform active:scale-[0.98] bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-90 text-white border-0"
-              onClick={() => window.location.href = `tel:${BROKER_PHONE}`}
+              onClick={() => {
+                trackContact();
+                window.location.href = `tel:${BROKER_PHONE}`;
+              }}
             >
               <div className="flex flex-col items-start">
                 <span className="font-bold">Appeler par Téléphone</span>

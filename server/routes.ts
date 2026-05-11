@@ -1208,13 +1208,30 @@ Crawl-delay: 2
         })
         .from(propertyAnalytics);
 
-      // Sum of all property views
-      const totalPropertyViewsResult = await db
+      // Sum of all property views and contacts (clicks)
+      const totalPropertyStatsResult = await db
         .select({
-          total: sql<number>`SUM(${propertyAnalytics.totalViews})::int`,
+          totalViews: sql<number>`SUM(${propertyAnalytics.totalViews})::int`,
+          totalClicks: sql<number>`SUM(${propertyAnalytics.totalClicks})::int`,
         })
         .from(propertyAnalytics);
-      const totalPropertyViews = totalPropertyViewsResult[0]?.total || 0;
+      const totalPropertyViews = totalPropertyStatsResult[0]?.totalViews || 0;
+      const totalContacts = totalPropertyStatsResult[0]?.totalClicks || 0;
+      
+      // Get device breakdown for the period
+      const deviceStats = await db
+        .select({
+          desktop: sql<number>`SUM(${siteAnalytics.desktopVisitors})::int`,
+          mobile: sql<number>`SUM(${siteAnalytics.mobileVisitors})::int`,
+        })
+        .from(siteAnalytics)
+        .where(and(
+          gte(siteAnalytics.date, startDateStr),
+          lte(siteAnalytics.date, today),
+        ));
+      
+      const desktopVisitors = deviceStats[0]?.desktop || 0;
+      const mobileVisitors = deviceStats[0]?.mobile || 0;
       
       // Get active visitors RIGHT NOW (last 15 seconds — heartbeat is every 3s, 15s gives 5x buffer)
       const fifteenSecondsAgo = new Date(Date.now() - 15 * 1000);
@@ -1252,6 +1269,9 @@ Crawl-delay: 2
         totalVisitors: periodVisitors, // Unique visitors for selected period
         totalPageViews: periodPageViews, // Page views for selected period
         totalPropertyViews, // Sum of all property views
+        totalContacts, // Sum of all WhatsApp contact clicks
+        desktopVisitors, // Desktop visitors for period
+        mobileVisitors, // Mobile visitors for period
         todayVisitors: todayVisitors, // Visitors specifically today
         todayPageViews: todayPageViews, // Page views specifically today
         activeVisitors: activeVisitors[0]?.count || 0,
