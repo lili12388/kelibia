@@ -809,21 +809,21 @@ export default function PropertyDetailPage() {
           >
             {/* Close button */}
             <button 
-              className="absolute top-4 right-4 z-[110] w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors text-white"
+              className="absolute top-4 right-4 z-[110] w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 border border-white/20 backdrop-blur-md flex items-center justify-center transition-colors text-white shadow-lg"
               onClick={() => setLightboxOpen(false)}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
             </button>
 
             {/* Counter */}
-            <div className="absolute top-4 left-4 z-[110] text-white/80 text-sm font-medium">
+            <div className="absolute top-4 left-4 z-[110] text-white font-medium bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 text-sm shadow-lg">
               {lightboxIndex + 1} / {property.media.length}
             </div>
 
             {/* Left arrow */}
             {property.media.length > 1 && (
               <button
-                className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 z-[110] w-12 h-12 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center transition-all text-white active:scale-90"
+                className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 z-[110] w-12 h-12 rounded-full bg-black/40 hover:bg-black/60 border border-white/20 backdrop-blur-md flex items-center justify-center transition-all text-white active:scale-90 shadow-lg"
                 onClick={(e) => { e.stopPropagation(); lightboxPrev(); }}
               >
                 <ChevronLeft className="w-7 h-7" />
@@ -833,7 +833,7 @@ export default function PropertyDetailPage() {
             {/* Right arrow */}
             {property.media.length > 1 && (
               <button
-                className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 z-[110] w-12 h-12 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center transition-all text-white active:scale-90"
+                className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 z-[110] w-12 h-12 rounded-full bg-black/40 hover:bg-black/60 border border-white/20 backdrop-blur-md flex items-center justify-center transition-all text-white active:scale-90 shadow-lg"
                 onClick={(e) => { e.stopPropagation(); lightboxNext(); }}
               >
                 <ChevronRight className="w-7 h-7" />
