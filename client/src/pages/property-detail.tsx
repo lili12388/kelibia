@@ -222,8 +222,7 @@ export default function PropertyDetailPage() {
       }
     }
 
-    const refText = property.referenceCode ? `[${property.referenceCode}] ` : "";
-    let message = `Bonjour, je souhaite réserver la propriété ${refText}: ${property.title}.`;
+    let message = `Bonjour, je souhaite réserver la propriété ${window.location.href}.`;
 
     if (startDay && endDay) {
       const monthNames: { [key: string]: string } = {
@@ -236,8 +235,6 @@ export default function PropertyDetailPage() {
     } else {
       message += `\nJe n'ai pas encore choisi mes dates.`;
     }
-
-    message += `\nLien: ${window.location.href}`;
 
     trackContact();
     window.open(`https://wa.me/216${BROKER_PHONE}?text=${encodeURIComponent(message)}`, '_blank');
