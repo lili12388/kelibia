@@ -1067,12 +1067,6 @@ export default function PropertyDetailPage() {
                     <span className="font-medium">Machine à laver</span>
                   </div>
                 )}
-                {property.hasCoffeeMaker && (
-                  <div className="flex items-center gap-3 text-foreground/80">
-                    <Coffee className="w-6 h-6 opacity-70" />
-                    <span className="font-medium">Machine à café</span>
-                  </div>
-                )}
                 {property.hasLinens && (
                   <div className="flex items-center gap-3 text-foreground/80">
                     <NotebookText className="w-6 h-6 opacity-70" />
@@ -1388,6 +1382,49 @@ export default function PropertyDetailPage() {
                       >
                         {BROKER_PHONE_DISPLAY}
                       </a>
+                    </div>
+                  </div>
+                )}
+
+                {/* Admin-Only: Owner Contact Info */}
+                {isAdmin && submission && (submission.ownerName || submission.ownerPhone || submission.ownerEmail) && (
+                  <div className="px-5 pb-4 pt-3 border-t border-border/40">
+                    <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center">
+                          <User className="w-3.5 h-3.5 text-primary" />
+                        </div>
+                        <span className="text-sm font-bold text-foreground">Propriétaire</span>
+                        <Badge variant="secondary" className="text-[9px] ml-auto bg-amber-100 text-amber-700 border-amber-200">Admin seulement</Badge>
+                      </div>
+                      {submission.ownerName && (
+                        <div className="flex items-center gap-2.5 text-sm">
+                          <User className="w-4 h-4 text-muted-foreground shrink-0" />
+                          <span className="font-medium text-foreground">{submission.ownerName}</span>
+                        </div>
+                      )}
+                      {submission.ownerPhone && (
+                        <div className="flex items-center gap-2.5 text-sm">
+                          <Phone className="w-4 h-4 text-muted-foreground shrink-0" />
+                          <a
+                            href={`tel:${submission.ownerPhone}`}
+                            className="font-medium text-foreground hover:text-primary transition-colors"
+                          >
+                            {submission.ownerPhone}
+                          </a>
+                        </div>
+                      )}
+                      {submission.ownerEmail && (
+                        <div className="flex items-center gap-2.5 text-sm">
+                          <Mail className="w-4 h-4 text-muted-foreground shrink-0" />
+                          <a
+                            href={`mailto:${submission.ownerEmail}`}
+                            className="font-medium text-foreground hover:text-primary transition-colors truncate"
+                          >
+                            {submission.ownerEmail}
+                          </a>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

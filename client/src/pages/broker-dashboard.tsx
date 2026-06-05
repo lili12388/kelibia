@@ -871,21 +871,7 @@ export default function BrokerDashboardPage() {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="edit-coffee">Machine à café?</Label>
-                  <Select
-                    value={editForm.watch("hasCoffeeMaker") ? "true" : "false"}
-                    onValueChange={(value) => editForm.setValue("hasCoffeeMaker", value === "true")}
-                  >
-                    <SelectTrigger id="edit-coffee">
-                      <SelectValue placeholder="Choisir" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="false">Non</SelectItem>
-                      <SelectItem value="true">Oui</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+
 
                 <div className="space-y-2">
                   <Label htmlFor="edit-linens">Draps fournis?</Label>
@@ -1167,14 +1153,7 @@ export default function BrokerDashboardPage() {
 
             {/* Neighborhood Points */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-location-repere">Point de repère</Label>
-                <Input
-                  id="edit-location-repere"
-                  {...editForm.register("locationRepere")}
-                  placeholder="ex: 5 min de la plage"
-                />
-              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="edit-nearby">Commodités à proximité</Label>
                 <Input

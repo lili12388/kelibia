@@ -486,14 +486,6 @@ export default function ListPropertyPage() {
   };
 
   const onSubmit = (data: InsertPropertySubmission) => {
-    if (files.length === 0) {
-      toast({
-        title: "Media Required",
-        description: "Please upload at least one image or video of your property.",
-        variant: "destructive",
-      });
-      return;
-    }
 
     // Auto-generate title from property details
     const furni = data.isFurnished ? "Meublé" : "Non meublé";
@@ -730,6 +722,7 @@ export default function ListPropertyPage() {
                           <Input
                             type="number"
                             min={0}
+                            className="big-spinner"
                             value={roomBeds[idx]?.double || 0}
                             onChange={e => updateRoomBed(idx, 'double', parseInt(e.target.value) || 0)}
                           />
@@ -740,6 +733,7 @@ export default function ListPropertyPage() {
                           <Input
                             type="number"
                             min={0}
+                            className="big-spinner"
                             value={roomBeds[idx]?.single || 0}
                             onChange={e => updateRoomBed(idx, 'single', parseInt(e.target.value) || 0)}
                           />
@@ -892,27 +886,7 @@ export default function ListPropertyPage() {
                       )}
                     />
 
-                    <FormField
-                      control={form.control}
-                      name="hasCoffeeMaker"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Machine à café?</FormLabel>
-                          <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Choisir" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="false">Non</SelectItem>
-                              <SelectItem value="true">Oui</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+
 
                     <FormField
                       control={form.control}
@@ -1288,6 +1262,9 @@ export default function ListPropertyPage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
+                            <SelectItem value="0 minutes">0 minutes (sur la plage)</SelectItem>
+                            <SelectItem value="1 minute">1 minute</SelectItem>
+                            <SelectItem value="2 minutes">2 minutes</SelectItem>
                             <SelectItem value="3 minutes">3 minutes</SelectItem>
                             <SelectItem value="5 minutes">5 minutes</SelectItem>
                             <SelectItem value="7 minutes">7 minutes</SelectItem>
@@ -1327,19 +1304,7 @@ export default function ListPropertyPage() {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="locationRepere"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Point de repère</FormLabel>
-                        <FormControl>
-                          <Input placeholder="ex: À côté du Fort de Kelibia, près du café X..." {...field} value={field.value ?? ""} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+
 
                   <FormField
                     control={form.control}

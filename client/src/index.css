@@ -404,3 +404,27 @@
     inset: -1px;
   }
 }
+
+/* ─── Bigger Number Input Spinners ─── */
+.big-spinner::-webkit-inner-spin-button,
+.big-spinner::-webkit-outer-spin-button {
+  -webkit-appearance: inner-spin-button !important;
+  appearance: auto !important;
+  opacity: 1 !important;
+  width: 28px;
+  height: 100%;
+  cursor: pointer;
+}
+
+/* Firefox: make the whole input clickable step area bigger */
+.big-spinner[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+@supports (-moz-appearance: none) {
+  .big-spinner[type="number"] {
+    -moz-appearance: spinner-upbutton;
+    appearance: auto;
+  }
+}

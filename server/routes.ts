@@ -528,7 +528,7 @@ Crawl-delay: 2
     try {
       // Parse and validate property data
       const propertyData = insertPropertySubmissionSchema.parse({
-        title: req.body.title,
+        title: req.body.title || '',
         propertyType: req.body.propertyType,
         floorLevel: req.body.floorLevel || null,
         isFurnished: req.body.isFurnished === 'true',
@@ -553,12 +553,12 @@ Crawl-delay: 2
         checkOutTime: req.body.checkOutTime || "11:00",
         cancellationPolicy: req.body.cancellationPolicy || null,
         houseRules: req.body.houseRules || null,
-        description: req.body.description,
+        description: req.body.description || '',
         rooms: parseInt(req.body.rooms) || 0,
         bathrooms: parseInt(req.body.bathrooms) || 1,
         sizeM2: parseInt(req.body.sizeM2) || 0,
-        location: req.body.location,
-        price: req.body.price,
+        location: req.body.location || '',
+        price: req.body.price || '0',
         referenceCode: req.body.referenceCode || null,
         distanceToBeach: req.body.distanceToBeach || null,
         maxGuests: parseInt(req.body.maxGuests) || 1,
@@ -567,9 +567,9 @@ Crawl-delay: 2
         hasParking: req.body.hasParking === 'true',
         hasSeaView: req.body.hasSeaView === 'true',
         nearbyPlaces: req.body.nearbyPlaces || '[]',
-        ownerName: req.body.ownerName,
-        ownerEmail: req.body.ownerEmail,
-        ownerPhone: req.body.ownerPhone,
+        ownerName: req.body.ownerName || '',
+        ownerEmail: req.body.ownerEmail || '',
+        ownerPhone: req.body.ownerPhone || '',
         status: 'approved', // Auto-approve for admin
         googleMapsUrl: req.body.googleMapsUrl || null,
         neighborhoodMapUrl: null,

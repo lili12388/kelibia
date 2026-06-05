@@ -703,14 +703,7 @@ export default function BrokerBrowsePage() {
 
             {/* Neighborhood Points */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2 p-3 bg-slate-50 rounded-lg border">
-                <Label htmlFor="edit-location-repere">Point de repère</Label>
-                <Input
-                  id="edit-location-repere"
-                  {...editForm.register("locationRepere")}
-                  placeholder="ex: 5 min de la plage"
-                />
-              </div>
+
               <div className="space-y-2 p-3 bg-slate-50 rounded-lg border">
                 <Label htmlFor="edit-nearby">Services & Commerces à proximité</Label>
                 <div className="space-y-3">
@@ -968,14 +961,7 @@ export default function BrokerBrowsePage() {
                     />
                     <Label htmlFor="edit-washing">Machine à laver</Label>
                   </div>
-                  <div className="flex items-center space-x-2 p-2 bg-slate-50 rounded-lg border">
-                    <Checkbox
-                      id="edit-coffee"
-                      checked={editForm.watch("hasCoffeeMaker")}
-                      onCheckedChange={(checked) => editForm.setValue("hasCoffeeMaker", !!checked)}
-                    />
-                    <Label htmlFor="edit-coffee">Machine à café</Label>
-                  </div>
+
                   <div className="flex items-center space-x-2 p-2 bg-slate-50 rounded-lg border">
                     <Checkbox
                       id="edit-linens"
