@@ -1000,14 +1000,7 @@ export default function PropertyDetailPage() {
               </div>
             )}
 
-            {/* Availability Timeline */}
-            <div className="pt-2 pb-6 border-b border-border">
-              <h2 className="text-xl font-semibold mb-2 text-foreground">Disponibilités</h2>
-              <AvailabilityTimeline
-                propertyId={property.id}
-                isAdmin={isAdmin}
-              />
-            </div>
+
 
             {/* Amenities Grid (Ce que propose ce logement) - Moved up */}
             <div className="py-6 border-b border-border">
