@@ -1203,7 +1203,7 @@ export default function PropertyDetailPage() {
                     height="100%"
                     frameBorder="0"
                     style={{ border: 0 }}
-                    src={`https://www.google.com/maps?q=${encodeURIComponent(property.location + ', Tunisia')}&output=embed`}
+                    src={`https://www.google.com/maps?q=${encodeURIComponent(property.location + ', Tunisia')}&z=15&output=embed`}
                     allowFullScreen
                   ></iframe>
                 </div>
