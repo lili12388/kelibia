@@ -821,7 +821,7 @@ export default function BrokerBrowsePage() {
                       )}
 
                       {/* View Count Badge - Top Right */}
-                      <div className="absolute top-3 right-3">
+                      <div className={`absolute top-3 transition-all ${property.promoPrice && parseFloat(property.promoPrice) > 0 ? 'right-16' : 'right-3'}`}>
                         <Badge className="bg-black/70 backdrop-blur-sm text-white border-0 font-medium text-sm px-2.5 py-1 shadow-lg flex items-center gap-1">
                           <span>👁</span>
                           <span>{views.toLocaleString()}</span>

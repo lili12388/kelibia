@@ -816,7 +816,7 @@ export default function BrowsePropertiesPage() {
                               )}
                             </div>
                             
-                            <span className="bg-black/60 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-1 rounded-md flex items-center gap-1 shadow-sm">
+                            <span className={`bg-black/60 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-1 rounded-md flex items-center gap-1 shadow-sm transition-all ${property.promoPrice && parseFloat(property.promoPrice) > 0 ? 'mr-14' : ''}`}>
                               👁 {views}
                             </span>
                           </div>
