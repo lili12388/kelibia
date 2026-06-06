@@ -761,6 +761,14 @@ export default function BrowsePropertiesPage() {
                   const price = parseFloat(property.price);
                   const views = viewsMap.get(property.id) ?? 0;
                   
+                  const hasPromo = property.promoPrice && parseFloat(property.promoPrice) > 0;
+                  const currentDailyPrice = hasPromo ? parseFloat(property.promoPrice as string) : price;
+                  
+                  const hasWeekly = property.pricePerWeek && parseFloat(property.pricePerWeek) > 0;
+                  const weeklyPriceBase = hasWeekly ? parseFloat(property.pricePerWeek as string) : 0;
+                  const currentWeeklyPrice = hasPromo && hasWeekly ? Math.ceil(weeklyPriceBase * (currentDailyPrice / price)) : weeklyPriceBase;
+                  const savingsPerNight = hasWeekly ? Math.floor(currentDailyPrice - (currentWeeklyPrice / 7)) : 0;
+                  
                   return (
                     <Link key={property.id} href={generatePropertyUrl(property)}>
                       <div className="property-card bg-card rounded-xl overflow-hidden border border-border/30 h-full flex flex-col cursor-pointer group">
@@ -879,18 +887,23 @@ export default function BrowsePropertiesPage() {
                                 )}
                               </div>
                             </div>
-                            {property.pricePerWeek && parseFloat(property.pricePerWeek) > 0 && (
+                            {hasWeekly && (
                               <div className="flex flex-col items-end mt-0.5">
-                                {property.promoPrice && parseFloat(property.promoPrice) > 0 ? (
+                                {hasPromo ? (
                                   <>
                                     <div className="flex items-center gap-1.5 mb-[-2px]">
                                       <span className="text-[9px] font-bold text-red-500/60 line-through decoration-red-500/40">
-                                        {parseFloat(property.pricePerWeek).toLocaleString()} TND
+                                        {weeklyPriceBase.toLocaleString()} TND
                                       </span>
                                     </div>
                                     <div className="flex items-baseline gap-0.5">
+                                      {savingsPerNight > 0 && (
+                                        <span className="text-[9px] font-bold bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-sm mr-1 border border-orange-200 shadow-sm animate-pulse-subtle">
+                                          🔥 Éco {savingsPerNight} TND/nuit
+                                        </span>
+                                      )}
                                       <span className="font-black text-sm sm:text-base text-[#FF4500] tracking-tight">
-                                        {Math.ceil(parseFloat(property.pricePerWeek) * (parseFloat(property.promoPrice) / price)).toLocaleString()}
+                                        {currentWeeklyPrice.toLocaleString()}
                                       </span>
                                       <span className="font-bold text-[8px] sm:text-[10px] text-[#FF4500]/80 uppercase tracking-wider">
                                         TND
@@ -902,8 +915,13 @@ export default function BrowsePropertiesPage() {
                                   </>
                                 ) : (
                                   <div className="flex items-baseline gap-1 justify-end">
+                                    {savingsPerNight > 0 && (
+                                      <span className="text-[9px] font-bold bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded-sm mr-1 border border-emerald-200">
+                                        💰 Éco {savingsPerNight} TND/nuit
+                                      </span>
+                                    )}
                                     <span className="font-black text-sm sm:text-base text-emerald-600 tracking-tight">
-                                      {parseFloat(property.pricePerWeek).toLocaleString()}
+                                      {currentWeeklyPrice.toLocaleString()}
                                     </span>
                                     <span className="font-bold text-[8px] sm:text-[10px] text-emerald-600 uppercase tracking-wider">
                                       TND

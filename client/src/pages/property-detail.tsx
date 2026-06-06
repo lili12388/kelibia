@@ -488,6 +488,16 @@ export default function PropertyDetailPage() {
 
   const currentMedia = property.media[currentImageIndex] || property.media[0];
 
+  // Pricing & Savings logic
+  const price = parseFloat(property.price);
+  const hasPromo = property.promoPrice && parseFloat(property.promoPrice) > 0;
+  const currentDailyPrice = hasPromo ? parseFloat(property.promoPrice as string) : price;
+  
+  const hasWeekly = property.pricePerWeek && parseFloat(property.pricePerWeek) > 0;
+  const weeklyPriceBase = hasWeekly ? parseFloat(property.pricePerWeek as string) : 0;
+  const currentWeeklyPrice = hasPromo && hasWeekly ? Math.ceil(weeklyPriceBase * (currentDailyPrice / price)) : weeklyPriceBase;
+  const savingsPerNight = hasWeekly ? Math.floor(currentDailyPrice - (currentWeeklyPrice / 7)) : 0;
+
   // SEO data
   const primaryImage = property.media.find(m => m.isPrimary) || property.media[0];
   const displayLocation = /^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/.test(property.location.trim()) ? "Kélibia" : property.location;
@@ -1259,18 +1269,23 @@ export default function PropertyDetailPage() {
                         </div>
                       )}
                     </div>
-                    {property.pricePerWeek && parseFloat(property.pricePerWeek) > 0 && (
+                    {hasWeekly && (
                       <div className="flex flex-col mt-1.5">
-                        {property.promoPrice && parseFloat(property.promoPrice) > 0 ? (
+                        {hasPromo ? (
                           <>
                             <div className="flex items-center gap-2 mb-[-4px]">
                               <span className="text-sm font-bold text-red-500/60 line-through decoration-red-500/40">
-                                {parseFloat(property.pricePerWeek).toLocaleString()} TND
+                                {weeklyPriceBase.toLocaleString()} TND
                               </span>
                             </div>
                             <div className="flex items-baseline gap-1.5">
+                              {savingsPerNight > 0 && (
+                                <span className="text-[11px] font-bold bg-orange-100 text-orange-700 px-2 py-0.5 rounded-sm mr-1 border border-orange-200 shadow-sm animate-pulse-subtle">
+                                  🔥 Éco {savingsPerNight} TND/nuit
+                                </span>
+                              )}
                               <span className="text-xl font-black text-[#FF4500] tracking-tight">
-                                {Math.ceil(parseFloat(property.pricePerWeek) * (parseFloat(property.promoPrice) / parseFloat(property.price))).toLocaleString()}
+                                {currentWeeklyPrice.toLocaleString()}
                               </span>
                               <span className="text-sm font-bold text-[#FF4500]">TND</span>
                               <span className="text-xs text-[#FF4500]/70 font-medium ml-1">/ semaine</span>
@@ -1278,12 +1293,16 @@ export default function PropertyDetailPage() {
                           </>
                         ) : (
                           <div className="flex items-baseline gap-1.5">
+                            {savingsPerNight > 0 && (
+                              <span className="text-[11px] font-bold bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-sm mr-1 border border-emerald-200">
+                                💰 Éco {savingsPerNight} TND/nuit
+                              </span>
+                            )}
                             <span className="text-xl font-black text-emerald-600 tracking-tight">
-                              {parseFloat(property.pricePerWeek).toLocaleString()}
+                              {currentWeeklyPrice.toLocaleString()}
                             </span>
                             <span className="text-sm font-bold text-emerald-600">TND</span>
                             <span className="text-xs text-emerald-500 font-medium ml-1">/ semaine</span>
-                            <span className="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-1.5 py-0.5 rounded-full ml-1 border border-emerald-200">OFFRE</span>
                           </div>
                         )}
                       </div>
@@ -1707,29 +1726,38 @@ export default function PropertyDetailPage() {
                 <span className={`text-[10px] font-bold uppercase ${lightboxOpen ? 'text-white/70' : 'text-muted-foreground'}`}>/ nuit</span>
               </div>
             )}
-            {property.pricePerWeek && parseFloat(property.pricePerWeek) > 0 && (
+            {hasWeekly && (
               <div className="flex flex-col mt-0.5">
-                {property.promoPrice && parseFloat(property.promoPrice) > 0 ? (
+                {hasPromo ? (
                   <>
                     <div className="flex items-center gap-1.5 mb-[-2px]">
                       <span className={`text-[10px] font-bold line-through ${lightboxOpen ? 'text-red-400/60 decoration-red-400/40' : 'text-red-500/60 decoration-red-500/40'}`}>
-                        {parseFloat(property.pricePerWeek).toLocaleString()} TND
+                        {weeklyPriceBase.toLocaleString()} TND
                       </span>
                     </div>
                     <div className="flex items-baseline gap-1">
+                      {savingsPerNight > 0 && (
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-sm mr-1 shadow-sm ${lightboxOpen ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30' : 'bg-orange-100 text-orange-700 border border-orange-200'}`}>
+                          🔥 Éco {savingsPerNight} TND/nuit
+                        </span>
+                      )}
                       <span className={`text-sm font-black tracking-tighter ${lightboxOpen ? 'text-[#FF8C00]' : 'text-[#FF4500]'}`}>
-                        {Math.ceil(parseFloat(property.pricePerWeek) * (parseFloat(property.promoPrice) / parseFloat(property.price))).toLocaleString()} TND
+                        {currentWeeklyPrice.toLocaleString()} TND
                       </span>
                       <span className={`text-[10px] font-bold uppercase ${lightboxOpen ? 'text-[#FF8C00]/80' : 'text-[#FF4500]/80'}`}>/ semaine</span>
                     </div>
                   </>
                 ) : (
                   <div className="flex items-baseline gap-1">
+                    {savingsPerNight > 0 && (
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-sm mr-1 border ${lightboxOpen ? 'bg-emerald-500/20 text-emerald-400 border-emerald-400/30' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
+                        💰 Éco {savingsPerNight} TND/nuit
+                      </span>
+                    )}
                     <span className={`text-sm font-black tracking-tighter ${lightboxOpen ? 'text-emerald-400' : 'text-emerald-600'}`}>
-                      {parseFloat(property.pricePerWeek).toLocaleString()} TND
+                      {currentWeeklyPrice.toLocaleString()} TND
                     </span>
                     <span className={`text-[10px] font-bold uppercase ${lightboxOpen ? 'text-emerald-400/80' : 'text-emerald-500'}`}>/ semaine</span>
-                    <span className={`text-[8px] font-bold px-1 rounded-sm ml-0.5 border ${lightboxOpen ? 'bg-emerald-500/20 text-emerald-400 border-emerald-400/30' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>OFFRE</span>
                   </div>
                 )}
               </div>
