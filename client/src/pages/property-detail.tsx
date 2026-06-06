@@ -1644,6 +1644,15 @@ export default function PropertyDetailPage() {
               </span>
               <span className={`text-[10px] font-bold uppercase ${lightboxOpen ? 'text-white/70' : 'text-muted-foreground'}`}>/ nuit</span>
             </div>
+            {property.pricePerWeek && parseFloat(property.pricePerWeek) > 0 && (
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className={`text-sm font-black tracking-tighter ${lightboxOpen ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                  {parseFloat(property.pricePerWeek).toLocaleString()} TND
+                </span>
+                <span className={`text-[8px] font-bold uppercase ${lightboxOpen ? 'text-emerald-400/80' : 'text-emerald-500'}`}>/ sem</span>
+                <span className={`text-[8px] font-bold px-1 rounded-sm ml-0.5 border ${lightboxOpen ? 'bg-emerald-500/20 text-emerald-400 border-emerald-400/30' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>OFFRE</span>
+              </div>
+            )}
           </div>
 
           {/* Date Picker (Expanded to fill space) */}
