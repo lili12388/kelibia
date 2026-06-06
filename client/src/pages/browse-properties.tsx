@@ -879,18 +879,40 @@ export default function BrowsePropertiesPage() {
                                 )}
                               </div>
                             </div>
-                            
                             {property.pricePerWeek && parseFloat(property.pricePerWeek) > 0 && (
-                              <div className="flex items-baseline gap-1 justify-end mt-[-4px]">
-                                <span className="font-black text-sm sm:text-base text-emerald-600 tracking-tight">
-                                  {parseFloat(property.pricePerWeek).toLocaleString()}
-                                </span>
-                                <span className="font-bold text-[8px] sm:text-[10px] text-emerald-600 uppercase tracking-wider">
-                                  TND
-                                </span>
-                                <span className="font-bold text-[8px] text-emerald-500 uppercase tracking-wider ml-0.5">
-                                  / semaine
-                                </span>
+                              <div className="flex flex-col items-end mt-0.5">
+                                {property.promoPrice && parseFloat(property.promoPrice) > 0 ? (
+                                  <>
+                                    <div className="flex items-center gap-1.5 mb-[-2px]">
+                                      <span className="text-[9px] font-bold text-red-500/60 line-through decoration-red-500/40">
+                                        {parseFloat(property.pricePerWeek).toLocaleString()} TND
+                                      </span>
+                                    </div>
+                                    <div className="flex items-baseline gap-0.5">
+                                      <span className="font-black text-sm sm:text-base text-[#FF4500] tracking-tight">
+                                        {Math.ceil(parseFloat(property.pricePerWeek) * (parseFloat(property.promoPrice) / price)).toLocaleString()}
+                                      </span>
+                                      <span className="font-bold text-[8px] sm:text-[10px] text-[#FF4500]/80 uppercase tracking-wider">
+                                        TND
+                                      </span>
+                                      <span className="font-bold text-[8px] text-[#FF4500]/70 uppercase tracking-wider ml-0.5">
+                                        / semaine
+                                      </span>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div className="flex items-baseline gap-1 justify-end">
+                                    <span className="font-black text-sm sm:text-base text-emerald-600 tracking-tight">
+                                      {parseFloat(property.pricePerWeek).toLocaleString()}
+                                    </span>
+                                    <span className="font-bold text-[8px] sm:text-[10px] text-emerald-600 uppercase tracking-wider">
+                                      TND
+                                    </span>
+                                    <span className="font-bold text-[8px] text-emerald-500 uppercase tracking-wider ml-0.5">
+                                      / semaine
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>
