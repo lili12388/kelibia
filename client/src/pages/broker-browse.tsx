@@ -917,6 +917,16 @@ export default function BrokerBrowsePage() {
                 />
               </div>
 
+              <div className="space-y-2 p-3 bg-slate-50 rounded-lg border">
+                <Label htmlFor="edit-price-week">Prix par semaine (TND) — optionnel</Label>
+                <Input
+                  id="edit-price-week"
+                  {...editForm.register("pricePerWeek")}
+                  placeholder="ex: 650 (laisser vide si pas de tarif semaine)"
+                />
+                <p className="text-xs text-muted-foreground">Si rempli, apparaîtra en vert sous le prix/nuit</p>
+              </div>
+
               {/* Kitchen & Logistics */}
               <div className="col-span-2 space-y-4 pt-4 border-t">
                 <h4 className="font-bold text-sm text-primary uppercase">Cuisine & Logistique</h4>

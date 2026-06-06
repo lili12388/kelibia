@@ -39,6 +39,7 @@ export const propertySubmissions = pgTable("property_submissions", {
   location: text("location").notNull(), // exact location within neighborhood
   googleMapsUrl: text("google_maps_url"), // Google Maps link to the property
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  pricePerWeek: decimal("price_per_week", { precision: 10, scale: 2 }),
   referenceCode: text("reference_code"), // e.g. REF-001
   distanceToBeach: text("distance_to_beach"), // e.g. "À 5 minutes à pied"
   maxGuests: integer("max_guests").notNull().default(1),
@@ -107,6 +108,7 @@ export const properties = pgTable("properties", {
   location: text("location").notNull(),
   googleMapsUrl: text("google_maps_url"), // Google Maps link to the property
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  pricePerWeek: decimal("price_per_week", { precision: 10, scale: 2 }),
   referenceCode: text("reference_code"),
   distanceToBeach: text("distance_to_beach"),
   maxGuests: integer("max_guests").notNull().default(1),
@@ -256,6 +258,7 @@ export const insertPropertySubmissionSchema = createInsertSchema(propertySubmiss
   description: z.string().default(""),
   location: z.string().default(""),
   price: z.string().regex(/^(\d+(\.\d{1,2})?)?$/, "Price must be a valid number").default(""),
+  pricePerWeek: z.string().regex(/^(\d+(\.\d{1,2})?)?$/, "Price must be a valid number").optional().default(""),
   rooms: z.number().min(0).default(1),
   bathrooms: z.number().min(0).default(1),
   maxGuests: z.number().min(0).default(1),

@@ -1078,6 +1078,16 @@ export default function BrokerDashboardPage() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="edit-price-week">Prix par semaine (TND) — optionnel</Label>
+                <Input
+                  id="edit-price-week"
+                  {...editForm.register("pricePerWeek")}
+                  placeholder="ex: 650 (laisser vide si pas de tarif semaine)"
+                />
+                <p className="text-xs text-muted-foreground">Si rempli, appara??tra en vert sous le prix/nuit</p>
+              </div>
+
+              <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="edit-deposit">Cautionnement requis?</Label>
                   <div className="flex items-center gap-2">

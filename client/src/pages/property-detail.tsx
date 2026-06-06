@@ -490,9 +490,10 @@ export default function PropertyDetailPage() {
 
   // SEO data
   const primaryImage = property.media.find(m => m.isPrimary) || property.media[0];
-  const seoTitle = `${frenchTitle(property.title, property.rooms)} — ${property.rooms} Chambres à ${property.location} | Laith Kelibia`;
-  const seoDescription = `${property.isFurnished ? 'Logement meublé' : 'Logement'} S+${property.rooms} avec ${property.bathrooms} salles de bain à ${property.location}, Kelibia. ${property.distanceToBeach ? `À ${property.distanceToBeach} de la plage. ` : ''}Prix: ${parseFloat(property.price).toLocaleString()} TND/nuit. Réservez sur Laith Kelibia.`;
-  const seoKeywords = `location ${property.location}, maison s+${property.rooms} kelibia, ${property.title}, ${property.isFurnished ? 'meublé' : 'non meublé'} kelibia, location vacances kelibia, ${parseFloat(property.price).toLocaleString()} TND nuit, dar kelibia, location été cap bon, hébergement kelibia plage`;
+  const displayLocation = /^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/.test(property.location.trim()) ? "Kélibia" : property.location;
+  const seoTitle = `${frenchTitle(property.title, property.rooms)} — ${property.rooms} Chambres à ${displayLocation} | Laith Kelibia`;
+  const seoDescription = `${property.isFurnished ? 'Logement meublé' : 'Logement'} S+${property.rooms} avec ${property.bathrooms} salles de bain à ${displayLocation}, Kelibia. ${property.distanceToBeach ? `À ${property.distanceToBeach} de la plage. ` : ''}Prix: ${parseFloat(property.price).toLocaleString()} TND/nuit. Réservez sur Laith Kelibia.`;
+  const seoKeywords = `location ${displayLocation}, maison s+${property.rooms} kelibia, ${property.title}, ${property.isFurnished ? 'meublé' : 'non meublé'} kelibia, location vacances kelibia, ${parseFloat(property.price).toLocaleString()} TND nuit, dar kelibia, location été cap bon, hébergement kelibia plage`;
 
   // Structured Data (Schema.org) for Google rich snippets
   const structuredData = {
@@ -503,7 +504,7 @@ export default function PropertyDetailPage() {
     "url": `https://laith-kelibia.tn/maisons/${property.slug || property.id}`,
     "address": {
       "@type": "PostalAddress",
-      "addressLocality": property.location,
+      "addressLocality": displayLocation,
       "addressRegion": "Nabeul",
       "addressCountry": "TN"
     },
@@ -1233,6 +1234,16 @@ export default function PropertyDetailPage() {
                         <Badge variant="secondary" className="text-[10px] ml-2">Admin</Badge>
                       )}
                     </div>
+                    {property.pricePerWeek && parseFloat(property.pricePerWeek) > 0 && (
+                      <div className="flex items-baseline gap-1.5 mt-1.5">
+                        <span className="text-xl font-black text-emerald-600 tracking-tight">
+                          {parseFloat(property.pricePerWeek).toLocaleString()}
+                        </span>
+                        <span className="text-sm font-bold text-emerald-600">TND</span>
+                        <span className="text-xs text-emerald-500 font-medium ml-1">/ semaine</span>
+                        <span className="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-1.5 py-0.5 rounded-full ml-1 border border-emerald-200">OFFRE</span>
+                      </div>
+                    )}
                   </div>
                 )}
 

@@ -137,6 +137,7 @@ export default function ListPropertyPage() {
       distanceToBeach: "",
       nearbyPlaces: "[]",
       price: "",
+      pricePerWeek: "",
       ownerName: "",
       ownerEmail: "",
       ownerPhone: "",
@@ -1198,6 +1199,25 @@ export default function ListPropertyPage() {
                             {...field}
                           />
                         </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="pricePerWeek"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Prix par semaine (TND) — optionnel</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="ex: 650 (laisser vide si pas de tarif semaine)"
+                            data-testid="input-price-week"
+                            {...field}
+                          />
+                        </FormControl>
+                        <p className="text-xs text-muted-foreground">Si rempli, ce prix apparaîtra en vert sous le prix/nuit pour attirer les locataires longue durée</p>
                         <FormMessage />
                       </FormItem>
                     )}

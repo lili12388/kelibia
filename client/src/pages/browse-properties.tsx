@@ -822,29 +822,47 @@ export default function BrowsePropertiesPage() {
                           
                           <div className="flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground mb-2">
                             <MapPin className="w-3 h-3 flex-shrink-0 text-primary/50" />
-                            <span className="truncate">{property.location}</span>
+                            <span className="truncate">{/^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/.test(property.location.trim()) ? "Kélibia" : property.location}</span>
                           </div>
                           
                           {/* Room/Bath pills & Price */}
-                          <div className="mt-auto flex items-center justify-between">
-                            <div className="flex items-center gap-1.5">
-                              <div className="flex items-center gap-0.5 text-[10px] sm:text-xs font-medium text-muted-foreground bg-muted/40 px-2 py-1 rounded-md">
-                                <BedDouble className="w-3 h-3" />
-                                <span>{property.rooms}</span>
+                          <div className="mt-auto flex flex-col gap-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-1.5">
+                                <div className="flex items-center gap-0.5 text-[10px] sm:text-xs font-medium text-muted-foreground bg-muted/40 px-2 py-1 rounded-md">
+                                  <BedDouble className="w-3 h-3" />
+                                  <span>{property.rooms}</span>
+                                </div>
+                                <div className="flex items-center gap-0.5 text-[10px] sm:text-xs font-medium text-muted-foreground bg-muted/40 px-2 py-1 rounded-md">
+                                  <Bath className="w-3 h-3" />
+                                  <span>{property.bathrooms}</span>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-0.5 text-[10px] sm:text-xs font-medium text-muted-foreground bg-muted/40 px-2 py-1 rounded-md">
-                                <Bath className="w-3 h-3" />
-                                <span>{property.bathrooms}</span>
+                              <div className="flex flex-col items-end">
+                                <div className="flex items-baseline gap-1">
+                                  <span className="font-black text-lg sm:text-xl text-foreground tracking-tight">
+                                    {price.toLocaleString()}
+                                  </span>
+                                  <span className="font-bold text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">
+                                    TND
+                                  </span>
+                                </div>
                               </div>
                             </div>
-                            <div className="flex items-baseline gap-1">
-                              <span className="font-black text-lg sm:text-xl text-foreground tracking-tight">
-                                {price.toLocaleString()}
-                              </span>
-                              <span className="font-bold text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">
-                                TND
-                              </span>
-                            </div>
+                            
+                            {property.pricePerWeek && parseFloat(property.pricePerWeek) > 0 && (
+                              <div className="flex items-baseline gap-1 justify-end mt-[-4px]">
+                                <span className="font-black text-sm sm:text-base text-emerald-600 tracking-tight">
+                                  {parseFloat(property.pricePerWeek).toLocaleString()}
+                                </span>
+                                <span className="font-bold text-[8px] sm:text-[10px] text-emerald-600 uppercase tracking-wider">
+                                  TND
+                                </span>
+                                <span className="font-bold text-[8px] text-emerald-500 uppercase tracking-wider ml-0.5">
+                                  / semaine
+                                </span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
