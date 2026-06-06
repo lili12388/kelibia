@@ -143,7 +143,6 @@ export default function PropertyDetailPage() {
       description: "",
       rooms: 1,
       bathrooms: 1,
-      maxGuests: 1,
       location: "",
       referenceCode: "",
       distanceToBeach: "",
@@ -372,7 +371,6 @@ export default function PropertyDetailPage() {
       description: submission.description,
       rooms: submission.rooms,
       bathrooms: submission.bathrooms,
-      maxGuests: submission.maxGuests ?? 1,
       location: submission.location,
       referenceCode: submission.referenceCode ?? "",
       distanceToBeach: submission.distanceToBeach ?? "",
@@ -525,10 +523,6 @@ export default function PropertyDetailPage() {
     },
     "numberOfRooms": property.rooms,
     "numberOfBathroomsTotal": property.bathrooms,
-    "occupancy": {
-      "@type": "QuantitativeValue",
-      "maxValue": property.maxGuests || 1
-    },
     "amenityFeature": [
       ...(property.hasAC ? [{ "@type": "LocationFeatureSpecification", "name": "Climatisation", "value": true }] : []),
       ...(property.hasWiFi ? [{ "@type": "LocationFeatureSpecification", "name": "WiFi", "value": true }] : []),
@@ -888,13 +882,6 @@ export default function PropertyDetailPage() {
 
             {/* Quick Summary Row */}
             <div className="flex flex-wrap items-center gap-4 pb-2 border-b border-border">
-              {isAdmin && (
-                <div className="flex items-center gap-2">
-                  <Users className="w-5 h-5 text-muted-foreground" />
-                  <span className="font-medium">{property.maxGuests || 1} voyageurs</span>
-                  <span className="text-muted-foreground/30 hidden sm:inline ml-2">•</span>
-                </div>
-              )}
               {(isAdmin || property.showRooms) && (
                 <div className="flex items-center gap-2">
                   <BedDouble className="w-5 h-5 text-muted-foreground" />
@@ -1594,16 +1581,6 @@ export default function PropertyDetailPage() {
                     id="edit-bathrooms"
                     type="number"
                     {...editForm.register("bathrooms", { valueAsNumber: true })}
-                    min={1}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="edit-max-guests">Voyageurs max</Label>
-                  <Input
-                    id="edit-max-guests"
-                    type="number"
-                    {...editForm.register("maxGuests", { valueAsNumber: true })}
                     min={1}
                   />
                 </div>

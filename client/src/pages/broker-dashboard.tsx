@@ -88,7 +88,6 @@ export default function BrokerDashboardPage() {
       checkOutTime: "11:00",
       cancellationPolicy: "",
       houseRules: "",
-      maxGuests: 1,
     },
   });
 
@@ -231,7 +230,6 @@ export default function BrokerDashboardPage() {
       checkOutTime: submission.checkOutTime || "11:00",
       cancellationPolicy: submission.cancellationPolicy || "",
       houseRules: submission.houseRules || "",
-      maxGuests: submission.maxGuests || 1,
     });
     setNeighborhoodMapFile(null);
     setNeighborhoodMapPreview(submission.neighborhoodMapUrl || null);
@@ -633,10 +631,6 @@ export default function BrokerDashboardPage() {
                   <div className="text-sm text-muted-foreground mb-1">Size</div>
                   <div className="text-foreground">{selectedSubmission.sizeM2}m²</div>
                 </div>
-                <div>
-                  <div className="text-sm text-muted-foreground mb-1">Max Guests</div>
-                  <div className="text-foreground">{selectedSubmission.maxGuests} voyageurs</div>
-                </div>
                 {selectedSubmission.bedDetails && (
                   <div className="col-span-2">
                     <div className="text-sm text-muted-foreground mb-1">Couchages</div>
@@ -980,17 +974,6 @@ export default function BrokerDashboardPage() {
                   id="edit-rooms"
                   type="number"
                   {...editForm.register("rooms", { valueAsNumber: true })}
-                  min={1}
-                />
-              </div>
-
-              {/* Max Guests */}
-              <div className="space-y-2 p-3 bg-slate-50 rounded-lg border">
-                <Label htmlFor="edit-max-guests">Max Guests</Label>
-                <Input
-                  id="edit-max-guests"
-                  type="number"
-                  {...editForm.register("maxGuests", { valueAsNumber: true })}
                   min={1}
                 />
               </div>

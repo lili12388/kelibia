@@ -42,7 +42,6 @@ export const propertySubmissions = pgTable("property_submissions", {
   pricePerWeek: decimal("price_per_week", { precision: 10, scale: 2 }),
   referenceCode: text("reference_code"), // e.g. REF-001
   distanceToBeach: text("distance_to_beach"), // e.g. "À 5 minutes à pied"
-  maxGuests: integer("max_guests").notNull().default(1),
   hasAC: boolean("has_ac").notNull().default(false),
   hasWiFi: boolean("has_wifi").notNull().default(false),
   hasParking: boolean("has_parking").notNull().default(false),
@@ -111,7 +110,6 @@ export const properties = pgTable("properties", {
   pricePerWeek: decimal("price_per_week", { precision: 10, scale: 2 }),
   referenceCode: text("reference_code"),
   distanceToBeach: text("distance_to_beach"),
-  maxGuests: integer("max_guests").notNull().default(1),
   hasAC: boolean("has_ac").notNull().default(false),
   hasWiFi: boolean("has_wifi").notNull().default(false),
   hasParking: boolean("has_parking").notNull().default(false),
@@ -264,7 +262,6 @@ export const insertPropertySubmissionSchema = createInsertSchema(propertySubmiss
   pricePerWeek: z.string().regex(/^(\d+(\.\d{1,2})?)?$/, "Price must be a valid number").optional().default(""),
   rooms: z.number().min(0).default(1),
   bathrooms: z.number().min(0).default(1),
-  maxGuests: z.number().min(0).default(1),
   sizeM2: z.number().min(0, "Size must be 0 or greater").default(0),
   ownerName: z.string().optional().default(""),
   ownerEmail: z.string().optional().default(""),

@@ -131,7 +131,6 @@ export default function ListPropertyPage() {
       description: "",
       rooms: 1,
       bathrooms: 1,
-      maxGuests: 1,
       location: "",
       referenceCode: "",
       distanceToBeach: "",
@@ -678,32 +677,6 @@ export default function ListPropertyPage() {
                           <SelectContent>
                             <SelectItem value="false">Non</SelectItem>
                             <SelectItem value="true">Oui</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="maxGuests"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Voyageurs max</FormLabel>
-                        <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-max-guests">
-                              <SelectValue placeholder="Nombre" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="1">1 voyageur</SelectItem>
-                            <SelectItem value="2">2 voyageurs</SelectItem>
-                            <SelectItem value="3">3 voyageurs</SelectItem>
-                            <SelectItem value="4">4 voyageurs</SelectItem>
-                            <SelectItem value="5">5 voyageurs</SelectItem>
-                            <SelectItem value="6">6+ voyageurs</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />

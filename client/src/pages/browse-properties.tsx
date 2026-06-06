@@ -86,7 +86,6 @@ export default function BrowsePropertiesPage() {
       if (maxPrice && price > parseFloat(maxPrice)) return false;
       if (selectedRooms !== null && property.rooms !== selectedRooms) return false;
       if (selectedBathrooms !== null && property.bathrooms !== selectedBathrooms) return false;
-      if (selectedGuests !== null && property.maxGuests < selectedGuests) return false;
       if (furnishedFilter === "furnished" && !property.isFurnished) return false;
       if (furnishedFilter === "unfurnished" && property.isFurnished) return false;
       if (reqAC && !property.hasAC) return false;

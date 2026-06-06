@@ -243,7 +243,6 @@ export default function BrokerBrowsePage() {
       checkOutTime: "11:00",
       cancellationPolicy: "",
       houseRules: "",
-      maxGuests: 1,
       hasKitchenUtensils: false,
       isQuietNeighborhood: false,
     },
@@ -512,7 +511,6 @@ export default function BrokerBrowsePage() {
       checkOutTime: submission.checkOutTime || "11:00",
       cancellationPolicy: submission.cancellationPolicy || "",
       houseRules: submission.houseRules || "",
-      maxGuests: submission.maxGuests || 1,
       hasKitchenUtensils: submission.hasKitchenUtensils ?? false,
       isQuietNeighborhood: submission.isQuietNeighborhood ?? false,
     });
@@ -1115,17 +1113,6 @@ export default function BrokerBrowsePage() {
                   id="edit-rooms"
                   type="number"
                   {...editForm.register("rooms", { valueAsNumber: true })}
-                  min={1}
-                />
-              </div>
-
-              {/* Max Guests */}
-              <div className="space-y-2 p-3 bg-slate-50 rounded-lg border">
-                <Label htmlFor="edit-max-guests">Max Guests</Label>
-                <Input
-                  id="edit-max-guests"
-                  type="number"
-                  {...editForm.register("maxGuests", { valueAsNumber: true })}
                   min={1}
                 />
               </div>
