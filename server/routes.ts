@@ -842,17 +842,23 @@ Crawl-delay: 2
     }
   });
 
-  // Broker: Apply bulk promo to ALL properties
+  // Broker: Apply bulk promo to ALL or SELECTED properties
   app.post('/api/broker/properties/bulk-promo', requireBrokerAuth, async (req, res) => {
     try {
-      const { type, value, label } = req.body; // type: 'amount' | 'percentage', value: number
+      const { type, value, label, propertyIds } = req.body; // propertyIds: optional string[]
       const numValue = parseFloat(value);
       if (isNaN(numValue) || numValue <= 0) {
         return res.status(400).json({ error: 'Invalid value' });
       }
 
-      // Get all published properties
-      const allProps = await db.select().from(properties);
+      // Get properties — either selected ones or all
+      let allProps;
+      if (propertyIds && Array.isArray(propertyIds) && propertyIds.length > 0) {
+        allProps = await db.select().from(properties);
+        allProps = allProps.filter(p => propertyIds.includes(p.id));
+      } else {
+        allProps = await db.select().from(properties);
+      }
 
       for (const prop of allProps) {
         const originalPrice = parseFloat(prop.price);

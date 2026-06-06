@@ -37,12 +37,16 @@ interface PropertyAnalytics {
   cityViews: Record<string, number>;
 }
 
-interface PromoBannerProps {
-  onApply: (type: 'percentage' | 'amount', value: string, label: string) => Promise<void>;
+interface PromoPanelProps {
+  selectedIds: Set<string>;
+  totalCount: number;
+  onApply: (type: 'percentage' | 'amount', value: string, label: string, ids: string[]) => Promise<void>;
   onClear: () => Promise<void>;
+  onSelectAll: () => void;
+  onDeselectAll: () => void;
 }
 
-function PromoBanner({ onApply, onClear }: PromoBannerProps) {
+function PromoPanel({ selectedIds, totalCount, onApply, onClear, onSelectAll, onDeselectAll }: PromoPanelProps) {
   const [promoType, setPromoType] = useState<'percentage' | 'amount'>('percentage');
   const [promoValue, setPromoValue] = useState('');
   const [promoLabel, setPromoLabel] = useState('');
@@ -50,9 +54,9 @@ function PromoBanner({ onApply, onClear }: PromoBannerProps) {
   const [clearing, setClearing] = useState(false);
 
   const handleApply = async () => {
-    if (!promoValue) return;
+    if (!promoValue || selectedIds.size === 0) return;
     setLoading(true);
-    try { await onApply(promoType, promoValue, promoLabel); } finally { setLoading(false); }
+    try { await onApply(promoType, promoValue, promoLabel, Array.from(selectedIds)); } finally { setLoading(false); }
   };
   const handleClear = async () => {
     setClearing(true);
@@ -60,8 +64,33 @@ function PromoBanner({ onApply, onClear }: PromoBannerProps) {
   };
 
   return (
-    <div className="bg-gradient-to-r from-orange-50 via-red-50 to-orange-50 border-y-2 border-orange-300">
+    <div className="bg-gradient-to-r from-orange-50 via-red-50 to-orange-50 border-b-2 border-orange-300 animate-in slide-in-from-top duration-300">
       <div className="max-w-7xl mx-auto px-6 py-4">
+        {/* Selection Controls */}
+        <div className="flex items-center gap-3 mb-4 pb-3 border-b border-orange-200">
+          <span className="text-sm font-bold text-orange-900">
+            🏠 {selectedIds.size} / {totalCount} sélectionné{selectedIds.size > 1 ? 's' : ''}
+          </span>
+          <button
+            onClick={onSelectAll}
+            className="text-xs font-bold text-orange-700 bg-orange-100 hover:bg-orange-200 px-3 py-1.5 rounded-lg transition-colors border border-orange-300"
+          >
+            ✅ Tout sélectionner
+          </button>
+          <button
+            onClick={onDeselectAll}
+            className="text-xs font-bold text-orange-600 hover:bg-orange-100 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            Tout désélectionner
+          </button>
+          {selectedIds.size === 0 && (
+            <span className="text-[11px] text-red-500 font-medium ml-auto">
+              ⚠️ Cliquez sur les maisons ci-dessous pour les sélectionner
+            </span>
+          )}
+        </div>
+
+        {/* Promo Config */}
         <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
           {/* Title */}
           <div className="flex items-center gap-2 flex-shrink-0">
@@ -70,7 +99,7 @@ function PromoBanner({ onApply, onClear }: PromoBannerProps) {
             </div>
             <div>
               <p className="font-black text-sm text-orange-900 leading-none">PROMO FLASH</p>
-              <p className="text-[10px] text-orange-600 font-medium">Appliquer à toutes les annonces</p>
+              <p className="text-[10px] text-orange-600 font-medium">Configurer la réduction</p>
             </div>
           </div>
 
@@ -93,21 +122,19 @@ function PromoBanner({ onApply, onClear }: PromoBannerProps) {
           </div>
 
           {/* Value input */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <div className="relative">
-              <input
-                type="number"
-                min="1"
-                max={promoType === 'percentage' ? '99' : undefined}
-                value={promoValue}
-                onChange={e => setPromoValue(e.target.value)}
-                placeholder={promoType === 'percentage' ? 'ex: 20' : 'ex: 50'}
-                className="w-24 h-9 text-center font-black text-base border-2 border-orange-300 rounded-lg bg-white outline-none focus:border-orange-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              />
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-orange-500">
-                {promoType === 'percentage' ? '%' : 'TND'}
-              </span>
-            </div>
+          <div className="relative flex-shrink-0">
+            <input
+              type="number"
+              min="1"
+              max={promoType === 'percentage' ? '99' : undefined}
+              value={promoValue}
+              onChange={e => setPromoValue(e.target.value)}
+              placeholder={promoType === 'percentage' ? 'ex: 20' : 'ex: 50'}
+              className="w-24 h-9 text-center font-black text-base border-2 border-orange-300 rounded-lg bg-white outline-none focus:border-orange-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-orange-500">
+              {promoType === 'percentage' ? '%' : 'TND'}
+            </span>
           </div>
 
           {/* Label input */}
@@ -123,11 +150,11 @@ function PromoBanner({ onApply, onClear }: PromoBannerProps) {
           <div className="flex gap-2 flex-shrink-0">
             <button
               onClick={handleApply}
-              disabled={!promoValue || loading}
+              disabled={!promoValue || selectedIds.size === 0 || loading}
               className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-black text-sm rounded-lg shadow-lg hover:from-orange-600 hover:to-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-xl hover:scale-105 active:scale-95"
             >
               <Zap className="w-3.5 h-3.5" />
-              {loading ? 'Application...' : 'Appliquer à tous'}
+              {loading ? 'Application...' : `Appliquer (${selectedIds.size})`}
             </button>
             <button
               onClick={handleClear}
@@ -135,7 +162,7 @@ function PromoBanner({ onApply, onClear }: PromoBannerProps) {
               className="flex items-center gap-1.5 px-3 py-2 bg-white text-red-600 font-bold text-sm rounded-lg border-2 border-red-300 hover:bg-red-50 disabled:opacity-50 transition-all"
             >
               <X className="w-3.5 h-3.5" />
-              {clearing ? '...' : 'Tout supprimer'}
+              {clearing ? '...' : 'Supprimer promos'}
             </button>
           </div>
         </div>
@@ -160,6 +187,8 @@ export default function BrokerBrowsePage() {
   const { toast } = useToast();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [analyticsDialogOpen, setAnalyticsDialogOpen] = useState(false);
+  const [promoMode, setPromoMode] = useState(false);
+  const [selectedPromoIds, setSelectedPromoIds] = useState<Set<string>>(new Set());
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [selectedSubmission, setSelectedSubmission] = useState<PropertySubmissionWithMedia | null>(null);
   const [neighborhoodMapFile, setNeighborhoodMapFile] = useState<File | null>(null);
@@ -546,37 +575,58 @@ export default function BrokerBrowsePage() {
                 <p className="text-sm text-muted-foreground">View properties with owner information</p>
               </div>
             </div>
-            <Badge variant="default" className="px-3 py-1">
-              Admin View
-            </Badge>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setPromoMode(!promoMode)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all shadow-sm ${
+                  promoMode 
+                  ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-orange-500/20" 
+                  : "bg-white text-orange-600 border-2 border-orange-200 hover:border-orange-400"
+                }`}
+              >
+                <Zap className="w-4 h-4" />
+                {promoMode ? "Fermer Promotions" : "Gérer Promotions"}
+              </button>
+              <Badge variant="default" className="px-3 py-1">
+                Admin View
+              </Badge>
+            </div>
           </div>
         </div>
       </div>
 
       {/* 🔥 Promo Control Panel */}
-      <PromoBanner
-        onApply={async (type, value, label) => {
-          const res = await fetch('/api/broker/properties/bulk-promo', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ type, value, label }),
-          });
-          if (!res.ok) throw new Error('Failed');
-          const data = await res.json();
-          queryClient.invalidateQueries({ queryKey: ['/api/properties'] });
-          toast({ title: `✅ Promo appliquée à ${data.updated} annonces !`, description: `Réduction ${type === 'percentage' ? value + '%' : value + ' TND'} sur tous les prix.` });
-        }}
-        onClear={async () => {
-          const res = await fetch('/api/broker/properties/bulk-promo', {
-            method: 'DELETE',
-            credentials: 'include',
-          });
-          if (!res.ok) throw new Error('Failed');
-          queryClient.invalidateQueries({ queryKey: ['/api/properties'] });
-          toast({ title: '🗑️ Toutes les promos supprimées', description: 'Les prix originaux sont restaurés.' });
-        }}
-      />
+      {promoMode && (
+        <PromoPanel
+          selectedIds={selectedPromoIds}
+          totalCount={properties?.length || 0}
+          onSelectAll={() => setSelectedPromoIds(new Set(properties?.map(p => p.id) || []))}
+          onDeselectAll={() => setSelectedPromoIds(new Set())}
+          onApply={async (type, value, label, ids) => {
+            const res = await fetch('/api/broker/properties/bulk-promo', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ type, value, label, propertyIds: ids }),
+            });
+            if (!res.ok) throw new Error('Failed');
+            const data = await res.json();
+            queryClient.invalidateQueries({ queryKey: ['/api/properties'] });
+            setSelectedPromoIds(new Set()); // clear selection after apply
+            toast({ title: `✅ Promo appliquée à ${data.updated} annonces !`, description: `Réduction ${type === 'percentage' ? value + '%' : value + ' TND'} sur les prix.` });
+          }}
+          onClear={async () => {
+            const res = await fetch('/api/broker/properties/bulk-promo', {
+              method: 'DELETE',
+              credentials: 'include',
+            });
+            if (!res.ok) throw new Error('Failed');
+            queryClient.invalidateQueries({ queryKey: ['/api/properties'] });
+            setSelectedPromoIds(new Set()); // clear selection after clear
+            toast({ title: '🗑️ Toutes les promos supprimées', description: 'Les prix originaux sont restaurés.' });
+          }}
+        />
+      )}
 
       {/* Search Bar */}
       <div className="bg-background border-b border-border">
@@ -646,11 +696,35 @@ export default function BrokerBrowsePage() {
               const submission = submissionsMap.get(property.submissionId);
               const views = viewsMap.get(property.id) ?? 0;
 
+              const isSelected = selectedPromoIds.has(property.id);
+
               return (
-                <Card key={property.id} className="overflow-hidden hover-elevate transition-all h-full flex flex-col">
+                <Card 
+                  key={property.id} 
+                  className={`overflow-hidden hover-elevate transition-all h-full flex flex-col ${promoMode && isSelected ? 'ring-4 ring-orange-500 shadow-orange-500/20' : ''}`}
+                >
                   {/* Property Image */}
-                  <Link href={generatePropertyUrl(property)}>
+                  <Link 
+                    href={promoMode ? '#' : generatePropertyUrl(property)}
+                    onClick={(e) => {
+                      if (promoMode) {
+                        e.preventDefault();
+                        const next = new Set(selectedPromoIds);
+                        if (next.has(property.id)) next.delete(property.id);
+                        else next.add(property.id);
+                        setSelectedPromoIds(next);
+                      }
+                    }}
+                  >
                     <div className="relative aspect-[4/3] overflow-hidden bg-muted cursor-pointer group">
+                      {/* Selection Checkbox Overlay */}
+                      {promoMode && (
+                        <div className="absolute inset-0 z-30 bg-black/10 transition-colors group-hover:bg-black/20 flex items-start justify-end p-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 shadow-sm transition-colors ${isSelected ? 'bg-orange-500 border-orange-500 text-white' : 'bg-white border-gray-300 text-transparent group-hover:border-orange-300'}`}>
+                            <CheckCircle2 className="w-5 h-5" />
+                          </div>
+                        </div>
+                      )}
 
                       {/* Display Order Badge (top-left) */}
                       <div
