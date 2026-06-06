@@ -1185,7 +1185,7 @@ export default function ListPropertyPage() {
                 />
 
                 {/* Price & Reference */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <FormField
                     control={form.control}
                     name="price"
