@@ -200,6 +200,7 @@ export default function BrokerDashboardPage() {
       sizeM2: submission.sizeM2,
       location: submission.location,
       price: submission.price,
+      pricePerWeek: (submission as any).pricePerWeek || "",
       googleMapsUrl: submission.googleMapsUrl || "",
       requiresDeposit: (submission as any).requiresDeposit ?? true,
       showOwnerContact: submission.showOwnerContact,

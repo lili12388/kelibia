@@ -200,7 +200,17 @@ export class DatabaseStorage implements IStorage {
       with: {
         media: true,
       },
-      orderBy: (properties, { desc }) => [desc(properties.publishedAt)],
+    });
+    
+    // Sort: numbered posts first (ascending by displayOrder), unnumbered posts at the end (by publishedAt desc)
+    allProperties.sort((a, b) => {
+      const aOrder = a.displayOrder ?? null;
+      const bOrder = b.displayOrder ?? null;
+      if (aOrder !== null && bOrder !== null) return aOrder - bOrder;
+      if (aOrder !== null) return -1; // a has order, b doesn't → a comes first
+      if (bOrder !== null) return 1;  // b has order, a doesn't → b comes first
+      // Both null: sort by publishedAt descending
+      return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
     });
     
     // Sort media for all properties so primary is first, then by upload time

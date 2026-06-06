@@ -806,6 +806,24 @@ Crawl-delay: 2
 
   // PROTECTED BROKER ENDPOINTS - Require authentication
 
+  // Broker: Update display order of a property
+  app.patch('/api/broker/properties/:id/order', requireBrokerAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { displayOrder } = req.body;
+      const orderValue = displayOrder === '' || displayOrder === null || displayOrder === undefined
+        ? null
+        : parseInt(displayOrder);
+      await db.update(properties)
+        .set({ displayOrder: isNaN(orderValue as number) ? null : orderValue })
+        .where(eq(properties.id, id));
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error updating display order:', error);
+      res.status(500).json({ error: 'Failed to update display order' });
+    }
+  });
+
   // Broker: Delete a property
   app.delete('/api/broker/properties/:id', requireBrokerAuth, async (req, res) => {
     try {

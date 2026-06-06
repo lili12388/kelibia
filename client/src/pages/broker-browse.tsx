@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Link } from "wouter";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -45,6 +45,9 @@ export default function BrokerBrowsePage() {
   const [selectedSubmission, setSelectedSubmission] = useState<PropertySubmissionWithMedia | null>(null);
   const [neighborhoodMapFile, setNeighborhoodMapFile] = useState<File | null>(null);
   const [neighborhoodMapPreview, setNeighborhoodMapPreview] = useState<string | null>(null);
+  const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
+  const [orderInputValue, setOrderInputValue] = useState<string>("");
+  const orderInputRef = useRef<HTMLInputElement>(null);
 
   const editForm = useForm({
     defaultValues: {
@@ -61,6 +64,7 @@ export default function BrokerBrowsePage() {
       sizeM2: 0,
       location: "",
       price: "",
+      pricePerWeek: "",
       googleMapsUrl: "",
       requiresDeposit: true,
       showOwnerContact: false,
@@ -94,6 +98,28 @@ export default function BrokerBrowsePage() {
       maxGuests: 1,
       hasKitchenUtensils: false,
       isQuietNeighborhood: false,
+    },
+  });
+
+  // Mutation to update display order
+  const orderMutation = useMutation({
+    mutationFn: async ({ id, displayOrder }: { id: string; displayOrder: string }) => {
+      const res = await fetch(`/api/broker/properties/${id}/order`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ displayOrder }),
+      });
+      if (!res.ok) throw new Error('Failed to update order');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/properties'] });
+      setEditingOrderId(null);
+      toast({ title: 'Ordre mis à jour ✓', description: 'Les annonces seront réorganisées.' });
+    },
+    onError: () => {
+      toast({ title: 'Erreur', description: 'Impossible de mettre à jour l\'ordre.', variant: 'destructive' });
     },
   });
 
@@ -307,6 +333,7 @@ export default function BrokerBrowsePage() {
       sizeM2: submission.sizeM2,
       location: submission.location,
       price: submission.price,
+      pricePerWeek: (submission as any).pricePerWeek || "",
       googleMapsUrl: submission.googleMapsUrl || "",
       requiresDeposit: (submission as any).requiresDeposit ?? true,
       showOwnerContact: submission.showOwnerContact ?? false,
@@ -480,6 +507,57 @@ export default function BrokerBrowsePage() {
                   {/* Property Image */}
                   <Link href={generatePropertyUrl(property)}>
                     <div className="relative aspect-[4/3] overflow-hidden bg-muted cursor-pointer group">
+
+                      {/* Display Order Badge (top-left) */}
+                      <div
+                        className="absolute top-2 left-2 z-20"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                      >
+                        {editingOrderId === property.id ? (
+                          <div className="flex items-center gap-1">
+                            <input
+                              ref={orderInputRef}
+                              type="number"
+                              min="1"
+                              autoFocus
+                              value={orderInputValue}
+                              onChange={(e) => setOrderInputValue(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  orderMutation.mutate({ id: property.id, displayOrder: orderInputValue });
+                                } else if (e.key === 'Escape') {
+                                  setEditingOrderId(null);
+                                }
+                              }}
+                              onBlur={() => {
+                                if (orderInputValue !== String(property.displayOrder ?? '')) {
+                                  orderMutation.mutate({ id: property.id, displayOrder: orderInputValue });
+                                } else {
+                                  setEditingOrderId(null);
+                                }
+                              }}
+                              className="w-14 h-8 text-center font-black text-sm bg-white border-2 border-primary rounded-lg shadow-lg outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              placeholder="#"
+                            />
+                          </div>
+                        ) : (
+                          <button
+                            title="Cliquer pour définir l'ordre d'affichage"
+                            onClick={() => {
+                              setEditingOrderId(property.id);
+                              setOrderInputValue(property.displayOrder != null ? String(property.displayOrder) : '');
+                              setTimeout(() => orderInputRef.current?.focus(), 50);
+                            }}
+                            className={`flex items-center justify-center w-9 h-9 rounded-lg shadow-lg font-black text-sm border-2 transition-all ${
+                              property.displayOrder != null
+                                ? 'bg-primary text-white border-primary'
+                                : 'bg-white/90 text-muted-foreground border-white/60 hover:border-primary hover:text-primary'
+                            }`}
+                          >
+                            {property.displayOrder != null ? property.displayOrder : '#'}
+                          </button>
+                        )}
+                      </div>
                       {primaryMedia ? (
                         primaryMedia.mimeType.startsWith('video/') ? (
                           // Show video thumbnail if available, otherwise show placeholder
