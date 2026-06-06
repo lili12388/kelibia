@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { MapPin, BedDouble, Bath, Search, Phone, Mail, User, ArrowLeft, Pencil, ChefHat, Refrigerator, Flame, BarChart3, Eye, MousePointer, Monitor, Smartphone, Trash2, Plus, X, WashingMachine } from "lucide-react";
+import { MapPin, BedDouble, Bath, Search, Phone, Mail, User, ArrowLeft, Pencil, ChefHat, Refrigerator, Flame, BarChart3, Eye, MousePointer, Monitor, Smartphone, Trash2, Plus, X, WashingMachine, Zap, Percent, Tag, CheckCircle2 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { PropertyWithMedia, PropertySubmissionWithMedia } from "@shared/schema";
@@ -35,6 +35,125 @@ interface PropertyAnalytics {
   mobileViews: number;
   lastViewedAt: string;
   cityViews: Record<string, number>;
+}
+
+interface PromoBannerProps {
+  onApply: (type: 'percentage' | 'amount', value: string, label: string) => Promise<void>;
+  onClear: () => Promise<void>;
+}
+
+function PromoBanner({ onApply, onClear }: PromoBannerProps) {
+  const [promoType, setPromoType] = useState<'percentage' | 'amount'>('percentage');
+  const [promoValue, setPromoValue] = useState('');
+  const [promoLabel, setPromoLabel] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [clearing, setClearing] = useState(false);
+
+  const handleApply = async () => {
+    if (!promoValue) return;
+    setLoading(true);
+    try { await onApply(promoType, promoValue, promoLabel); } finally { setLoading(false); }
+  };
+  const handleClear = async () => {
+    setClearing(true);
+    try { await onClear(); } finally { setClearing(false); }
+  };
+
+  return (
+    <div className="bg-gradient-to-r from-orange-50 via-red-50 to-orange-50 border-y-2 border-orange-300">
+      <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+          {/* Title */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center shadow-md">
+              <Zap className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <p className="font-black text-sm text-orange-900 leading-none">PROMO FLASH</p>
+              <p className="text-[10px] text-orange-600 font-medium">Appliquer à toutes les annonces</p>
+            </div>
+          </div>
+
+          {/* Type Toggle */}
+          <div className="flex rounded-lg border-2 border-orange-300 overflow-hidden flex-shrink-0">
+            <button
+              onClick={() => setPromoType('percentage')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-colors ${promoType === 'percentage' ? 'bg-orange-500 text-white' : 'bg-white text-orange-700 hover:bg-orange-50'}`}
+            >
+              <Percent className="w-3 h-3" />
+              Pourcentage
+            </button>
+            <button
+              onClick={() => setPromoType('amount')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-colors ${promoType === 'amount' ? 'bg-orange-500 text-white' : 'bg-white text-orange-700 hover:bg-orange-50'}`}
+            >
+              <Tag className="w-3 h-3" />
+              Montant TND
+            </button>
+          </div>
+
+          {/* Value input */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="relative">
+              <input
+                type="number"
+                min="1"
+                max={promoType === 'percentage' ? '99' : undefined}
+                value={promoValue}
+                onChange={e => setPromoValue(e.target.value)}
+                placeholder={promoType === 'percentage' ? 'ex: 20' : 'ex: 50'}
+                className="w-24 h-9 text-center font-black text-base border-2 border-orange-300 rounded-lg bg-white outline-none focus:border-orange-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-orange-500">
+                {promoType === 'percentage' ? '%' : 'TND'}
+              </span>
+            </div>
+          </div>
+
+          {/* Label input */}
+          <input
+            type="text"
+            value={promoLabel}
+            onChange={e => setPromoLabel(e.target.value)}
+            placeholder="Label (ex: 🌊 Promo Été) — optionnel"
+            className="flex-1 min-w-0 h-9 px-3 text-sm border-2 border-orange-300 rounded-lg bg-white outline-none focus:border-orange-500 font-medium"
+          />
+
+          {/* Buttons */}
+          <div className="flex gap-2 flex-shrink-0">
+            <button
+              onClick={handleApply}
+              disabled={!promoValue || loading}
+              className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-black text-sm rounded-lg shadow-lg hover:from-orange-600 hover:to-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-xl hover:scale-105 active:scale-95"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              {loading ? 'Application...' : 'Appliquer à tous'}
+            </button>
+            <button
+              onClick={handleClear}
+              disabled={clearing}
+              className="flex items-center gap-1.5 px-3 py-2 bg-white text-red-600 font-bold text-sm rounded-lg border-2 border-red-300 hover:bg-red-50 disabled:opacity-50 transition-all"
+            >
+              <X className="w-3.5 h-3.5" />
+              {clearing ? '...' : 'Tout supprimer'}
+            </button>
+          </div>
+        </div>
+
+        {/* Preview */}
+        {promoValue && (
+          <div className="mt-3 flex items-center gap-2 text-xs text-orange-700 bg-orange-100 rounded-lg px-3 py-2 w-fit">
+            <CheckCircle2 className="w-3.5 h-3.5 text-orange-600" />
+            {promoType === 'percentage'
+              ? `Une maison à 100 TND → ${Math.ceil(100 * (1 - parseFloat(promoValue) / 100))} TND après arrondi`
+              : `Une maison à 100 TND → ${Math.max(1, Math.ceil(100 - parseFloat(promoValue)))} TND`
+            }
+            {promoLabel && <span className="ml-2 font-bold">{promoLabel}</span>}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function BrokerBrowsePage() {
@@ -434,6 +553,31 @@ export default function BrokerBrowsePage() {
         </div>
       </div>
 
+      {/* 🔥 Promo Control Panel */}
+      <PromoBanner
+        onApply={async (type, value, label) => {
+          const res = await fetch('/api/broker/properties/bulk-promo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ type, value, label }),
+          });
+          if (!res.ok) throw new Error('Failed');
+          const data = await res.json();
+          queryClient.invalidateQueries({ queryKey: ['/api/properties'] });
+          toast({ title: `✅ Promo appliquée à ${data.updated} annonces !`, description: `Réduction ${type === 'percentage' ? value + '%' : value + ' TND'} sur tous les prix.` });
+        }}
+        onClear={async () => {
+          const res = await fetch('/api/broker/properties/bulk-promo', {
+            method: 'DELETE',
+            credentials: 'include',
+          });
+          if (!res.ok) throw new Error('Failed');
+          queryClient.invalidateQueries({ queryKey: ['/api/properties'] });
+          toast({ title: '🗑️ Toutes les promos supprimées', description: 'Les prix originaux sont restaurés.' });
+        }}
+      />
+
       {/* Search Bar */}
       <div className="bg-background border-b border-border">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -656,13 +800,36 @@ export default function BrokerBrowsePage() {
                           </div>
                         )}
                       </div>
-                      <div className="flex items-baseline gap-1">
-                        <span className="font-black text-xl text-foreground tracking-tight">
-                          {parseFloat(property.price).toLocaleString()}
-                        </span>
-                        <span className="font-bold text-xs text-muted-foreground uppercase tracking-wider">
-                          TND
-                        </span>
+                      <div className="flex flex-col items-end">
+                        {property.promoPrice && parseFloat(property.promoPrice) > 0 ? (
+                          <>
+                            <div className="flex items-center gap-1.5 mb-[-2px]">
+                              <span className="text-[10px] font-bold text-red-500/60 line-through decoration-red-500/40">
+                                {parseFloat(property.price).toLocaleString()} TND
+                              </span>
+                              <span className="bg-red-100 text-red-600 text-[9px] font-black px-1 rounded">
+                                -{Math.round((1 - parseFloat(property.promoPrice) / parseFloat(property.price)) * 100)}%
+                              </span>
+                            </div>
+                            <div className="flex items-baseline gap-1">
+                              <span className="font-black text-xl text-[#FF4500] tracking-tight animate-pulse-subtle shadow-orange-500/20 drop-shadow-sm">
+                                {parseFloat(property.promoPrice).toLocaleString()}
+                              </span>
+                              <span className="font-bold text-xs text-[#FF4500]/80 uppercase tracking-wider">
+                                TND
+                              </span>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="flex items-baseline gap-1">
+                            <span className="font-black text-xl text-foreground tracking-tight">
+                              {parseFloat(property.price).toLocaleString()}
+                            </span>
+                            <span className="font-bold text-xs text-muted-foreground uppercase tracking-wider">
+                              TND
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
 

@@ -824,6 +824,77 @@ Crawl-delay: 2
     }
   });
 
+  // Broker: Set promo on a single property
+  app.patch('/api/broker/properties/:id/promo', requireBrokerAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { promoPrice, promoLabel } = req.body;
+      await db.update(properties)
+        .set({
+          promoPrice: promoPrice && promoPrice !== '' ? String(parseFloat(promoPrice).toFixed(2)) : null,
+          promoLabel: promoLabel && promoLabel !== '' ? promoLabel : null,
+        })
+        .where(eq(properties.id, id));
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error updating promo:', error);
+      res.status(500).json({ error: 'Failed to update promo' });
+    }
+  });
+
+  // Broker: Apply bulk promo to ALL properties
+  app.post('/api/broker/properties/bulk-promo', requireBrokerAuth, async (req, res) => {
+    try {
+      const { type, value, label } = req.body; // type: 'amount' | 'percentage', value: number
+      const numValue = parseFloat(value);
+      if (isNaN(numValue) || numValue <= 0) {
+        return res.status(400).json({ error: 'Invalid value' });
+      }
+
+      // Get all published properties
+      const allProps = await db.select().from(properties);
+
+      for (const prop of allProps) {
+        const originalPrice = parseFloat(prop.price);
+        let newPrice: number;
+
+        if (type === 'percentage') {
+          newPrice = originalPrice * (1 - numValue / 100);
+        } else {
+          // fixed amount
+          newPrice = originalPrice - numValue;
+        }
+
+        // Round UP to nearest whole number (never show decimals)
+        newPrice = Math.ceil(newPrice);
+        if (newPrice < 1) newPrice = 1; // never go below 1
+
+        await db.update(properties)
+          .set({
+            promoPrice: String(newPrice.toFixed(2)),
+            promoLabel: label && label !== '' ? label : null,
+          })
+          .where(eq(properties.id, prop.id));
+      }
+
+      res.json({ success: true, updated: allProps.length });
+    } catch (error) {
+      console.error('Error applying bulk promo:', error);
+      res.status(500).json({ error: 'Failed to apply bulk promo' });
+    }
+  });
+
+  // Broker: Clear ALL promos
+  app.delete('/api/broker/properties/bulk-promo', requireBrokerAuth, async (req, res) => {
+    try {
+      await db.update(properties).set({ promoPrice: null, promoLabel: null });
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error clearing promos:', error);
+      res.status(500).json({ error: 'Failed to clear promos' });
+    }
+  });
+
   // Broker: Delete a property
   app.delete('/api/broker/properties/:id', requireBrokerAuth, async (req, res) => {
     try {

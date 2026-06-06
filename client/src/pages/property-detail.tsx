@@ -1224,14 +1224,39 @@ export default function PropertyDetailPage() {
                 {/* Price Header */}
                 {(isAdmin || property.showPrice) && (
                   <div className="px-5 pt-5 pb-3 border-b border-border/40">
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-3xl font-black text-foreground tracking-tight">
-                        {parseFloat(property.price).toLocaleString()}
-                      </span>
-                      <span className="text-base font-bold text-foreground">TND</span>
-                      <span className="text-xs text-muted-foreground font-medium ml-1">/ nuit</span>
-                      {isAdmin && !property.showPrice && (
-                        <Badge variant="secondary" className="text-[10px] ml-2">Admin</Badge>
+                    <div className="flex flex-col mb-1">
+                      {property.promoPrice && parseFloat(property.promoPrice) > 0 ? (
+                        <>
+                          <div className="flex items-center gap-2 mb-[-4px]">
+                            <span className="text-sm font-bold text-red-500/60 line-through decoration-red-500/40">
+                              {parseFloat(property.price).toLocaleString()} TND
+                            </span>
+                            <span className="bg-red-100 text-red-600 text-[10px] font-black px-1.5 py-0.5 rounded shadow-sm">
+                              -{Math.round((1 - parseFloat(property.promoPrice) / parseFloat(property.price)) * 100)}%
+                            </span>
+                          </div>
+                          <div className="flex items-baseline gap-1.5">
+                            <span className="text-3xl font-black text-[#FF4500] tracking-tight animate-pulse-subtle shadow-orange-500/20 drop-shadow-sm">
+                              {parseFloat(property.promoPrice).toLocaleString()}
+                            </span>
+                            <span className="text-base font-bold text-[#FF4500]/80">TND</span>
+                            <span className="text-xs text-muted-foreground font-medium ml-1">/ nuit</span>
+                            {isAdmin && !property.showPrice && (
+                              <Badge variant="secondary" className="text-[10px] ml-2">Admin</Badge>
+                            )}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-3xl font-black text-foreground tracking-tight">
+                            {parseFloat(property.price).toLocaleString()}
+                          </span>
+                          <span className="text-base font-bold text-foreground">TND</span>
+                          <span className="text-xs text-muted-foreground font-medium ml-1">/ nuit</span>
+                          {isAdmin && !property.showPrice && (
+                            <Badge variant="secondary" className="text-[10px] ml-2">Admin</Badge>
+                          )}
+                        </div>
                       )}
                     </div>
                     {property.pricePerWeek && parseFloat(property.pricePerWeek) > 0 && (
@@ -1638,12 +1663,31 @@ export default function PropertyDetailPage() {
         {/* Row 1: Price and Date Selection (Expanded) */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex flex-col flex-shrink-0">
-            <div className="flex items-baseline gap-1">
-              <span className={`text-xl font-black tracking-tighter ${lightboxOpen ? 'text-white' : 'text-foreground'}`}>
-                {parseFloat(property.price).toLocaleString()} TND
-              </span>
-              <span className={`text-[10px] font-bold uppercase ${lightboxOpen ? 'text-white/70' : 'text-muted-foreground'}`}>/ nuit</span>
-            </div>
+            {property.promoPrice && parseFloat(property.promoPrice) > 0 ? (
+              <div className="flex flex-col">
+                <div className="flex items-center gap-1.5 mb-[-2px]">
+                  <span className={`text-[10px] font-bold ${lightboxOpen ? 'text-red-400/60' : 'text-red-500/60'} line-through decoration-red-500/40`}>
+                    {parseFloat(property.price).toLocaleString()} TND
+                  </span>
+                  <span className={`text-[9px] font-black px-1 rounded ${lightboxOpen ? 'bg-red-500/20 text-red-400' : 'bg-red-100 text-red-600'}`}>
+                    -{Math.round((1 - parseFloat(property.promoPrice) / parseFloat(property.price)) * 100)}%
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className={`text-xl font-black tracking-tighter ${lightboxOpen ? 'text-[#FF8C00]' : 'text-[#FF4500]'}`}>
+                    {parseFloat(property.promoPrice).toLocaleString()} TND
+                  </span>
+                  <span className={`text-[10px] font-bold uppercase ${lightboxOpen ? 'text-white/70' : 'text-muted-foreground'}`}>/ nuit</span>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-baseline gap-1">
+                <span className={`text-xl font-black tracking-tighter ${lightboxOpen ? 'text-white' : 'text-foreground'}`}>
+                  {parseFloat(property.price).toLocaleString()} TND
+                </span>
+                <span className={`text-[10px] font-bold uppercase ${lightboxOpen ? 'text-white/70' : 'text-muted-foreground'}`}>/ nuit</span>
+              </div>
+            )}
             {property.pricePerWeek && parseFloat(property.pricePerWeek) > 0 && (
               <div className="flex items-baseline gap-1 mt-0.5">
                 <span className={`text-sm font-black tracking-tighter ${lightboxOpen ? 'text-emerald-400' : 'text-emerald-600'}`}>

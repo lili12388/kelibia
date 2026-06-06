@@ -131,6 +131,8 @@ export const properties = pgTable("properties", {
   showSize: boolean("show_size").notNull().default(true), // show size to public users
   showDescription: boolean("show_description").notNull().default(true), // show full description to public users
   displayOrder: integer("display_order"), // admin-controlled sort order (1 = first), null = at the end
+  promoPrice: decimal("promo_price", { precision: 10, scale: 2 }), // promotional discounted price
+  promoLabel: text("promo_label"), // e.g. "🌊 Promo Été", "⚡ Flash Sale"
   slug: text("slug").unique(),
   publishedAt: timestamp("published_at").notNull().defaultNow(),
 });

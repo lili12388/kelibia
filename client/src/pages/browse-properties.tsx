@@ -787,6 +787,15 @@ export default function BrowsePropertiesPage() {
                             </div>
                           )}
                           
+                          {/* Promo Ribbon */}
+                          {property.promoPrice && parseFloat(property.promoPrice) > 0 && (
+                            <div className="absolute top-0 right-0 z-10 w-24 h-24 overflow-hidden pointer-events-none">
+                              <div className="absolute top-4 -right-8 w-32 bg-gradient-to-r from-[#FF4500] to-[#FF8C00] text-white text-center text-[10px] font-black uppercase tracking-wider py-1 shadow-lg transform rotate-45 border-y border-white/20">
+                                {property.promoLabel || "PROMO"}
+                              </div>
+                            </div>
+                          )}
+                          
                           {/* Badges */}
                           <div className="absolute top-2 left-2 right-2 flex justify-between items-start pointer-events-none">
                             <div className="flex flex-col gap-1.5 items-start">
@@ -839,14 +848,35 @@ export default function BrowsePropertiesPage() {
                                 </div>
                               </div>
                               <div className="flex flex-col items-end">
-                                <div className="flex items-baseline gap-1">
-                                  <span className="font-black text-lg sm:text-xl text-foreground tracking-tight">
-                                    {price.toLocaleString()}
-                                  </span>
-                                  <span className="font-bold text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">
-                                    TND
-                                  </span>
-                                </div>
+                                {property.promoPrice && parseFloat(property.promoPrice) > 0 ? (
+                                  <>
+                                    <div className="flex items-center gap-1.5 mb-[-2px]">
+                                      <span className="text-[10px] font-bold text-red-500/60 line-through decoration-red-500/40">
+                                        {price.toLocaleString()} TND
+                                      </span>
+                                      <span className="bg-red-100 text-red-600 text-[9px] font-black px-1 rounded">
+                                        -{Math.round((1 - parseFloat(property.promoPrice) / price) * 100)}%
+                                      </span>
+                                    </div>
+                                    <div className="flex items-baseline gap-1">
+                                      <span className="font-black text-lg sm:text-xl text-[#FF4500] tracking-tight animate-pulse-subtle shadow-orange-500/20 drop-shadow-sm">
+                                        {parseFloat(property.promoPrice).toLocaleString()}
+                                      </span>
+                                      <span className="font-bold text-[10px] sm:text-xs text-[#FF4500]/80 uppercase tracking-wider">
+                                        TND
+                                      </span>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div className="flex items-baseline gap-1">
+                                    <span className="font-black text-lg sm:text-xl text-foreground tracking-tight">
+                                      {price.toLocaleString()}
+                                    </span>
+                                    <span className="font-bold text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">
+                                      TND
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             </div>
                             
