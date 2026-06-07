@@ -1166,6 +1166,65 @@ Crawl-delay: 2
       res.status(500).json({ error: 'Failed to update submission' });
     }
   });
+  // Broker: Reorder media for a submission
+  app.post('/api/broker/submissions/:id/reorder-media', requireBrokerAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { orderedMediaIds } = req.body;
+
+      if (!Array.isArray(orderedMediaIds)) {
+        res.status(400).json({ error: 'orderedMediaIds must be an array' });
+        return;
+      }
+
+      const submission = await storage.getPropertySubmission(id);
+      if (!submission) {
+        res.status(404).json({ error: 'Submission not found' });
+        return;
+      }
+
+      const now = Date.now();
+      for (let i = 0; i < orderedMediaIds.length; i++) {
+        const mediaId = orderedMediaIds[i];
+        await db.update(submissionMedia)
+          .set({ uploadedAt: new Date(now + i * 1000) })
+          .where(eq(submissionMedia.id, mediaId));
+      }
+
+      if (submission.status === 'approved') {
+        const [publishedProperty] = await db
+          .select()
+          .from(properties)
+          .where(eq(properties.submissionId, id))
+          .limit(1);
+
+        if (publishedProperty) {
+          const updatedSubmission = await storage.getPropertySubmission(id);
+          if (updatedSubmission) {
+             for (let i = 0; i < orderedMediaIds.length; i++) {
+                const mediaId = orderedMediaIds[i];
+                const subMedia = updatedSubmission.media.find(m => m.id === mediaId);
+                if (subMedia) {
+                  await db.update(propertyMedia)
+                    .set({ uploadedAt: new Date(now + i * 1000) })
+                    .where(
+                      and(
+                        eq(propertyMedia.propertyId, publishedProperty.id),
+                        eq(propertyMedia.url, subMedia.url)
+                      )
+                    );
+                }
+             }
+          }
+        }
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error reordering media:', error);
+      res.status(500).json({ error: 'Failed to reorder media' });
+    }
+  });
 
   // Broker: Set primary media for a submission
   app.post('/api/broker/submissions/:id/set-primary-media', requireBrokerAuth, async (req, res) => {

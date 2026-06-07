@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { MapPin, BedDouble, Bath, Search, Phone, Mail, User, ArrowLeft, Pencil, ChefHat, Refrigerator, Flame, BarChart3, Eye, MousePointer, Monitor, Smartphone, Trash2, Plus, X, WashingMachine, Zap, Percent, Tag, CheckCircle2 } from "lucide-react";
+import { MapPin, BedDouble, Bath, Search, Phone, Mail, User, ArrowLeft, Pencil, ChefHat, Refrigerator, Flame, BarChart3, Eye, MousePointer, Monitor, Smartphone, Trash2, Plus, X, WashingMachine, Zap, Percent, Tag, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { PropertyWithMedia, PropertySubmissionWithMedia } from "@shared/schema";
@@ -442,6 +442,52 @@ export default function BrokerBrowsePage() {
     setPrimaryMediaMutation.mutate({
       submissionId: selectedSubmission.id,
       mediaId,
+    });
+  };
+
+  const reorderMediaMutation = useMutation({
+    mutationFn: async ({ submissionId, orderedMediaIds }: { submissionId: string; orderedMediaIds: string[] }) => {
+      return apiRequest('POST', `/api/broker/submissions/${submissionId}/reorder-media`, { orderedMediaIds });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/broker/submissions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/properties'] });
+      toast({
+        title: "Order Updated",
+        description: "Media order has been updated successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update media order.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleMoveMedia = (index: number, direction: 'left' | 'right') => {
+    if (!selectedSubmission) return;
+
+    const mediaList = [...selectedSubmission.media];
+    if (direction === 'left' && index > 0) {
+      [mediaList[index - 1], mediaList[index]] = [mediaList[index], mediaList[index - 1]];
+    } else if (direction === 'right' && index < mediaList.length - 1) {
+      [mediaList[index], mediaList[index + 1]] = [mediaList[index + 1], mediaList[index]];
+    } else {
+      return;
+    }
+
+    // Update local state immediately for snappy UI
+    setSelectedSubmission({
+      ...selectedSubmission,
+      media: mediaList
+    });
+
+    // Send the new order to the backend
+    reorderMediaMutation.mutate({
+      submissionId: selectedSubmission.id,
+      orderedMediaIds: mediaList.map(m => m.id)
     });
   };
 
@@ -1449,48 +1495,72 @@ export default function BrokerBrowsePage() {
                 </div>
 
                 <div className="grid grid-cols-4 gap-3">
-                  {selectedSubmission.media.map((media) => (
-                    <button
-                      key={media.id}
-                      type="button"
-                      onClick={() => handleSetPrimaryMedia(media.id)}
-                      className={`relative aspect-square rounded-lg overflow-hidden border-4 transition-all hover:scale-105 ${media.isPrimary
-                        ? 'border-purple-600 shadow-xl ring-4 ring-purple-300'
-                        : 'border-gray-300 hover:border-purple-400'
-                        }`}
-                    >
-                      {media.mimeType.startsWith('video/') ? (
-                        media.thumbnailUrl ? (
+                  {selectedSubmission.media.map((media, index) => (
+                    <div key={media.id} className="relative group">
+                      <button
+                        type="button"
+                        onClick={() => handleSetPrimaryMedia(media.id)}
+                        className={`w-full relative aspect-square rounded-lg overflow-hidden border-4 transition-all hover:scale-105 ${media.isPrimary
+                          ? 'border-purple-600 shadow-xl ring-4 ring-purple-300'
+                          : 'border-gray-300 hover:border-purple-400'
+                          }`}
+                      >
+                        {media.mimeType.startsWith('video/') ? (
+                          media.thumbnailUrl ? (
+                            <img
+                              src={media.thumbnailUrl}
+                              alt="Video thumbnail"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                              <div className="text-center text-white">
+                                <div className="text-2xl mb-1">🎥</div>
+                                <div className="text-[8px] font-bold">VIDEO</div>
+                              </div>
+                            </div>
+                          )
+                        ) : (
                           <img
-                            src={media.thumbnailUrl}
-                            alt="Video thumbnail"
+                            src={media.url}
+                            alt="Property media"
                             className="w-full h-full object-cover"
                           />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                            <div className="text-center text-white">
-                              <div className="text-2xl mb-1">🎥</div>
-                              <div className="text-[8px] font-bold">VIDEO</div>
+                        )}
+
+                        {media.isPrimary && (
+                          <div className="absolute inset-0 bg-purple-600/20 flex items-center justify-center">
+                            <div className="bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
+                              <Eye className="h-3 w-3" />
+                              PRIMARY
                             </div>
                           </div>
-                        )
-                      ) : (
-                        <img
-                          src={media.url}
-                          alt="Property media"
-                          className="w-full h-full object-cover"
-                        />
-                      )}
+                        )}
+                      </button>
 
-                      {media.isPrimary && (
-                        <div className="absolute inset-0 bg-purple-600/20 flex items-center justify-center">
-                          <div className="bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
-                            <Eye className="h-3 w-3" />
-                            PRIMARY
-                          </div>
-                        </div>
-                      )}
-                    </button>
+                      <div className="absolute bottom-2 right-2 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10 pointer-events-auto">
+                        {index > 0 && (
+                          <button
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMoveMedia(index, 'left'); }}
+                            className="bg-black/60 text-white rounded p-1 hover:bg-black/80 backdrop-blur-sm"
+                            title="Déplacer à gauche"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </button>
+                        )}
+                        {index < selectedSubmission.media.length - 1 && (
+                          <button
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMoveMedia(index, 'right'); }}
+                            className="bg-black/60 text-white rounded p-1 hover:bg-black/80 backdrop-blur-sm"
+                            title="Déplacer à droite"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>

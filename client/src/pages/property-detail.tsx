@@ -604,7 +604,7 @@ export default function PropertyDetailPage() {
             {isAdmin && !property.showExactLocation && (
               <Badge variant="secondary" className="text-[10px] ml-2">Admin seulement</Badge>
             )}
-            {isAdmin && property.referenceCode && (
+            {property.referenceCode && (
               <Badge variant="outline" className="text-[10px] ml-2 font-mono text-primary border-primary">REF: {property.referenceCode}</Badge>
             )}
           </div>
