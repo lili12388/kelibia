@@ -823,7 +823,7 @@ export default function BrowsePropertiesPage() {
                               )}
                             </div>
                             
-                            <span className={`bg-black/60 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-1 rounded-md flex items-center gap-1 shadow-sm transition-all ${property.promoPrice && parseFloat(property.promoPrice) > 0 ? 'mr-14' : ''}`}>
+                            <span className={`bg-black/60 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-1 rounded-md flex items-center gap-1 shadow-sm transition-all ${property.promoPrice && parseFloat(property.promoPrice) > 0 ? 'mr-[72px]' : ''}`}>
                               👁 {views}
                             </span>
                           </div>
@@ -887,49 +887,34 @@ export default function BrowsePropertiesPage() {
                               </div>
                             </div>
                             {hasWeekly && (
-                              <div className="flex flex-col items-end mt-0.5">
-                                {hasPromo ? (
-                                  <>
-                                    <div className="flex items-center gap-1.5 mb-[-2px]">
-                                      <span className="text-[9px] font-bold text-red-500/60 line-through decoration-red-500/40">
-                                        {weeklyPriceBase.toLocaleString()} TND
-                                      </span>
-                                    </div>
-                                    <div className="flex items-baseline gap-0.5">
-                                      {savingsPerNight > 0 && (
-                                        <span className="text-[9px] font-bold bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-sm mr-1 border border-orange-200 shadow-sm animate-pulse-subtle">
-                                          🔥 Éco {savingsPerNight} TND/nuit
-                                        </span>
-                                      )}
-                                      <span className="font-black text-sm sm:text-base text-[#FF4500] tracking-tight">
-                                        {currentWeeklyPrice.toLocaleString()}
-                                      </span>
-                                      <span className="font-bold text-[8px] sm:text-[10px] text-[#FF4500]/80 uppercase tracking-wider">
-                                        TND
-                                      </span>
-                                      <span className="font-bold text-[8px] text-[#FF4500]/70 uppercase tracking-wider ml-0.5">
-                                        / semaine
-                                      </span>
-                                    </div>
-                                  </>
-                                ) : (
-                                  <div className="flex items-baseline gap-1 justify-end">
-                                    {savingsPerNight > 0 && (
-                                      <span className="text-[9px] font-bold bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded-sm mr-1 border border-emerald-200">
-                                        💰 Éco {savingsPerNight} TND/nuit
-                                      </span>
-                                    )}
-                                    <span className="font-black text-sm sm:text-base text-emerald-600 tracking-tight">
-                                      {currentWeeklyPrice.toLocaleString()}
-                                    </span>
-                                    <span className="font-bold text-[8px] sm:text-[10px] text-emerald-600 uppercase tracking-wider">
-                                      TND
-                                    </span>
-                                    <span className="font-bold text-[8px] text-emerald-500 uppercase tracking-wider ml-0.5">
-                                      / semaine
+                              <div className="flex flex-col items-end mt-0.5 w-full">
+                                {hasPromo && (
+                                  <div className="flex justify-end w-full mb-[-2px]">
+                                    <span className="text-[9px] font-bold text-red-500/60 line-through decoration-red-500/40">
+                                      {weeklyPriceBase.toLocaleString()} TND
                                     </span>
                                   </div>
                                 )}
+                                <div className="flex items-center justify-between w-full">
+                                  <div>
+                                    {savingsPerNight > 0 && (
+                                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-sm border ${hasPromo ? 'bg-orange-100 text-orange-700 border-orange-200 shadow-sm animate-pulse-subtle' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
+                                        {hasPromo ? '🔥' : '💰'} Éco {savingsPerNight} TND/nuit
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-baseline gap-0.5 whitespace-nowrap shrink-0">
+                                    <span className={`font-black text-sm sm:text-base tracking-tight ${hasPromo ? 'text-[#FF4500]' : 'text-emerald-600'}`}>
+                                      {currentWeeklyPrice.toLocaleString()}
+                                    </span>
+                                    <span className={`font-bold text-[10px] uppercase tracking-wider ${hasPromo ? 'text-[#FF4500]/80' : 'text-emerald-600'}`}>
+                                      TND
+                                    </span>
+                                    <span className={`font-bold text-[10px] uppercase tracking-wider ml-0.5 ${hasPromo ? 'text-[#FF4500]/70' : 'text-emerald-500'}`}>
+                                      / semaine
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
                             )}
                           </div>
