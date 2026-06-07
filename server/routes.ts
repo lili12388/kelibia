@@ -6,10 +6,10 @@ import multer from "multer";
 import sharp from "sharp";
 import path from "path";
 import { mkdir } from "fs/promises";
-import { insertPropertySubmissionSchema, insertReservationSchema, reservations, propertySubmissions, properties, propertyMedia, propertyAnalytics, visitorLogs } from "../shared/schema.js";
+import { insertPropertySubmissionSchema, insertReservationSchema, reservations, propertySubmissions, properties, propertyMedia, submissionMedia, propertyAnalytics, visitorLogs } from "../shared/schema.js";
 import { z } from "zod";
 import { db } from "./db.js";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import fsSync from "fs";
 import crypto from "crypto";
 
@@ -1166,6 +1166,56 @@ Crawl-delay: 2
       res.status(500).json({ error: 'Failed to update submission' });
     }
   });
+  // Broker: Delete media for a submission
+  app.delete('/api/broker/submissions/:id/media/:mediaId', requireBrokerAuth, async (req, res) => {
+    try {
+      const { id, mediaId } = req.params;
+
+      const submission = await storage.getPropertySubmission(id);
+      if (!submission) {
+        res.status(404).json({ error: 'Submission not found' });
+        return;
+      }
+
+      const mediaToDelete = submission.media.find(m => m.id === mediaId);
+      if (!mediaToDelete) {
+        res.status(404).json({ error: 'Media not found' });
+        return;
+      }
+
+      if (submission.media.length <= 1) {
+        res.status(400).json({ error: 'Cannot delete the last remaining media' });
+        return;
+      }
+
+      if (submission.status === 'approved') {
+        const [publishedProperty] = await db
+          .select()
+          .from(properties)
+          .where(eq(properties.submissionId, id))
+          .limit(1);
+
+        if (publishedProperty) {
+          await db.delete(propertyMedia)
+            .where(
+              and(
+                eq(propertyMedia.propertyId, publishedProperty.id),
+                eq(propertyMedia.url, mediaToDelete.url)
+              )
+            );
+        }
+      }
+
+      await db.delete(submissionMedia)
+        .where(eq(submissionMedia.id, mediaId));
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting media:', error);
+      res.status(500).json({ error: 'Failed to delete media' });
+    }
+  });
+
   // Broker: Reorder media for a submission
   app.post('/api/broker/submissions/:id/reorder-media', requireBrokerAuth, async (req, res) => {
     try {

@@ -491,6 +491,52 @@ export default function BrokerBrowsePage() {
     });
   };
 
+  const deleteMediaMutation = useMutation({
+    mutationFn: async ({ submissionId, mediaId }: { submissionId: string; mediaId: string }) => {
+      return apiRequest('DELETE', `/api/broker/submissions/${submissionId}/media/${mediaId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/broker/submissions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/properties'] });
+      toast({
+        title: "Media Deleted",
+        description: "The media file has been removed successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Delete Failed",
+        description: error.message || "Failed to delete media.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDeleteMedia = (mediaId: string) => {
+    if (!selectedSubmission) return;
+    if (selectedSubmission.media.length <= 1) {
+      toast({
+        title: "Cannot delete",
+        description: "You must have at least one media file.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (window.confirm("Are you sure you want to delete this media file?")) {
+      // Optimistic update
+      setSelectedSubmission({
+        ...selectedSubmission,
+        media: selectedSubmission.media.filter(m => m.id !== mediaId)
+      });
+      
+      deleteMediaMutation.mutate({
+        submissionId: selectedSubmission.id,
+        mediaId
+      });
+    }
+  };
+
   const handleEditSubmission = (submission: PropertySubmissionWithMedia) => {
     setSelectedSubmission(submission);
     
@@ -1536,6 +1582,15 @@ export default function BrokerBrowsePage() {
                             </div>
                           </div>
                         )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDeleteMedia(media.id); }}
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10 pointer-events-auto shadow-md hover:bg-red-600"
+                        title="Supprimer"
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </button>
 
                       <div className="absolute bottom-2 right-2 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10 pointer-events-auto">

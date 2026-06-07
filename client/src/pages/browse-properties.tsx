@@ -895,23 +895,23 @@ export default function BrowsePropertiesPage() {
                                     </span>
                                   </div>
                                 )}
-                                <div className="flex items-center justify-between w-full">
-                                  <div>
+                                <div className="flex items-center justify-between w-full gap-1">
+                                  <div className="shrink-0">
                                     {savingsPerNight > 0 && (
-                                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-sm border ${hasPromo ? 'bg-orange-100 text-orange-700 border-orange-200 shadow-sm animate-pulse-subtle' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
-                                        {hasPromo ? '🔥' : '💰'} Éco {savingsPerNight} TND/nuit
+                                      <span className={`whitespace-nowrap text-[8.5px] sm:text-[9px] font-bold px-1 py-0.5 rounded-sm border ${hasPromo ? 'bg-orange-100 text-orange-700 border-orange-200 shadow-sm animate-pulse-subtle' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
+                                        {hasPromo ? '🔥' : '💰'} Éco {savingsPerNight} TND/n.
                                       </span>
                                     )}
                                   </div>
                                   <div className="flex items-baseline gap-0.5 whitespace-nowrap shrink-0">
-                                    <span className={`font-black text-sm sm:text-base tracking-tight ${hasPromo ? 'text-[#FF4500]' : 'text-emerald-600'}`}>
+                                    <span className={`font-black text-xs sm:text-base tracking-tight ${hasPromo ? 'text-[#FF4500]' : 'text-emerald-600'}`}>
                                       {currentWeeklyPrice.toLocaleString()}
                                     </span>
-                                    <span className={`font-bold text-[10px] uppercase tracking-wider ${hasPromo ? 'text-[#FF4500]/80' : 'text-emerald-600'}`}>
+                                    <span className={`font-bold text-[8.5px] sm:text-[10px] uppercase tracking-wider ${hasPromo ? 'text-[#FF4500]/80' : 'text-emerald-600'}`}>
                                       TND
                                     </span>
-                                    <span className={`font-bold text-[10px] uppercase tracking-wider ml-0.5 ${hasPromo ? 'text-[#FF4500]/70' : 'text-emerald-500'}`}>
-                                      / semaine
+                                    <span className={`font-bold text-[8.5px] sm:text-[10px] uppercase tracking-wider ml-0.5 ${hasPromo ? 'text-[#FF4500]/70' : 'text-emerald-500'}`}>
+                                      / sem
                                     </span>
                                   </div>
                                 </div>
