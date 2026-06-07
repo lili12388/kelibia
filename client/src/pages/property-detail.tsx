@@ -590,7 +590,7 @@ export default function PropertyDetailPage() {
           <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-sm sm:text-base">
             <span className="flex items-center gap-1 font-medium text-foreground underline decoration-foreground/30 underline-offset-4">
               <MapPin className="w-4 h-4 text-primary" />
-              {property.location}
+              {displayLocation}
             </span>
             {property.distanceToBeach && (
               <>
