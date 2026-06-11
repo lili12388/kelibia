@@ -900,7 +900,6 @@ export default function PropertyDetailPage() {
             {/* Bed Details - Per-Room Card Layout */}
             {(property.numDoubleBeds > 0 || property.numSingleBeds > 0 || property.hasSofaBed || property.bedDetails) && (
               <div className="pb-2">
-              <div className="pb-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {property.bedDetails && property.bedDetails.startsWith('[') ? (
                     <>
