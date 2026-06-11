@@ -21,7 +21,7 @@ import {
   ChevronLeft, ChevronRight, User, Pencil, ChefHat,
   Refrigerator, Flame, Wind, Wifi, Car, Waves, Users,
   TriangleAlert, Microwave, Coffee, Home, Utensils, Info, Clock, ShieldCheck,
-  Ban, NotebookText, Tv, WashingMachine
+  Ban, NotebookText, Tv, WashingMachine, Sofa
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -881,20 +881,34 @@ export default function PropertyDetailPage() {
           <div className="lg:col-span-2 space-y-4 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
 
             {/* Quick Summary Row */}
-            <div className="flex flex-wrap items-center gap-4 pb-2 border-b border-border">
-              {(isAdmin || property.showRooms) && (
-                <div className="flex items-center gap-2">
-                  <BedDouble className="w-5 h-5 text-muted-foreground" />
-                  <span className="font-medium">{property.rooms} بيوت</span>
-                </div>
-              )}
+            <div className="flex flex-wrap items-center justify-start gap-4 pb-2 border-b border-border" dir="rtl">
+              <div className="flex items-center gap-2">
+                <Sofa className="w-5 h-5 text-muted-foreground" />
+                <span className="font-medium">1 صالة</span>
+              </div>
               <span className="text-muted-foreground/30 hidden sm:inline">•</span>
-              {(isAdmin || property.showBathrooms) && (
-                <div className="flex items-center gap-2">
-                  <Bath className="w-5 h-5 text-muted-foreground" />
-                  <span className="font-medium">{property.bathrooms} حمامات</span>
-                </div>
+              {(isAdmin || property.showRooms) && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <BedDouble className="w-5 h-5 text-muted-foreground" />
+                    <span className="font-medium">{property.rooms} بيوت</span>
+                  </div>
+                  <span className="text-muted-foreground/30 hidden sm:inline">•</span>
+                </>
               )}
+              {(isAdmin || property.showBathrooms) && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <Bath className="w-5 h-5 text-muted-foreground" />
+                    <span className="font-medium">{property.bathrooms} حمامات</span>
+                  </div>
+                  <span className="text-muted-foreground/30 hidden sm:inline">•</span>
+                </>
+              )}
+              <div className="flex items-center gap-2">
+                <ChefHat className="w-5 h-5 text-muted-foreground" />
+                <span className="font-medium">1 مطبخ</span>
+              </div>
             </div>
 
             {/* Bed Details - Per-Room Card Layout */}
@@ -929,16 +943,6 @@ export default function PropertyDetailPage() {
                         }
                       })()}
                       
-                      {/* Sofa-bed in living room */}
-                      {property.hasSofaBed && (
-                        <div className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-background shadow-sm">
-                          <span className="text-2xl leading-none">🛋️</span>
-                          <div>
-                            <span className="text-sm font-semibold text-foreground block">الصالة</span>
-                            <span className="text-sm text-muted-foreground">1 كنبة</span>
-                          </div>
-                        </div>
-                      )}
                     </>
                   ) : (
                     <>
@@ -970,16 +974,7 @@ export default function PropertyDetailPage() {
                         </div>
                       )}
 
-                      {/* Sofa-bed in living room */}
-                      {property.hasSofaBed && (
-                        <div className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-background shadow-sm">
-                          <span className="text-2xl leading-none">🛋️</span>
-                          <div>
-                            <span className="text-sm font-semibold text-foreground block">الصالة</span>
-                            <span className="text-sm text-muted-foreground">1 كنبة</span>
-                          </div>
-                        </div>
-                      )}
+
 
                       {/* Fallback: show bedDetails text if no structured counts */}
                       {!property.numDoubleBeds && !property.numSingleBeds && !property.hasSofaBed && property.bedDetails && (
@@ -1002,7 +997,7 @@ export default function PropertyDetailPage() {
             {/* Amenities Grid (Ce que propose ce logement) - Moved up */}
             <div className="py-6 border-b border-border">
               <h2 className="text-xl font-semibold mb-6 text-foreground text-center">شنوّة تلقى في الدار</h2>
-              <div className="grid grid-cols-2 gap-y-4 gap-x-8">
+              <div className="grid grid-cols-2 gap-y-4 gap-x-8 justify-items-center" dir="rtl">
                 {property.hasWiFi && (
                   <div className="flex items-center gap-3 text-foreground/80">
                     <Wifi className="w-6 h-6 opacity-70" />
@@ -1143,54 +1138,42 @@ export default function PropertyDetailPage() {
                     <Badge variant="secondary" className="text-[10px]">Admin</Badge>
                   )}
                 </h2>
-                <div className="text-foreground/90 whitespace-pre-line leading-relaxed mb-8">
+                <div className="text-foreground/90 whitespace-pre-line leading-relaxed mb-8 text-right" dir="rtl">
                   {property.description}
                 </div>
               </div>
             )}
 
             {/* Rules & Terms (New) - Moved before Map */}
-            <div className="py-6 border-t border-border">
-              <h2 className="text-xl font-semibold mb-6 text-foreground text-center">القواعد والشروط</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Entry/Exit Times */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                      <Clock className="w-5 h-5 text-foreground" />
-                    </div>
-                    <div>
-                      <span className="text-sm text-muted-foreground block">وقت الدخول والخروج</span>
-                      <span className="font-bold text-foreground">دخول: {property.checkInTime || "14:00"} • خروج: {property.checkOutTime || "11:00"}</span>
-                    </div>
-                  </div>
-
-                  {property.houseRules && (
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
-                        <ShieldCheck className="w-5 h-5 text-foreground" />
-                      </div>
-                      <div>
-                        <span className="text-sm text-muted-foreground block">قواعد الدار</span>
-                        <span className="font-medium text-foreground">{property.houseRules}</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Cancellation Policy */}
-                {property.cancellationPolicy && (
-                  <div className="bg-muted/30 p-5 rounded-2xl border border-border/50">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Info className="w-4 h-4 text-muted-foreground" />
-                      <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">شروط الإلغاء</h3>
-                    </div>
-                    <p className="text-sm text-foreground/80 leading-relaxed italic">
-                      "{property.cancellationPolicy}"
-                    </p>
-                  </div>
-                )}
+            <div className="py-6 border-t border-border flex flex-col items-center">
+              <h2 className="text-xl font-semibold mb-6 text-foreground text-center">وقت الدخول و الخروج</h2>
+              
+              <div className="flex flex-col items-center gap-2 mb-6" dir="rtl">
+                <Clock className="w-8 h-8 text-muted-foreground mb-2" />
+                <span className="font-bold text-lg text-foreground">
+                  الدخول: {property.checkInTime || "14:00"} • الخروج: {property.checkOutTime || "11:00"}
+                </span>
               </div>
+
+              {property.houseRules && (
+                <div className="text-center max-w-lg mb-6" dir="rtl">
+                  <span className="text-sm text-muted-foreground block mb-2">قواعد الدار</span>
+                  <span className="font-medium text-foreground">{property.houseRules}</span>
+                </div>
+              )}
+
+              {/* Cancellation Policy */}
+              {property.cancellationPolicy && (
+                <div className="bg-muted/30 p-5 rounded-2xl border border-border/50 text-center max-w-lg" dir="rtl">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">شروط الإلغاء</h3>
+                    <Info className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm text-foreground/80 leading-relaxed italic">
+                    "{property.cancellationPolicy}"
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Google Maps Embed Location - Moved right under rules */}
@@ -1334,130 +1317,11 @@ export default function PropertyDetailPage() {
 
                 {/* Booking Widget */}
                 <div id="booking-widget" className="px-4 py-4 space-y-2.5">
-
-                  {/* ── DU (Arrivée) ── */}
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-primary mb-1.5">
-                      📅 Arrivée — Du
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        placeholder="Jour"
-                        id="start-day-input"
-                        className="w-16 shrink-0 text-lg font-black text-center bg-muted/50 hover:bg-muted/80 focus:bg-background rounded-lg px-2 py-2 outline-none border-2 border-transparent focus:border-primary/40 transition-all [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        value={startDay}
-                        onChange={(e) => {
-                          let val = e.target.value;
-                          if (val.length > 2) val = val.slice(0, 2);
-                          setStartDay(val);
-                          setHasInterference(false);
-                        }}
-                        min="1"
-                        max="31"
-                      />
-                      <select
-                        className="flex-1 text-sm font-semibold bg-muted/50 hover:bg-muted/80 focus:bg-background rounded-lg px-3 py-2 outline-none cursor-pointer text-foreground border-2 border-transparent focus:border-primary/40 transition-all appearance-none"
-                        value={startMonth}
-                        onChange={(e) => {
-                          setStartMonth(e.target.value);
-                          setHasInterference(false);
-                        }}
-                      >
-                        <option value="05">Mai</option>
-                        <option value="06">Juin</option>
-                        <option value="07">Juillet</option>
-                        <option value="08">Août</option>
-                        <option value="09">Septembre</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* ── Nights divider ── */}
-                  <div className="flex items-center gap-2 py-0.5">
-                    <div className="flex-1 h-px bg-border/50" />
-                    <div className="flex items-center gap-1 bg-muted/60 rounded-full px-2.5 py-1">
-                      <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Durée</span>
-                      <input
-                        type="number"
-                        className="w-8 text-xs font-black text-center bg-transparent outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-foreground"
-                        value={reserveDays}
-                        onChange={handleReserveDaysChange}
-                        placeholder="0"
-                        min="1"
-                      />
-                      <span className="text-[10px] text-muted-foreground font-semibold">nuits</span>
-                    </div>
-                    <div className="flex-1 h-px bg-border/50" />
-                  </div>
-
-                  {/* ── AU (Départ) ── */}
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-primary mb-1.5">
-                      🏁 Départ — Au
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        placeholder="Jour"
-                        id="end-day-input"
-                        className="w-16 shrink-0 text-lg font-black text-center bg-muted/50 hover:bg-muted/80 focus:bg-background rounded-lg px-2 py-2 outline-none border-2 border-transparent focus:border-primary/40 transition-all [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        value={endDay}
-                        onChange={(e) => {
-                          let val = e.target.value;
-                          if (val.length > 2) val = val.slice(0, 2);
-                          setEndDay(val);
-                          setHasInterference(false);
-                        }}
-                        min="1"
-                        max="31"
-                      />
-                      <select
-                        className="flex-1 text-sm font-semibold bg-muted/50 hover:bg-muted/80 focus:bg-background rounded-lg px-3 py-2 outline-none cursor-pointer text-foreground border-2 border-transparent focus:border-primary/40 transition-all appearance-none"
-                        value={endMonth}
-                        onChange={(e) => {
-                          setEndMonth(e.target.value);
-                          setHasInterference(false);
-                        }}
-                      >
-                        <option value="05">Mai</option>
-                        <option value="06">Juin</option>
-                        <option value="07">Juillet</option>
-                        <option value="08">Août</option>
-                        <option value="09">Septembre</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* ── Live Total ── */}
-                  {String(reserveDays) !== '' && !isNaN(Number(reserveDays)) && (
-                    <div className="flex justify-between items-center bg-muted/40 rounded-xl px-4 py-3 border border-border/40">
-                      <span className="text-sm text-muted-foreground font-medium">
-                        {parseFloat(property.price).toLocaleString()} TND × {reserveDays} nuits
-                      </span>
-                      <span className="text-lg font-black text-foreground">
-                        {(parseFloat(property.price) * Number(reserveDays)).toLocaleString()} TND
-                      </span>
-                    </div>
-                  )}
-
-                  {/* ── Interference Warning ── */}
-                  {hasInterference && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2 text-red-600 text-sm animate-in fade-in zoom-in-95">
-                      <TriangleAlert className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-semibold">Dates non disponibles</p>
-                        <p className="text-red-600/80 text-xs mt-1">Ces dates interfèrent avec une réservation existante. Veuillez choisir d'autres dates.</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* ── CTA Button ── */}
                   <Button
                     className="w-full py-4 text-sm font-black rounded-xl shadow-lg shadow-rose-500/20 transition-all active:scale-[0.98] bg-gradient-to-r from-[#FF385C] to-[#E31C5F] hover:from-[#E0314F] hover:to-[#C8185A] text-white border-0"
                     onClick={onReserveClick}
                   >
-                    احجز عن طريق الواتساب
+                    Réserver
                   </Button>
                 </div>
 
@@ -1776,57 +1640,6 @@ export default function PropertyDetailPage() {
             )}
           </div>
 
-          {/* Date Picker (Expanded to fill space) */}
-          <div className="flex-1 flex gap-2">
-            {/* Du */}
-            <div className="flex-1 bg-muted/40 rounded-xl p-2 border border-border/60 shadow-sm transition-all active:bg-muted/60 relative">
-              <span className="block text-[9px] font-black uppercase text-primary/70 mb-1 text-center leading-none tracking-tight">Du</span>
-              <div className="flex gap-2 items-center justify-center">
-                <input
-                  type="number"
-                  placeholder="--"
-                  className="w-8 text-base font-bold bg-transparent text-center outline-none focus:ring-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  value={startDay}
-                  onChange={(e) => setStartDay(e.target.value.slice(0, 2))}
-                />
-                <select
-                  className="bg-transparent text-xs font-bold outline-none cursor-pointer"
-                  value={startMonth}
-                  onChange={(e) => setStartMonth(e.target.value)}
-                >
-                  <option value="05">Mai</option>
-                  <option value="06">Juin</option>
-                  <option value="07">Juil.</option>
-                  <option value="08">Août</option>
-                  <option value="09">Sep.</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Au */}
-            <div className="flex-1 bg-muted/40 rounded-xl p-2 border border-border/60 shadow-sm transition-all active:bg-muted/60 relative">
-              <span className="block text-[9px] font-black uppercase text-primary/70 mb-1 text-center leading-none tracking-tight">Au</span>
-              <div className="flex gap-2 items-center justify-center">
-                <input
-                  type="number"
-                  placeholder="--"
-                  className="w-8 text-base font-bold bg-transparent text-center outline-none focus:ring-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  value={endDay}
-                  onChange={(e) => setEndDay(e.target.value.slice(0, 2))}
-                />
-                <select
-                  className="bg-transparent text-xs font-bold outline-none cursor-pointer"
-                  value={endMonth}
-                  onChange={(e) => setEndMonth(e.target.value)}
-                >
-                  <option value="05">Mai</option>
-                  <option value="06">Juin</option>
-                  <option value="07">Juil.</option>
-                  <option value="08">Août</option>
-                  <option value="09">Sep.</option>
-                </select>
-              </div>
-            </div>
           </div>
         </div>
 
