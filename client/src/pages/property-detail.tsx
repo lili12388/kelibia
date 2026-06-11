@@ -900,7 +900,7 @@ export default function PropertyDetailPage() {
             {/* Bed Details - Per-Room Card Layout */}
             {(property.numDoubleBeds > 0 || property.numSingleBeds > 0 || property.hasSofaBed || property.bedDetails) && (
               <div className="pb-2">
-                <h2 className="text-xl font-semibold mb-4 text-foreground">Couchages</h2>
+              <div className="pb-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {property.bedDetails && property.bedDetails.startsWith('[') ? (
                     <>
@@ -913,12 +913,12 @@ export default function PropertyDetailPage() {
                                 <span className="text-2xl leading-none">🛏️</span>
                                 <div>
                                   <span className="text-sm font-semibold text-foreground block">
-                                    Chambre {i + 1}
+                                    الغرفة {i + 1}
                                   </span>
                                   <span className="text-sm text-muted-foreground">
                                     {[
-                                      room.double > 0 ? `${room.double} lit${room.double > 1 ? 's' : ''} double${room.double > 1 ? 's' : ''}` : null,
-                                      room.single > 0 ? `${room.single} lit${room.single > 1 ? 's' : ''} simple${room.single > 1 ? 's' : ''}` : null
+                                      room.double > 0 ? `${room.double} فرش دوبل` : null,
+                                      room.single > 0 ? `${room.single} فرش مفرد` : null
                                     ].filter(Boolean).join(", ")}
                                   </span>
                                 </div>
@@ -935,8 +935,8 @@ export default function PropertyDetailPage() {
                         <div className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-background shadow-sm">
                           <span className="text-2xl leading-none">🛋️</span>
                           <div>
-                            <span className="text-sm font-semibold text-foreground block">Salon</span>
-                            <span className="text-sm text-muted-foreground">1 canapé-lit</span>
+                            <span className="text-sm font-semibold text-foreground block">الصالة</span>
+                            <span className="text-sm text-muted-foreground">1 كنبة</span>
                           </div>
                         </div>
                       )}
@@ -949,9 +949,9 @@ export default function PropertyDetailPage() {
                           <span className="text-2xl leading-none">🛏️</span>
                           <div>
                             <span className="text-sm font-semibold text-foreground block">
-                              Chambre {i + 1}
+                              الغرفة {i + 1}
                             </span>
-                            <span className="text-sm text-muted-foreground">1 lit double</span>
+                            <span className="text-sm text-muted-foreground">1 فرش دوبل</span>
                           </div>
                         </div>
                       ))}
@@ -962,10 +962,10 @@ export default function PropertyDetailPage() {
                           <span className="text-2xl leading-none">🛏️</span>
                           <div>
                             <span className="text-sm font-semibold text-foreground block">
-                              Chambre {(property.numDoubleBeds || 0) + 1}
+                              الغرفة {(property.numDoubleBeds || 0) + 1}
                             </span>
                             <span className="text-sm text-muted-foreground">
-                              {property.numSingleBeds} lit{property.numSingleBeds > 1 ? 's' : ''} simple{property.numSingleBeds > 1 ? 's' : ''}
+                              {property.numSingleBeds} فرش مفرد
                             </span>
                           </div>
                         </div>
@@ -976,8 +976,8 @@ export default function PropertyDetailPage() {
                         <div className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-background shadow-sm">
                           <span className="text-2xl leading-none">🛋️</span>
                           <div>
-                            <span className="text-sm font-semibold text-foreground block">Salon</span>
-                            <span className="text-sm text-muted-foreground">1 canapé-lit</span>
+                            <span className="text-sm font-semibold text-foreground block">الصالة</span>
+                            <span className="text-sm text-muted-foreground">1 كنبة</span>
                           </div>
                         </div>
                       )}
@@ -987,7 +987,7 @@ export default function PropertyDetailPage() {
                         <div className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-background shadow-sm col-span-full">
                           <span className="text-2xl leading-none">🛏️</span>
                           <div>
-                            <span className="text-sm font-semibold text-foreground block">Couchages</span>
+                            <span className="text-sm font-semibold text-foreground block"></span>
                             <span className="text-sm text-muted-foreground">{property.bedDetails}</span>
                           </div>
                         </div>
@@ -1002,7 +1002,7 @@ export default function PropertyDetailPage() {
 
             {/* Amenities Grid (Ce que propose ce logement) - Moved up */}
             <div className="py-6 border-b border-border">
-              <h2 className="text-xl font-semibold mb-6 text-foreground">شنوّة تلقى في الدار</h2>
+              <h2 className="text-xl font-semibold mb-6 text-foreground text-center">شنوّة تلقى في الدار</h2>
               <div className="grid grid-cols-2 gap-y-4 gap-x-8">
                 {property.hasWiFi && (
                   <div className="flex items-center gap-3 text-foreground/80">
@@ -1043,7 +1043,7 @@ export default function PropertyDetailPage() {
                 {property.hasKitchenUtensils && (
                   <div className="flex items-center gap-3 text-foreground/80">
                     <Utensils className="w-6 h-6 opacity-70" />
-                    <span className="font-medium">Ustensiles de cuisine</span>
+                    <span className="font-medium">ماعون كوجينة</span>
                   </div>
                 )}
                 {property.hasMicrowave && (
@@ -1061,20 +1061,20 @@ export default function PropertyDetailPage() {
                 {property.hasLinens && (
                   <div className="flex items-center gap-3 text-foreground/80">
                     <NotebookText className="w-6 h-6 opacity-70" />
-                    <span className="font-medium">Draps fournis</span>
+                    <span className="font-medium">دراوات</span>
                   </div>
                 )}
                 {property.hasTowels && (
                   <div className="flex items-center gap-3 text-foreground/80">
                     <NotebookText className="w-6 h-6 opacity-70" />
-                    <span className="font-medium">Serviettes fournies</span>
+                    <span className="font-medium">مناشف</span>
                   </div>
                 )}
                 {property.tvType && property.tvType !== "None" && (
                   <div className="flex items-center gap-3 text-foreground/80">
                     <Tv className="w-6 h-6 opacity-70" />
                     <span className="font-medium">
-                      {property.tvType === "Smart TV" ? "Smart TV (Netflix/YT)" : "Télévision"}
+                      {property.tvType === "Smart TV" ? "تلفزة سمارت (Netflix/YT)" : "تلفزة"}
                     </span>
                   </div>
                 )}
@@ -1085,12 +1085,35 @@ export default function PropertyDetailPage() {
             {/* Services à proximité — standalone section below amenities */}
             {property.nearbyCommodities && (
               <div className="py-6 border-b border-border">
-                <h2 className="text-xl font-semibold mb-4 text-foreground">الخدمات القريبة</h2>
-                <div className="flex flex-wrap gap-2">
+                <h2 className="text-xl font-semibold mb-4 text-foreground text-center">الخدمات القريبة</h2>
+                <div className="flex flex-wrap justify-center gap-2">
                   {property.nearbyCommodities.split(", ").filter(Boolean).map((rawTag, idx) => {
                     let tag = rawTag.trim();
                     const lower = tag.toLowerCase();
                     
+                    const tagTranslations: Record<string, string> = {
+                      "plage": "بحر",
+                      "restaurant": "مطعم",
+                      "café": "قهوة",
+                      "cafe": "قهوة",
+                      "boulangerie": "كوشة",
+                      "pharmacie": "فرمسي",
+                      "épicerie": "عطار",
+                      "epicerie": "عطار",
+                      "transport": "نقل",
+                      "banque": "بانكة",
+                      "marché": "مرشي",
+                      "marche": "مرشي",
+                      "hôpital": "سبيطار",
+                      "hopital": "سبيطار"
+                    };
+                    
+                    for (const [fr, ar] of Object.entries(tagTranslations)) {
+                      if (lower.includes(fr)) {
+                        tag = tag.replace(new RegExp(fr, "ig"), ar);
+                      }
+                    }
+
                     if (lower.includes("transport")) {
                       tag = `🚕 ${tag.replace("🚌", "").trim()}`;
                     } else if (lower.includes("restaurant") && !tag.includes("🍽️")) {
@@ -1115,8 +1138,8 @@ export default function PropertyDetailPage() {
             {/* Description */}
             {(isAdmin || property.showDescription) && (
               <div className="pb-6">
-                <h2 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
-                  وصف الدار
+                <h2 className="text-xl font-semibold mb-4 text-foreground flex justify-center items-center gap-2">
+                  الوصف
                   {isAdmin && !property.showDescription && (
                     <Badge variant="secondary" className="text-[10px]">Admin</Badge>
                   )}
@@ -1129,7 +1152,7 @@ export default function PropertyDetailPage() {
 
             {/* Rules & Terms (New) - Moved before Map */}
             <div className="py-6 border-t border-border">
-              <h2 className="text-xl font-semibold mb-6 text-foreground">Règles et conditions</h2>
+              <h2 className="text-xl font-semibold mb-6 text-foreground text-center">القواعد والشروط</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Entry/Exit Times */}
                 <div className="space-y-4">
@@ -1139,7 +1162,7 @@ export default function PropertyDetailPage() {
                     </div>
                     <div>
                       <span className="text-sm text-muted-foreground block">وقت الدخول والخروج</span>
-                      <span className="font-bold text-foreground">Entrée: {property.checkInTime || "14:00"} • Sortie: {property.checkOutTime || "11:00"}</span>
+                      <span className="font-bold text-foreground">دخول: {property.checkInTime || "14:00"} • خروج: {property.checkOutTime || "11:00"}</span>
                     </div>
                   </div>
 
@@ -1149,7 +1172,7 @@ export default function PropertyDetailPage() {
                         <ShieldCheck className="w-5 h-5 text-foreground" />
                       </div>
                       <div>
-                        <span className="text-sm text-muted-foreground block">Règles de la maison</span>
+                        <span className="text-sm text-muted-foreground block">قواعد الدار</span>
                         <span className="font-medium text-foreground">{property.houseRules}</span>
                       </div>
                     </div>
@@ -1161,7 +1184,7 @@ export default function PropertyDetailPage() {
                   <div className="bg-muted/30 p-5 rounded-2xl border border-border/50">
                     <div className="flex items-center gap-2 mb-2">
                       <Info className="w-4 h-4 text-muted-foreground" />
-                      <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Conditions d'annulation</h3>
+                      <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">شروط الإلغاء</h3>
                     </div>
                     <p className="text-sm text-foreground/80 leading-relaxed italic">
                       "{property.cancellationPolicy}"
@@ -1174,8 +1197,8 @@ export default function PropertyDetailPage() {
             {/* Google Maps Embed Location - Moved right under rules */}
             {property.location && (
               <div className="pt-6 border-t border-border">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-foreground">البلاصة</h3>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 mb-4">
+                  <h3 className="text-lg font-semibold text-foreground text-center">البلاصة</h3>
                   {property.distanceToBeach && (
                     <Badge variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200">
                       <Waves className="w-3 h-3 mr-1" />
@@ -1191,11 +1214,24 @@ export default function PropertyDetailPage() {
                   {property.isQuietNeighborhood && (
                     <Badge variant="secondary" className="bg-green-50 text-green-700 hover:bg-green-100 border-green-200 ml-2">
                       <span className="mr-1">🤫</span>
-                      Quartier Calme
+                      حومة هادية
                     </Badge>
                   )}
                 </div>
-                <div className="w-full h-64 md:h-[350px] rounded-xl overflow-hidden border border-border shadow-sm mb-4">
+                <div className="relative w-full h-64 md:h-[350px] rounded-xl overflow-hidden border border-border shadow-sm mb-4">
+                  <a 
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                      /^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/.test(property.location.trim()) 
+                        ? property.location.trim() 
+                        : (property.location.toLowerCase().includes('tunisi') ? property.location : property.location + ', Tunisia')
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute top-4 right-4 z-10 bg-white/95 backdrop-blur-sm text-primary font-bold px-4 py-2 rounded-xl shadow-md hover:scale-105 transition-all flex items-center gap-2 border border-primary/20 hover:bg-primary hover:text-white group"
+                  >
+                    <MapPin className="w-4 h-4 text-primary group-hover:text-white transition-colors" />
+                    شوف في جوجل مابس
+                  </a>
                   <iframe
                     width="100%"
                     height="100%"

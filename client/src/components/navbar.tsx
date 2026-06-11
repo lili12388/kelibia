@@ -114,7 +114,7 @@ export default function Navbar() {
                     ? "text-white hover:text-white/80" 
                     : location === "/" ? "text-primary" : "text-foreground/70 hover:text-primary"
                 }`}>
-                  الرئيسية
+                  Accueil
                 </span>
               </Link>
               
@@ -124,7 +124,7 @@ export default function Navbar() {
                     ? "text-white hover:text-white/80" 
                     : location === "/about" ? "text-primary" : "text-foreground/70 hover:text-primary"
                 }`}>
-                  على الموقع
+                  À Propos
                 </span>
               </Link>
             </div>
@@ -256,7 +256,7 @@ export default function Navbar() {
                   ? isTransparent ? "bg-white/15 text-white" : "bg-primary/10 text-primary"
                   : isTransparent ? "text-white/80 hover:bg-white/10" : "text-foreground/70 hover:bg-muted/50"
               }`}>
-                <span className="text-sm font-bold">الرئيسية</span>
+                <span className="text-sm font-bold">Accueil</span>
               </div>
             </Link>
             
@@ -266,7 +266,7 @@ export default function Navbar() {
                   ? isTransparent ? "bg-white/15 text-white" : "bg-primary/10 text-primary"
                   : isTransparent ? "text-white/80 hover:bg-white/10" : "text-foreground/70 hover:bg-muted/50"
               }`}>
-                <span className="text-sm font-bold">على الموقع</span>
+                <span className="text-sm font-bold">À Propos</span>
               </div>
             </Link>
           </div>
