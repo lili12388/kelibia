@@ -885,14 +885,14 @@ export default function PropertyDetailPage() {
               {(isAdmin || property.showRooms) && (
                 <div className="flex items-center gap-2">
                   <BedDouble className="w-5 h-5 text-muted-foreground" />
-                  <span className="font-medium">{property.rooms} chambres</span>
+                  <span className="font-medium">{property.rooms} بيوت</span>
                 </div>
               )}
               <span className="text-muted-foreground/30 hidden sm:inline">•</span>
               {(isAdmin || property.showBathrooms) && (
                 <div className="flex items-center gap-2">
                   <Bath className="w-5 h-5 text-muted-foreground" />
-                  <span className="font-medium">{property.bathrooms} salles de bain</span>
+                  <span className="font-medium">{property.bathrooms} حمامات</span>
                 </div>
               )}
             </div>
@@ -1002,7 +1002,7 @@ export default function PropertyDetailPage() {
 
             {/* Amenities Grid (Ce que propose ce logement) - Moved up */}
             <div className="py-6 border-b border-border">
-              <h2 className="text-xl font-semibold mb-6 text-foreground">Ce que propose ce logement</h2>
+              <h2 className="text-xl font-semibold mb-6 text-foreground">شنوّة تلقى في الدار</h2>
               <div className="grid grid-cols-2 gap-y-4 gap-x-8">
                 {property.hasWiFi && (
                   <div className="flex items-center gap-3 text-foreground/80">
@@ -1013,31 +1013,31 @@ export default function PropertyDetailPage() {
                 {property.hasAC && (
                   <div className="flex items-center gap-3 text-foreground/80">
                     <Wind className="w-6 h-6 opacity-70" />
-                    <span className="font-medium">Climatisation</span>
+                    <span className="font-medium">تكييف</span>
                   </div>
                 )}
                 {property.hasParking && (
                   <div className="flex items-center gap-3 text-foreground/80">
                     <Car className="w-6 h-6 opacity-70" />
-                    <span className="font-medium">Parking gratuit</span>
+                    <span className="font-medium">باركينج</span>
                   </div>
                 )}
                 {property.hasSeaView && (
                   <div className="flex items-center gap-3 text-foreground/80">
                     <Waves className="w-6 h-6 opacity-70" />
-                    <span className="font-medium">Vue sur mer</span>
+                    <span className="font-medium">إطلالة على البحر</span>
                   </div>
                 )}
                 {property.hasFridge && (
                   <div className="flex items-center gap-3 text-foreground/80">
                     <Refrigerator className="w-6 h-6 opacity-70" />
-                    <span className="font-medium">Réfrigérateur</span>
+                    <span className="font-medium">فريجيدار</span>
                   </div>
                 )}
                 {property.hasGasStove && (
                   <div className="flex items-center gap-3 text-foreground/80">
                     <Flame className="w-6 h-6 opacity-70" />
-                    <span className="font-medium">Cuisinière à gaz</span>
+                    <span className="font-medium">غاز</span>
                   </div>
                 )}
                 {property.hasKitchenUtensils && (
@@ -1049,13 +1049,13 @@ export default function PropertyDetailPage() {
                 {property.hasMicrowave && (
                   <div className="flex items-center gap-3 text-foreground/80">
                     <Microwave className="w-6 h-6 opacity-70" />
-                    <span className="font-medium">Micro-ondes</span>
+                    <span className="font-medium">ميكروويف</span>
                   </div>
                 )}
                 {property.hasWashingMachine && (
                   <div className="flex items-center gap-3 text-foreground/80">
                     <WashingMachine className="w-6 h-6 opacity-70" />
-                    <span className="font-medium">Machine à laver</span>
+                    <span className="font-medium">آلة غسيل</span>
                   </div>
                 )}
                 {property.hasLinens && (
@@ -1085,7 +1085,7 @@ export default function PropertyDetailPage() {
             {/* Services à proximité — standalone section below amenities */}
             {property.nearbyCommodities && (
               <div className="py-6 border-b border-border">
-                <h2 className="text-xl font-semibold mb-4 text-foreground">Services à proximité</h2>
+                <h2 className="text-xl font-semibold mb-4 text-foreground">الخدمات القريبة</h2>
                 <div className="flex flex-wrap gap-2">
                   {property.nearbyCommodities.split(", ").filter(Boolean).map((rawTag, idx) => {
                     let tag = rawTag.trim();
@@ -1116,7 +1116,7 @@ export default function PropertyDetailPage() {
             {(isAdmin || property.showDescription) && (
               <div className="pb-6">
                 <h2 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
-                  À propos de ce logement
+                  وصف الدار
                   {isAdmin && !property.showDescription && (
                     <Badge variant="secondary" className="text-[10px]">Admin</Badge>
                   )}
@@ -1138,7 +1138,7 @@ export default function PropertyDetailPage() {
                       <Clock className="w-5 h-5 text-foreground" />
                     </div>
                     <div>
-                      <span className="text-sm text-muted-foreground block">Heures d'arrivée / départ</span>
+                      <span className="text-sm text-muted-foreground block">وقت الدخول والخروج</span>
                       <span className="font-bold text-foreground">Entrée: {property.checkInTime || "14:00"} • Sortie: {property.checkOutTime || "11:00"}</span>
                     </div>
                   </div>
@@ -1175,7 +1175,7 @@ export default function PropertyDetailPage() {
             {property.location && (
               <div className="pt-6 border-t border-border">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-foreground">Où se situe le logement</h3>
+                  <h3 className="text-lg font-semibold text-foreground">البلاصة</h3>
                   {property.distanceToBeach && (
                     <Badge variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200">
                       <Waves className="w-3 h-3 mr-1" />
@@ -1236,8 +1236,8 @@ export default function PropertyDetailPage() {
                             <span className="text-3xl font-black text-[#FF4500] tracking-tight animate-pulse-subtle shadow-orange-500/20 drop-shadow-sm">
                               {parseFloat(property.promoPrice).toLocaleString()}
                             </span>
-                            <span className="text-base font-bold text-[#FF4500]/80">TND</span>
-                            <span className="text-xs text-muted-foreground font-medium ml-1">/ nuit</span>
+                            <span className="text-base font-bold text-[#FF4500]/80">د</span>
+                            <span className="text-xs text-muted-foreground font-medium ml-1">/ الليلة</span>
                             {isAdmin && !property.showPrice && (
                               <Badge variant="secondary" className="text-[10px] ml-2">Admin</Badge>
                             )}
@@ -1248,8 +1248,8 @@ export default function PropertyDetailPage() {
                           <span className="text-3xl font-black text-foreground tracking-tight">
                             {parseFloat(property.price).toLocaleString()}
                           </span>
-                          <span className="text-base font-bold text-foreground">TND</span>
-                          <span className="text-xs text-muted-foreground font-medium ml-1">/ nuit</span>
+                          <span className="text-base font-bold text-foreground">د</span>
+                          <span className="text-xs text-muted-foreground font-medium ml-1">/ الليلة</span>
                           {isAdmin && !property.showPrice && (
                             <Badge variant="secondary" className="text-[10px] ml-2">Admin</Badge>
                           )}
@@ -1422,7 +1422,7 @@ export default function PropertyDetailPage() {
                     className="w-full py-4 text-sm font-black rounded-xl shadow-lg shadow-rose-500/20 transition-all active:scale-[0.98] bg-gradient-to-r from-[#FF385C] to-[#E31C5F] hover:from-[#E0314F] hover:to-[#C8185A] text-white border-0"
                     onClick={onReserveClick}
                   >
-                    Réserver
+                    احجز عن طريق الواتساب
                   </Button>
                 </div>
 
@@ -1452,7 +1452,7 @@ export default function PropertyDetailPage() {
                         <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center">
                           <User className="w-3.5 h-3.5 text-primary" />
                         </div>
-                        <span className="text-sm font-bold text-foreground">Propriétaire</span>
+                        <span className="text-sm font-bold text-foreground">مولى الدار</span>
                         <Badge variant="secondary" className="text-[9px] ml-auto bg-amber-100 text-amber-700 border-amber-200">Admin seulement</Badge>
                       </div>
                       {submission.ownerName && (

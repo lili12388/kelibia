@@ -170,94 +170,14 @@ export default function BrowsePropertiesPage() {
       {/* Hero Content */}
       <div className="relative z-10 w-full max-w-5xl px-4 flex flex-col items-center text-center animate-fade-in-up pt-20 sm:pt-24 lg:pt-28 pb-8 sm:pb-12 mx-auto">
         <h1 className="text-3xl sm:text-4xl lg:text-[3.25rem] font-extrabold text-white tracking-tight mb-3 sm:mb-5 drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] leading-snug">
-          Trouvez la Maison de Vacances <br className="hidden sm:block" />
-          <span className="inline-block mt-1 sm:mt-2">Idéale à Kelibia</span>
+          🌊🌊 أحسن الديار للكراء الصيفي <br className="hidden sm:block" />
+          <span className="inline-block mt-1 sm:mt-2">في قليبية</span>
         </h1>
         <p className="text-base sm:text-lg lg:text-xl text-white mb-6 sm:mb-8 max-w-2xl font-medium drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
-          Découvrez nos plus beaux logements, appartements et villas pour un séjour inoubliable près de la plage.
+          شوف الديار المتوفرة، الأسعار، والصور واحجز منزلك الصيفي في قليبية بكل سهولة
         </p>
 
-        {/* Horizontal Search Bar */}
-        <div className="w-full bg-background rounded-[2rem] p-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.2)] flex flex-col sm:flex-row items-center gap-2 sm:gap-0 max-w-4xl mx-auto border border-border/40 text-left">
-            {/* Arrivée */}
-            <div className="w-full sm:w-1/2 px-5 py-3 hover:bg-gray-100 rounded-[1.5rem] cursor-pointer transition-colors border-b sm:border-b-0 sm:border-r border-border">
-              <label className="block text-[11px] font-black uppercase tracking-wider text-foreground mb-1">
-                Arrivée
-              </label>
-              <div className="flex items-center gap-1.5">
-                <input 
-                  type="number" 
-                  placeholder="Jour"
-                  className="w-14 sm:w-16 text-sm sm:text-base font-bold bg-muted/30 hover:bg-muted/60 focus:bg-background rounded-md px-2 py-1 outline-none text-center transition-colors [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  value={startDay}
-                  onChange={(e) => {
-                    let val = e.target.value;
-                    if (val.length > 2) val = val.slice(0, 2);
-                    setStartDay(val);
-                  }}
-                  min="1"
-                  max="31"
-                />
-                <select 
-                  className="flex-1 text-xs sm:text-sm font-bold bg-muted/30 hover:bg-muted/60 focus:bg-background rounded-md px-1 py-1.5 outline-none cursor-pointer text-foreground transition-colors"
-                  value={startMonth}
-                  onChange={(e) => setStartMonth(e.target.value)}
-                >
-                  <option value="05">Mai</option>
-                  <option value="06">Juin</option>
-                  <option value="07">Juil.</option>
-                  <option value="08">Août</option>
-                  <option value="09">Sept.</option>
-                </select>
-              </div>
-            </div>
-            
-            {/* Départ */}
-            <div className="w-full sm:w-1/2 px-5 py-3 hover:bg-gray-100 rounded-[1.5rem] cursor-pointer transition-colors flex items-center justify-between">
-              <div className="flex-1">
-                <label className="block text-[11px] font-black uppercase tracking-wider text-foreground mb-1">
-                  Départ
-                </label>
-                <div className="flex items-center gap-1.5">
-                  <input 
-                    type="number" 
-                    placeholder="Jour"
-                    className="w-14 sm:w-16 text-sm sm:text-base font-bold bg-muted/30 hover:bg-muted/60 focus:bg-background rounded-md px-2 py-1 outline-none text-center transition-colors [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    value={endDay}
-                  onChange={(e) => {
-                    let val = e.target.value;
-                    if (val.length > 2) val = val.slice(0, 2);
-                    setEndDay(val);
-                  }}
-                  min="1"
-                  max="31"
-                />
-                <select 
-                  className="flex-1 text-xs sm:text-sm font-bold bg-muted/30 hover:bg-muted/60 focus:bg-background rounded-md px-1 py-1.5 outline-none cursor-pointer text-foreground transition-colors"
-                  value={endMonth}
-                  onChange={(e) => setEndMonth(e.target.value)}
-                >
-                  <option value="05">Mai</option>
-                  <option value="06">Juin</option>
-                  <option value="07">Juil.</option>
-                  <option value="08">Août</option>
-                  <option value="09">Sept.</option>
-                </select>
-              </div>
-            </div>
-          </div>
 
-            <div className="px-2 pb-2 sm:pb-0 shrink-0">
-              <button 
-                onClick={() => {
-                  window.scrollBy({ top: 500, behavior: 'smooth' });
-                }}
-                className="rounded-full w-full sm:w-auto px-10 py-4 sm:px-14 bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-90 transition-all text-white font-bold flex items-center justify-center shadow-lg active:scale-[0.98]"
-              >
-                <span className="inline font-black text-lg">Rechercher</span>
-              </button>
-            </div>
-          </div>
         </div>
 
       {/* Mobile Filter Bar — horizontal pills */}

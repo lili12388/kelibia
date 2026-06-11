@@ -9,6 +9,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { frenchTitle } from "@/lib/utils";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 interface AnalyticsSummary {
   totalVisitors: number;
@@ -28,6 +29,10 @@ interface AnalyticsSummary {
     desktopViews: number;
     mobileViews: number;
     lastViewedAt: string;
+  }>;
+  dailyTrend: Array<{
+    date: string;
+    visitors: number;
   }>;
 }
 
@@ -462,7 +467,59 @@ export default function AdminAnalytics() {
           </CardContent>
         </Card>
 
-        {/* Propriétés les Plus Vues */}
+        {/* Visitors Trend Chart */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              Tendance des Visiteurs
+            </CardTitle>
+            <CardDescription>
+              Nombre de visiteurs uniques par jour
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {summary?.dailyTrend && summary.dailyTrend.length > 0 ? (
+              <div className="h-[300px] w-full mt-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={summary.dailyTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorVisitors" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#1a5f3f" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#1a5f3f" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                    <XAxis 
+                      dataKey="date" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fill: '#6b7280', fontSize: 12 }}
+                      tickFormatter={(val) => {
+                        const d = new Date(val);
+                        return `${d.getDate()}/${d.getMonth() + 1}`;
+                      }}
+                    />
+                    <YAxis 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fill: '#6b7280', fontSize: 12 }}
+                    />
+                    <Tooltip 
+                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                      labelFormatter={(label) => new Date(label).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}
+                    />
+                    <Area type="monotone" dataKey="visitors" name="Visiteurs" stroke="#1a5f3f" strokeWidth={3} fillOpacity={1} fill="url(#colorVisitors)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="h-[300px] flex items-center justify-center text-gray-500">
+                Pas assez de données pour afficher la tendance
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Top Properties */}
         <Card className="mb-8">

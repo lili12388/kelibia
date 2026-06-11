@@ -162,7 +162,7 @@ export default function AvailabilityTimeline({ propertyId, isAdmin = false }: Ti
       <div className="flex items-center justify-between px-1">
         <span className="text-xs sm:text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
           <CalendarDays className="w-4 h-4 text-primary" />
-          Disponibilité
+          وقتاش فاضية
         </span>
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-sm bg-[#3b82f6]" /><span className="text-[9px] sm:text-[10px] text-muted-foreground">Libre</span></div>

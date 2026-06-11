@@ -1480,6 +1480,20 @@ Crawl-delay: 2
         })
       );
       
+      // Get daily visitors trend for the selected period
+      const { asc } = await import("drizzle-orm");
+      const dailyTrendData = await db
+        .select({
+          date: siteAnalytics.date,
+          visitors: siteAnalytics.totalVisitors,
+        })
+        .from(siteAnalytics)
+        .where(and(
+          gte(siteAnalytics.date, startDateStr),
+          lte(siteAnalytics.date, today),
+        ))
+        .orderBy(asc(siteAnalytics.date));
+
       res.json({
         totalVisitors: periodVisitors, // Unique visitors for selected period
         totalPageViews: periodPageViews, // Page views for selected period
@@ -1491,6 +1505,7 @@ Crawl-delay: 2
         todayPageViews: todayPageViews, // Page views specifically today
         activeVisitors: activeVisitors[0]?.count || 0,
         topProperties: topPropertiesWithDetails,
+        dailyTrend: dailyTrendData,
       });
     } catch (error) {
       console.error('Error fetching analytics summary:', error);

@@ -114,7 +114,7 @@ export default function Navbar() {
                     ? "text-white hover:text-white/80" 
                     : location === "/" ? "text-primary" : "text-foreground/70 hover:text-primary"
                 }`}>
-                  Accueil
+                  الرئيسية
                 </span>
               </Link>
               
@@ -124,7 +124,7 @@ export default function Navbar() {
                     ? "text-white hover:text-white/80" 
                     : location === "/about" ? "text-primary" : "text-foreground/70 hover:text-primary"
                 }`}>
-                  À Propos
+                  على الموقع
                 </span>
               </Link>
             </div>
@@ -163,7 +163,7 @@ export default function Navbar() {
               }`}
               onClick={() => setContactDialogOpen(true)}
             >
-              Contactez-nous
+              📞 50 344 187
             </Button>
 
             {/* Admin Controls — Desktop */}
@@ -219,7 +219,7 @@ export default function Navbar() {
               }`}
               onClick={() => setContactDialogOpen(true)}
             >
-              Contactez-nous
+              📞 50 344 187
             </Button>
 
             {/* Hamburger Button */}
@@ -256,7 +256,7 @@ export default function Navbar() {
                   ? isTransparent ? "bg-white/15 text-white" : "bg-primary/10 text-primary"
                   : isTransparent ? "text-white/80 hover:bg-white/10" : "text-foreground/70 hover:bg-muted/50"
               }`}>
-                <span className="text-sm font-bold">Accueil</span>
+                <span className="text-sm font-bold">الرئيسية</span>
               </div>
             </Link>
             
@@ -266,7 +266,7 @@ export default function Navbar() {
                   ? isTransparent ? "bg-white/15 text-white" : "bg-primary/10 text-primary"
                   : isTransparent ? "text-white/80 hover:bg-white/10" : "text-foreground/70 hover:bg-muted/50"
               }`}>
-                <span className="text-sm font-bold">À Propos</span>
+                <span className="text-sm font-bold">على الموقع</span>
               </div>
             </Link>
           </div>
@@ -352,7 +352,7 @@ export default function Navbar() {
           <div className="bg-gradient-to-br from-primary/10 via-background to-background p-6 pt-8">
             <DialogHeader className="mb-6">
               <DialogTitle className="text-center text-2xl font-black tracking-tight text-foreground">
-                Contactez-nous
+                اتصل بنا
               </DialogTitle>
               <DialogDescription className="text-center text-muted-foreground font-medium">
                 Choisissez votre mode de communication préféré
