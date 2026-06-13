@@ -914,7 +914,7 @@ export default function PropertyDetailPage() {
             {/* Bed Details - Per-Room Card Layout */}
             {(property.numDoubleBeds > 0 || property.numSingleBeds > 0 || property.hasSofaBed || property.bedDetails) && (
               <div className="pb-2">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" dir="rtl">
                   {property.bedDetails && property.bedDetails.startsWith('[') ? (
                     <>
                       {(() => {
@@ -1287,7 +1287,8 @@ export default function PropertyDetailPage() {
                               <span className="text-2xl font-black text-[#FF4500] tracking-tight">
                                 {currentWeeklyPrice.toLocaleString()}
                               </span>
-                              <span className="text-sm font-bold text-[#FF4500]/80">د / الأسبوع</span>
+                              <span className="text-base font-bold text-[#FF4500]/90 ml-1.5">د</span>
+                              <span className="text-xs font-bold text-[#FF4500]/80 ml-1">/ الأسبوع</span>
                               {savingsPerNight > 0 && (
                                 <span className="text-[11px] font-bold bg-orange-100 text-orange-700 px-2 py-0.5 rounded-sm border border-orange-200 shadow-sm">
                                   💰 Éco {savingsPerNight} TND/nuit
@@ -1300,7 +1301,8 @@ export default function PropertyDetailPage() {
                             <span className="text-2xl font-black text-emerald-600 tracking-tight">
                               {currentWeeklyPrice.toLocaleString()}
                             </span>
-                            <span className="text-sm font-bold text-emerald-600">د / الأسبوع</span>
+                            <span className="text-base font-bold text-emerald-600 ml-1.5">د</span>
+                            <span className="text-xs font-bold text-emerald-600 ml-1">/ الأسبوع</span>
                             {savingsPerNight > 0 && (
                               <span className="text-[11px] font-bold bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-sm border border-emerald-200">
                                 💰 Éco {savingsPerNight} TND/nuit
@@ -1589,7 +1591,8 @@ export default function PropertyDetailPage() {
                   <span className={`text-xl font-black tracking-tighter ${lightboxOpen ? 'text-[#FF8C00]' : 'text-[#FF4500]'}`}>
                     {parseFloat(property.promoPrice).toLocaleString()}
                   </span>
-                  <span className={`text-[10px] font-bold uppercase ${lightboxOpen ? 'text-white/70' : 'text-muted-foreground'}`}>د / الليلة</span>
+                  <span className={`text-sm font-bold ml-1.5 ${lightboxOpen ? 'text-[#FF8C00]/90' : 'text-[#FF4500]/90'}`}>د</span>
+                  <span className={`text-[10px] font-bold uppercase ml-1 ${lightboxOpen ? 'text-[#FF8C00]/70' : 'text-muted-foreground'}`}>/ الليلة</span>
                 </div>
               </div>
             ) : (
@@ -1597,7 +1600,8 @@ export default function PropertyDetailPage() {
                 <span className={`text-xl font-black tracking-tighter ${lightboxOpen ? 'text-white' : 'text-foreground'}`}>
                   {parseFloat(property.price).toLocaleString()}
                 </span>
-                <span className={`text-[10px] font-bold uppercase ${lightboxOpen ? 'text-white/70' : 'text-muted-foreground'}`}>د / الليلة</span>
+                <span className={`text-sm font-bold ml-1.5 ${lightboxOpen ? 'text-white/90' : 'text-foreground'}`}>د</span>
+                <span className={`text-[10px] font-bold uppercase ml-1 ${lightboxOpen ? 'text-white/70' : 'text-muted-foreground'}`}>/ الليلة</span>
               </div>
             )}
             {hasWeekly && (
@@ -1613,7 +1617,8 @@ export default function PropertyDetailPage() {
                       <span className={`text-sm font-black tracking-tighter ${lightboxOpen ? 'text-[#FF8C00]' : 'text-[#FF4500]'}`}>
                         {currentWeeklyPrice.toLocaleString()}
                       </span>
-                      <span className={`text-[10px] font-bold uppercase ${lightboxOpen ? 'text-[#FF8C00]/80' : 'text-[#FF4500]/80'}`}>د / الأسبوع</span>
+                      <span className={`text-sm font-bold ml-1.5 ${lightboxOpen ? 'text-[#FF8C00]/90' : 'text-[#FF4500]/90'}`}>د</span>
+                      <span className={`text-[10px] font-bold uppercase ml-1 ${lightboxOpen ? 'text-[#FF8C00]/80' : 'text-[#FF4500]/80'}`}>/ الأسبوع</span>
                       {savingsPerNight > 0 && (
                         <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-sm shadow-sm ${lightboxOpen ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30' : 'bg-orange-100 text-orange-700 border border-orange-200'}`}>
                           🔥 Éco {savingsPerNight} TND/nuit
@@ -1626,7 +1631,8 @@ export default function PropertyDetailPage() {
                     <span className={`text-sm font-black tracking-tighter ${lightboxOpen ? 'text-emerald-400' : 'text-emerald-600'}`}>
                       {currentWeeklyPrice.toLocaleString()}
                     </span>
-                    <span className={`text-[10px] font-bold uppercase ${lightboxOpen ? 'text-emerald-400/80' : 'text-emerald-500'}`}>د / الأسبوع</span>
+                    <span className={`text-sm font-bold ml-1.5 ${lightboxOpen ? 'text-emerald-400' : 'text-emerald-600'}`}>د</span>
+                    <span className={`text-[10px] font-bold uppercase ml-1 ${lightboxOpen ? 'text-emerald-400/80' : 'text-emerald-500'}`}>/ الأسبوع</span>
                     {savingsPerNight > 0 && (
                       <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-sm border ${lightboxOpen ? 'bg-emerald-500/20 text-emerald-400 border-emerald-400/30' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
                         💰 Éco {savingsPerNight} TND/nuit
