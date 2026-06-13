@@ -169,12 +169,12 @@ export default function BrowsePropertiesPage() {
 
       {/* Hero Content */}
       <div className="relative z-10 w-full max-w-5xl px-4 flex flex-col items-center text-center animate-fade-in-up pt-20 sm:pt-24 lg:pt-28 pb-8 sm:pb-12 mx-auto">
-        <h1 className="text-3xl sm:text-4xl lg:text-[3.25rem] font-extrabold text-white tracking-tight mb-3 sm:mb-5 drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] leading-snug">
-          🌊🌊 أحسن الديار للكراء الصيفي <br className="hidden sm:block" />
-          <span className="inline-block mt-1 sm:mt-2">في قليبية</span>
+        <h1 className="text-3xl sm:text-4xl lg:text-[3.25rem] font-extrabold text-white tracking-tight mb-3 sm:mb-5 drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] leading-snug" dir="rtl">
+          أفضل عروض الكراء الصيفي <br className="hidden sm:block" />
+          <span className="inline-block mt-1 sm:mt-2">في قليبية 🌊🏖️</span>
         </h1>
-        <p className="text-base sm:text-lg lg:text-xl text-white mb-6 sm:mb-8 max-w-2xl font-medium drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
-          شوف الديار المتوفرة، الأسعار، والصور واحجز منزلك الصيفي في قليبية بكل سهولة
+        <p className="text-base sm:text-lg lg:text-xl text-white mb-6 sm:mb-8 max-w-2xl font-medium drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" dir="rtl">
+          منازل وشقق مختارة بعناية 🏡، مع صور وأسعار واضحة 📸💰 لتجربة حجز سهلة وسريعة ⚡
         </p>
 
 
