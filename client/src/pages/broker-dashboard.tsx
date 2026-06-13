@@ -84,7 +84,7 @@ export default function BrokerDashboardPage() {
       bedDetails: "",
       locationRepere: "",
       nearbyCommodities: "",
-      checkInTime: "14:00",
+      checkInTime: "13:00",
       checkOutTime: "11:00",
       cancellationPolicy: "",
       houseRules: "",
@@ -226,7 +226,7 @@ export default function BrokerDashboardPage() {
       bedDetails: submission.bedDetails || "",
       locationRepere: submission.locationRepere || "",
       nearbyCommodities: submission.nearbyCommodities || "",
-      checkInTime: submission.checkInTime || "14:00",
+      checkInTime: submission.checkInTime || "13:00",
       checkOutTime: submission.checkOutTime || "11:00",
       cancellationPolicy: submission.cancellationPolicy || "",
       houseRules: submission.houseRules || "",
@@ -653,7 +653,7 @@ export default function BrokerDashboardPage() {
                 <div className="col-span-2 border-t pt-2 mt-2">
                   <div className="text-sm font-medium mb-1">Règlement</div>
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div><span className="text-muted-foreground">Check-in:</span> {selectedSubmission.checkInTime || "14:00"}</div>
+                    <div><span className="text-muted-foreground">Check-in:</span> {selectedSubmission.checkInTime || "13:00"}</div>
                     <div><span className="text-muted-foreground">Check-out:</span> {selectedSubmission.checkOutTime || "11:00"}</div>
                     {selectedSubmission.houseRules && (
                       <div className="col-span-2"><span className="text-muted-foreground">Règles:</span> {selectedSubmission.houseRules}</div>

@@ -997,7 +997,7 @@ export default function PropertyDetailPage() {
             {/* Amenities Grid (Ce que propose ce logement) - Moved up */}
             <div className="py-6 border-b border-border">
               <h2 className="text-xl font-semibold mb-6 text-foreground text-center">شنوّة تلقى في الدار</h2>
-              <div className="grid grid-cols-2 gap-y-4 gap-x-8 justify-items-center" dir="rtl">
+              <div className="grid grid-cols-2 gap-y-4 gap-x-2 justify-items-center">
                 {property.hasWiFi && (
                   <div className="flex items-center gap-3 text-foreground/80">
                     <Wifi className="w-6 h-6 opacity-70" />
@@ -1146,12 +1146,12 @@ export default function PropertyDetailPage() {
 
             {/* Rules & Terms (New) - Moved before Map */}
             <div className="py-6 border-t border-border flex flex-col items-center">
-              <h2 className="text-xl font-semibold mb-6 text-foreground text-center">وقت الدخول و الخروج</h2>
+              <h2 className="text-xl font-semibold mb-6 text-foreground text-center">وقت الدخول والخروج</h2>
               
-              <div className="flex flex-col items-center gap-2 mb-6" dir="rtl">
+              <div className="flex flex-col items-center gap-2 mb-6">
                 <Clock className="w-8 h-8 text-muted-foreground mb-2" />
-                <span className="font-bold text-lg text-foreground">
-                  الدخول: {property.checkInTime || "14:00"} • الخروج: {property.checkOutTime || "11:00"}
+                <span className="font-bold text-lg text-foreground text-center">
+                  الدخول: {property.checkInTime || "13:00"} &bull; الخروج: {property.checkOutTime || "11:00"}
                 </span>
               </div>
 
@@ -1321,7 +1321,7 @@ export default function PropertyDetailPage() {
                     className="w-full py-4 text-sm font-black rounded-xl shadow-lg shadow-rose-500/20 transition-all active:scale-[0.98] bg-gradient-to-r from-[#FF385C] to-[#E31C5F] hover:from-[#E0314F] hover:to-[#C8185A] text-white border-0"
                     onClick={onReserveClick}
                   >
-                    Réserver
+                    Réserver maintenant !
                   </Button>
                 </div>
 
@@ -1647,7 +1647,7 @@ export default function PropertyDetailPage() {
           className="w-full bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-95 text-white font-black py-7 rounded-2xl shadow-lg transition-all active:scale-[0.98] border-0 text-lg"
           onClick={onReserveClick}
         >
-          Réserver
+          Réserver maintenant !
         </Button>
       </div>
 
@@ -1688,7 +1688,7 @@ export default function PropertyDetailPage() {
           </div>
         </DialogContent>
       </Dialog>
-      </div>
+    </div>
     </>
   );
 }

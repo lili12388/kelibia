@@ -119,7 +119,7 @@ export default function ListPropertyPage() {
       bedDetails: "",
       locationRepere: "",
       nearbyCommodities: "",
-      checkInTime: "14:00",
+      checkInTime: "13:00",
       checkOutTime: "11:00",
       cancellationPolicy: "",
       houseRules: "",
