@@ -865,7 +865,7 @@ export default function BrowsePropertiesPage() {
       </div>
 
       {/* Footer - extra bottom padding on mobile for sticky bar */}
-      <footer className="py-6 pb-28 lg:pb-6 border-t border-border/30">
+      <footer className="py-6 pb-20 lg:pb-6 border-t border-border/30">
         <div className="text-center">
           <p className="text-[11px] text-muted-foreground">
             © {new Date().getFullYear()} laith-kelibia
@@ -874,9 +874,9 @@ export default function BrowsePropertiesPage() {
       </footer>
 
       {/* Mobile Sticky Reserve Button */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-background/98 backdrop-blur-lg border-t border-border/40 p-4 pb-6 z-[100] shadow-[0_-12px_40px_-10px_rgba(0,0,0,0.2)]">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-background/98 backdrop-blur-lg border-t border-border/40 px-4 py-2.5 pb-4 z-[100] shadow-[0_-8px_30px_-10px_rgba(0,0,0,0.15)]">
         <Button
-          className="w-full bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-95 text-white font-black py-7 rounded-2xl shadow-lg shadow-rose-500/25 transition-all active:scale-[0.98] border-0 text-lg"
+          className="w-full bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-95 text-white font-black py-4 rounded-xl shadow-lg shadow-rose-500/25 transition-all active:scale-[0.98] border-0 text-base"
           onClick={() => {
             fetch('/api/analytics/browse-reserve-click', { method: 'POST', keepalive: true }).catch(console.error);
             setContactDialogOpen(true);
