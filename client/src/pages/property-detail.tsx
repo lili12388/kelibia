@@ -1639,8 +1639,6 @@ export default function PropertyDetailPage() {
               </div>
             )}
           </div>
-
-          </div>
         </div>
 
         <Button
