@@ -884,14 +884,14 @@ export default function PropertyDetailPage() {
             <div className="flex flex-wrap items-center justify-start gap-4 pb-2 border-b border-border" dir="rtl">
               <div className="flex items-center gap-2">
                 <Sofa className="w-5 h-5 text-muted-foreground" />
-                <span className="font-medium">1 صالة</span>
+                <span className="font-medium">صالة</span>
               </div>
               <span className="text-muted-foreground/30 hidden sm:inline">•</span>
               {(isAdmin || property.showRooms) && (
                 <>
                   <div className="flex items-center gap-2">
                     <BedDouble className="w-5 h-5 text-muted-foreground" />
-                    <span className="font-medium">{property.rooms} بيوت</span>
+                    <span className="font-medium">بيوت = {property.rooms}</span>
                   </div>
                   <span className="text-muted-foreground/30 hidden sm:inline">•</span>
                 </>
@@ -900,14 +900,14 @@ export default function PropertyDetailPage() {
                 <>
                   <div className="flex items-center gap-2">
                     <Bath className="w-5 h-5 text-muted-foreground" />
-                    <span className="font-medium">{property.bathrooms} حمامات</span>
+                    <span className="font-medium">{property.bathrooms > 1 ? `حمامات = ${property.bathrooms}` : 'حمام'}</span>
                   </div>
                   <span className="text-muted-foreground/30 hidden sm:inline">•</span>
                 </>
               )}
               <div className="flex items-center gap-2">
                 <ChefHat className="w-5 h-5 text-muted-foreground" />
-                <span className="font-medium">1 مطبخ</span>
+                <span className="font-medium">مطبخ</span>
               </div>
             </div>
 
@@ -930,9 +930,9 @@ export default function PropertyDetailPage() {
                                   </span>
                                   <span className="text-sm text-muted-foreground">
                                     {[
-                                      room.double > 0 ? `${room.double} فرش دوبل` : null,
-                                      room.single > 0 ? `${room.single} فرش مفرد` : null
-                                    ].filter(Boolean).join(", ")}
+                                      room.double > 0 ? `فرش دوبل = ${room.double}` : null,
+                                      room.single > 0 ? `فرش مفرد = ${room.single}` : null
+                                    ].filter(Boolean).join("، ")}
                                   </span>
                                 </div>
                               </div>
@@ -954,7 +954,7 @@ export default function PropertyDetailPage() {
                             <span className="text-sm font-semibold text-foreground block">
                               الغرفة {i + 1}
                             </span>
-                            <span className="text-sm text-muted-foreground">1 فرش دوبل</span>
+                            <span className="text-sm text-muted-foreground">فرش دوبل = 1</span>
                           </div>
                         </div>
                       ))}
@@ -968,7 +968,7 @@ export default function PropertyDetailPage() {
                               الغرفة {(property.numDoubleBeds || 0) + 1}
                             </span>
                             <span className="text-sm text-muted-foreground">
-                              {property.numSingleBeds} فرش مفرد
+                              فرش مفرد = {property.numSingleBeds}
                             </span>
                           </div>
                         </div>
@@ -1275,39 +1275,37 @@ export default function PropertyDetailPage() {
                       )}
                     </div>
                     {hasWeekly && (
-                      <div className="flex flex-col mt-1.5">
+                      <div className="flex flex-col mt-3 gap-0.5">
                         {hasPromo ? (
                           <>
-                            <div className="flex items-center gap-2 mb-[-4px]">
+                            <div className="flex items-center gap-2">
                               <span className="text-sm font-bold text-red-500/60 line-through decoration-red-500/40">
-                                {weeklyPriceBase.toLocaleString()} TND
+                                {weeklyPriceBase.toLocaleString()} د
                               </span>
                             </div>
-                            <div className="flex items-baseline gap-1.5">
-                              {savingsPerNight > 0 && (
-                                <span className="text-[11px] font-bold bg-orange-100 text-orange-700 px-2 py-0.5 rounded-sm mr-1 border border-orange-200 shadow-sm animate-pulse-subtle">
-                                  🔥 Éco {savingsPerNight} TND/nuit
-                                </span>
-                              )}
-                              <span className="text-xl font-black text-[#FF4500] tracking-tight">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-2xl font-black text-[#FF4500] tracking-tight">
                                 {currentWeeklyPrice.toLocaleString()}
                               </span>
-                              <span className="text-sm font-bold text-[#FF4500]">TND</span>
-                              <span className="text-xs text-[#FF4500]/70 font-medium ml-1">/ semaine</span>
+                              <span className="text-sm font-bold text-[#FF4500]/80">د / الأسبوع</span>
+                              {savingsPerNight > 0 && (
+                                <span className="text-[11px] font-bold bg-orange-100 text-orange-700 px-2 py-0.5 rounded-sm border border-orange-200 shadow-sm">
+                                  💰 Éco {savingsPerNight} TND/nuit
+                                </span>
+                              )}
                             </div>
                           </>
                         ) : (
-                          <div className="flex items-baseline gap-1.5">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-2xl font-black text-emerald-600 tracking-tight">
+                              {currentWeeklyPrice.toLocaleString()}
+                            </span>
+                            <span className="text-sm font-bold text-emerald-600">د / الأسبوع</span>
                             {savingsPerNight > 0 && (
-                              <span className="text-[11px] font-bold bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-sm mr-1 border border-emerald-200">
+                              <span className="text-[11px] font-bold bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-sm border border-emerald-200">
                                 💰 Éco {savingsPerNight} TND/nuit
                               </span>
                             )}
-                            <span className="text-xl font-black text-emerald-600 tracking-tight">
-                              {currentWeeklyPrice.toLocaleString()}
-                            </span>
-                            <span className="text-sm font-bold text-emerald-600">TND</span>
-                            <span className="text-xs text-emerald-500 font-medium ml-1">/ semaine</span>
                           </div>
                         )}
                       </div>
@@ -1581,7 +1579,7 @@ export default function PropertyDetailPage() {
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5 mb-[-2px]">
                   <span className={`text-[10px] font-bold ${lightboxOpen ? 'text-red-400/60' : 'text-red-500/60'} line-through decoration-red-500/40`}>
-                    {parseFloat(property.price).toLocaleString()} TND
+                    {parseFloat(property.price).toLocaleString()} د
                   </span>
                   <span className={`text-[9px] font-black px-1 rounded ${lightboxOpen ? 'bg-red-500/20 text-red-400' : 'bg-red-100 text-red-600'}`}>
                     -{Math.round((1 - parseFloat(property.promoPrice) / parseFloat(property.price)) * 100)}%
@@ -1589,17 +1587,17 @@ export default function PropertyDetailPage() {
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className={`text-xl font-black tracking-tighter ${lightboxOpen ? 'text-[#FF8C00]' : 'text-[#FF4500]'}`}>
-                    {parseFloat(property.promoPrice).toLocaleString()} TND
+                    {parseFloat(property.promoPrice).toLocaleString()}
                   </span>
-                  <span className={`text-[10px] font-bold uppercase ${lightboxOpen ? 'text-white/70' : 'text-muted-foreground'}`}>/ nuit</span>
+                  <span className={`text-[10px] font-bold uppercase ${lightboxOpen ? 'text-white/70' : 'text-muted-foreground'}`}>د / الليلة</span>
                 </div>
               </div>
             ) : (
               <div className="flex items-baseline gap-1">
                 <span className={`text-xl font-black tracking-tighter ${lightboxOpen ? 'text-white' : 'text-foreground'}`}>
-                  {parseFloat(property.price).toLocaleString()} TND
+                  {parseFloat(property.price).toLocaleString()}
                 </span>
-                <span className={`text-[10px] font-bold uppercase ${lightboxOpen ? 'text-white/70' : 'text-muted-foreground'}`}>/ nuit</span>
+                <span className={`text-[10px] font-bold uppercase ${lightboxOpen ? 'text-white/70' : 'text-muted-foreground'}`}>د / الليلة</span>
               </div>
             )}
             {hasWeekly && (
@@ -1608,32 +1606,32 @@ export default function PropertyDetailPage() {
                   <>
                     <div className="flex items-center gap-1.5 mb-[-2px]">
                       <span className={`text-[10px] font-bold line-through ${lightboxOpen ? 'text-red-400/60 decoration-red-400/40' : 'text-red-500/60 decoration-red-500/40'}`}>
-                        {weeklyPriceBase.toLocaleString()} TND
+                        {weeklyPriceBase.toLocaleString()} د
                       </span>
                     </div>
-                    <div className="flex items-baseline gap-1">
+                    <div className="flex items-center gap-1 flex-wrap">
+                      <span className={`text-sm font-black tracking-tighter ${lightboxOpen ? 'text-[#FF8C00]' : 'text-[#FF4500]'}`}>
+                        {currentWeeklyPrice.toLocaleString()}
+                      </span>
+                      <span className={`text-[10px] font-bold uppercase ${lightboxOpen ? 'text-[#FF8C00]/80' : 'text-[#FF4500]/80'}`}>د / الأسبوع</span>
                       {savingsPerNight > 0 && (
-                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-sm mr-1 shadow-sm ${lightboxOpen ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30' : 'bg-orange-100 text-orange-700 border border-orange-200'}`}>
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-sm shadow-sm ${lightboxOpen ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30' : 'bg-orange-100 text-orange-700 border border-orange-200'}`}>
                           🔥 Éco {savingsPerNight} TND/nuit
                         </span>
                       )}
-                      <span className={`text-sm font-black tracking-tighter ${lightboxOpen ? 'text-[#FF8C00]' : 'text-[#FF4500]'}`}>
-                        {currentWeeklyPrice.toLocaleString()} TND
-                      </span>
-                      <span className={`text-[10px] font-bold uppercase ${lightboxOpen ? 'text-[#FF8C00]/80' : 'text-[#FF4500]/80'}`}>/ semaine</span>
                     </div>
                   </>
                 ) : (
-                  <div className="flex items-baseline gap-1">
+                  <div className="flex items-center gap-1 flex-wrap">
+                    <span className={`text-sm font-black tracking-tighter ${lightboxOpen ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                      {currentWeeklyPrice.toLocaleString()}
+                    </span>
+                    <span className={`text-[10px] font-bold uppercase ${lightboxOpen ? 'text-emerald-400/80' : 'text-emerald-500'}`}>د / الأسبوع</span>
                     {savingsPerNight > 0 && (
-                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-sm mr-1 border ${lightboxOpen ? 'bg-emerald-500/20 text-emerald-400 border-emerald-400/30' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-sm border ${lightboxOpen ? 'bg-emerald-500/20 text-emerald-400 border-emerald-400/30' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
                         💰 Éco {savingsPerNight} TND/nuit
                       </span>
                     )}
-                    <span className={`text-sm font-black tracking-tighter ${lightboxOpen ? 'text-emerald-400' : 'text-emerald-600'}`}>
-                      {currentWeeklyPrice.toLocaleString()} TND
-                    </span>
-                    <span className={`text-[10px] font-bold uppercase ${lightboxOpen ? 'text-emerald-400/80' : 'text-emerald-500'}`}>/ semaine</span>
                   </div>
                 )}
               </div>

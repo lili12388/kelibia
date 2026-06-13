@@ -1380,6 +1380,10 @@ Crawl-delay: 2
           // 30 days ago from now
           startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
           break;
+        case 'year':
+          // 365 days ago from now (last year)
+          startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+          break;
         case 'day':
         default:
           // Start of today (00:00) in server time, end at current time

@@ -107,7 +107,7 @@ export default function AdminAnalytics() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deletingPropertyId, setDeletingPropertyId] = useState<string | null>(null);
   const [deleteAllDialogOpen, setDeleteAllDialogOpen] = useState(false);
-  const [timePeriod, setTimePeriod] = useState<"day" | "week" | "month">("day");
+  const [timePeriod, setTimePeriod] = useState<"day" | "week" | "month" | "year">("day");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -270,6 +270,7 @@ export default function AdminAnalytics() {
                   <SelectItem value="day">Aujourd'hui</SelectItem>
                   <SelectItem value="week">Cette semaine</SelectItem>
                   <SelectItem value="month">Ce mois</SelectItem>
+                  <SelectItem value="year">L'année dernière</SelectItem>
                 </SelectContent>
               </Select>
               <Button 
@@ -368,7 +369,7 @@ export default function AdminAnalytics() {
                     {summary?.totalVisitors.toLocaleString() || 0}
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    {timePeriod === "day" ? "Aujourd'hui" : timePeriod === "week" ? "Cette semaine" : "Ce mois"}
+                     {timePeriod === "day" ? "Aujourd'hui" : timePeriod === "week" ? "Cette semaine" : timePeriod === "year" ? "L'année dernière" : "Ce mois"}
                   </p>
                 </CardContent>
               </Card>
