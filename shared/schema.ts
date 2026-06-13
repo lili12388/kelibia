@@ -35,6 +35,7 @@ export const propertySubmissions = pgTable("property_submissions", {
   description: text("description").notNull(),
   rooms: integer("rooms").notNull(),
   bathrooms: integer("bathrooms").notNull(),
+  maxGuests: integer("max_guests"),
   sizeM2: integer("size_m2").notNull(),
   location: text("location").notNull(), // exact location within neighborhood
   googleMapsUrl: text("google_maps_url"), // Google Maps link to the property
@@ -103,6 +104,7 @@ export const properties = pgTable("properties", {
   description: text("description").notNull(),
   rooms: integer("rooms").notNull(),
   bathrooms: integer("bathrooms").notNull(),
+  maxGuests: integer("max_guests"),
   sizeM2: integer("size_m2").notNull(),
   location: text("location").notNull(),
   googleMapsUrl: text("google_maps_url"), // Google Maps link to the property
@@ -227,6 +229,7 @@ export const siteAnalytics = pgTable("site_analytics", {
   desktopVisitors: integer("desktop_visitors").default(0),
   mobileVisitors: integer("mobile_visitors").default(0),
   cityBreakdown: text("city_breakdown").default('{}'), // JSON string
+  browseReserveClicks: integer("browse_reserve_clicks").default(0),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

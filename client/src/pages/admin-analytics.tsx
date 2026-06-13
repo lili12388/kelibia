@@ -16,6 +16,7 @@ interface AnalyticsSummary {
   totalPageViews: number;
   totalPropertyViews: number;
   totalContacts: number;
+  browseReserveClicks: number;
   desktopVisitors: number;
   mobileVisitors: number;
   todayVisitors: number;
@@ -421,6 +422,23 @@ export default function AdminAnalytics() {
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
                     Clics sur le bouton Reserver
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-l-4 border-pink-500">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                    <MousePointer className="h-4 w-4" />
+                    Clics Accueil
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-pink-600">
+                    {summary?.browseReserveClicks.toLocaleString() || 0}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Clics sur Reserver (Page principale)
                   </p>
                 </CardContent>
               </Card>

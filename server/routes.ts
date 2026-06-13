@@ -1399,6 +1399,7 @@ Crawl-delay: 2
         .select({
           totalVisitors: sql<number>`SUM(${siteAnalytics.totalVisitors})::int`,
           totalPageViews: sql<number>`SUM(${siteAnalytics.totalPageViews})::int`,
+          browseReserveClicks: sql<number>`SUM(${siteAnalytics.browseReserveClicks})::int`,
         })
         .from(siteAnalytics)
         .where(and(
@@ -1417,6 +1418,7 @@ Crawl-delay: 2
 
       const periodVisitors = periodStats[0]?.totalVisitors || 0;
       const periodPageViews = periodStats[0]?.totalPageViews || 0;
+      const browseReserveClicks = periodStats[0]?.browseReserveClicks || 0;
       const todayVisitors = todayStats[0]?.totalVisitors || 0;
       const todayPageViews = todayStats[0]?.totalPageViews || 0;
       
@@ -1503,6 +1505,7 @@ Crawl-delay: 2
         totalPageViews: periodPageViews, // Page views for selected period
         totalPropertyViews, // Sum of all property views
         totalContacts, // Sum of all WhatsApp contact clicks
+        browseReserveClicks, // Sum of all sticky reserve clicks on browse page
         desktopVisitors, // Desktop visitors for period
         mobileVisitors, // Mobile visitors for period
         todayVisitors: todayVisitors, // Visitors specifically today
@@ -1894,6 +1897,27 @@ Crawl-delay: 2
     } catch (error) {
       console.error('Error tracking contact click:', error);
       res.status(500).json({ error: 'Failed to track contact click' });
+    }
+  });
+
+  app.post('/api/analytics/browse-reserve-click', async (req, res) => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      await db.insert(siteAnalytics)
+        .values({
+          date: today,
+          browseReserveClicks: 1,
+        })
+        .onConflictDoUpdate({
+          target: siteAnalytics.date,
+          set: {
+            browseReserveClicks: sql`${siteAnalytics.browseReserveClicks} + 1`
+          }
+        });
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error tracking browse reserve click:', error);
+      res.status(500).json({ error: 'Failed to track browse reserve click' });
     }
   });
 

@@ -1,18 +1,35 @@
 import { useState, useMemo, useEffect } from "react";
 import { Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, BedDouble, Bath, SlidersHorizontal, X, Eye, Sofa, Building2, ChevronDown, Waves, Wind, Wifi, Car, Users, Flame, ArrowUpDown } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { MapPin, BedDouble, Bath, SlidersHorizontal, X, Eye, Sofa, Building2, ChevronDown, Waves, Wind, Wifi, Car, Users, Flame, ArrowUpDown, Phone } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { PropertyWithMedia } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import Navbar from "@/components/navbar";
 import { SEO } from "@/components/seo";
 import { generatePropertyUrl, frenchTitle } from "@/lib/utils";
+
+const BROKER_PHONE = "50344187";
+const BROKER_PHONE_DISPLAY = "50 344 187";
+
+const WhatsAppIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" className={className} fill="currentColor">
+    <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zM223.9 413.4c-33 0-65.4-8.9-94-25.7l-6.7-4-69.8 18.3L72 334.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7 .9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/>
+  </svg>
+);
 
 export default function BrowsePropertiesPage() {
   const [minPrice, setMinPrice] = useState<string>("");
@@ -27,6 +44,7 @@ export default function BrowsePropertiesPage() {
   const [distanceSearch, setDistanceSearch] = useState<string>("all");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [sortBy, setSortBy] = useState<"default" | "cheapest" | "expensive" | "beach" | "most_viewed">("default");
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
   
   // Hero section search states
   const [startDay, setStartDay] = useState("");
@@ -846,14 +864,69 @@ export default function BrowsePropertiesPage() {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="py-6 border-t border-border/30">
+      {/* Footer - extra bottom padding on mobile for sticky bar */}
+      <footer className="py-6 pb-28 lg:pb-6 border-t border-border/30">
         <div className="text-center">
           <p className="text-[11px] text-muted-foreground">
             © {new Date().getFullYear()} laith-kelibia
           </p>
         </div>
       </footer>
+
+      {/* Mobile Sticky Reserve Button */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-background/98 backdrop-blur-lg border-t border-border/40 p-4 pb-6 z-[100] shadow-[0_-12px_40px_-10px_rgba(0,0,0,0.2)]">
+        <Button
+          className="w-full bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-95 text-white font-black py-7 rounded-2xl shadow-lg shadow-rose-500/25 transition-all active:scale-[0.98] border-0 text-lg"
+          onClick={() => {
+            fetch('/api/analytics/browse-reserve-click', { method: 'POST', keepalive: true }).catch(console.error);
+            setContactDialogOpen(true);
+          }}
+        >
+          Réserver maintenant !
+        </Button>
+      </div>
+
+      {/* Contact Options Dialog */}
+      <Dialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
+        <DialogContent className="sm:max-w-md mx-auto w-[90vw] rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-center text-xl font-bold">Options de contact</DialogTitle>
+            <DialogDescription className="text-center">
+
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 py-4">
+            <Button
+              className="w-full justify-between text-lg py-7 h-auto rounded-2xl shadow-md transition-transform active:scale-[0.98] bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-90 text-white border-0"
+              onClick={() => {
+                setContactDialogOpen(false);
+                window.location.href = `tel:${BROKER_PHONE}`;
+              }}
+            >
+              <div className="flex flex-col items-start">
+                <span className="font-bold">Appeler par Téléphone</span>
+                <span className="text-xs opacity-90">{BROKER_PHONE_DISPLAY}</span>
+              </div>
+              <Phone className="w-6 h-6" />
+            </Button>
+
+            <Button
+              className="w-full justify-between text-lg py-7 h-auto rounded-2xl shadow-md transition-transform active:scale-[0.98] bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:opacity-90 text-white border-0"
+              onClick={() => {
+                setContactDialogOpen(false);
+                const message = `Bonjour, je suis intéressé(e) par vos logements disponibles à Kélibia. Pourriez-vous m'envoyer plus de détails ?`;
+                window.open(`https://wa.me/216${BROKER_PHONE}?text=${encodeURIComponent(message)}`, '_blank');
+              }}
+            >
+              <div className="flex flex-col items-start">
+                <span className="font-bold">Réserver par WhatsApp</span>
+                <span className="text-xs opacity-90">{BROKER_PHONE_DISPLAY}</span>
+              </div>
+              <WhatsAppIcon className="w-7 h-7" />
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
