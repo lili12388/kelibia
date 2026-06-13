@@ -1145,6 +1145,15 @@ export default function BrokerDashboardPage() {
               />
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="edit-distance-to-beach">Distance à la plage (ex: À 5 minutes à pied)</Label>
+              <Input
+                id="edit-distance-to-beach"
+                {...editForm.register("distanceToBeach")}
+                placeholder="ex: À 5 minutes à pied"
+              />
+            </div>
+
             {/* Neighborhood Points */}
             <div className="grid grid-cols-2 gap-4">
 
