@@ -725,6 +725,8 @@ export default function BrowsePropertiesPage() {
                                   className="card-image w-full h-full object-cover"
                                   loading={index < 4 ? "eager" : "lazy"}
                                   decoding="async"
+                                  width="800"
+                                  height="600"
                                 />
                             )
                           ) : (
