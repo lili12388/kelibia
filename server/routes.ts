@@ -59,11 +59,11 @@ async function saveOptimizedImageToFile(inputPath: string, originalName: string)
   const filepath = path.join(UPLOADS_DIR, filename);
   
   await sharp(inputPath)
-    .resize(1920, 1080, { 
+    .resize(1280, 720, { 
       fit: 'inside',
       withoutEnlargement: true 
     })
-    .webp({ quality: 85 })
+    .webp({ quality: 75 })
     .toFile(filepath);
     
   // Clean up temp file

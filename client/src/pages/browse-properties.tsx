@@ -693,7 +693,7 @@ export default function BrowsePropertiesPage() {
             {/* Property Cards — 2 columns on mobile, 3 on desktop */}
             {!isLoading && filteredProperties.length > 0 && (
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 stagger-children">
-                {filteredProperties.map((property) => {
+                {filteredProperties.map((property, index) => {
                   const primaryMedia = property.media.find(m => m.isPrimary) || property.media[0];
                   const price = parseFloat(property.price);
                   const views = viewsMap.get(property.id) ?? 0;
@@ -719,12 +719,13 @@ export default function BrowsePropertiesPage() {
                                 </div>
                               </div>
                             ) : (
-                              <img
-                                src={primaryMedia.url}
-                                alt={property.title}
-                                className="card-image w-full h-full object-cover"
-                                loading="lazy"
-                              />
+                                <img
+                                  src={primaryMedia.url}
+                                  alt={property.title}
+                                  className="card-image w-full h-full object-cover"
+                                  loading={index < 4 ? "eager" : "lazy"}
+                                  decoding="async"
+                                />
                             )
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-muted/10">
