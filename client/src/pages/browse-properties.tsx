@@ -757,11 +757,7 @@ export default function BrowsePropertiesPage() {
                                 </span>
                               ) : null}
                               
-                              {property.distanceToBeach && (
-                                <span className="bg-blue-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1">
-                                  <Waves className="w-3 h-3" /> {property.distanceToBeach}
-                                </span>
-                              )}
+
                             </div>
                             
                           </div>
@@ -774,10 +770,12 @@ export default function BrowsePropertiesPage() {
                             {frenchTitle(property.title, property.rooms)}
                           </h3>
                           
-                          <div className="flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground mb-2">
-                            <MapPin className="w-3 h-3 flex-shrink-0 text-primary/50" />
-                            <span className="truncate">{/^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/.test(property.location.trim()) ? "Kélibia" : property.location}</span>
-                          </div>
+                          {property.distanceToBeach && (
+                            <div className="flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-blue-600 dark:text-blue-400 mb-2">
+                              <Waves className="w-3 h-3 flex-shrink-0" />
+                              <span className="truncate">Distance à la plage sur pieds = {property.distanceToBeach} !!</span>
+                            </div>
+                          )}
                           
                           {/* Room/Bath pills & Price */}
                           <div className="mt-auto flex flex-col gap-2">

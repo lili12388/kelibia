@@ -589,18 +589,11 @@ export default function PropertyDetailPage() {
             {frenchTitle(property.title, property.rooms)}
           </h1>
           <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-sm sm:text-base">
-            <span className="flex items-center gap-1 font-medium text-foreground underline decoration-foreground/30 underline-offset-4">
-              <MapPin className="w-4 h-4 text-primary" />
-              {displayLocation}
-            </span>
             {property.distanceToBeach && (
-              <>
-                <span className="mx-1 text-muted-foreground/50">•</span>
-                <span className="flex items-center gap-1">
-                  <Waves className="w-4 h-4 text-blue-500" />
-                  {property.distanceToBeach}
-                </span>
-              </>
+              <span className="flex items-center gap-1.5 font-bold text-blue-600 dark:text-blue-400">
+                <Waves className="w-4 h-4" />
+                Distance à la plage sur pieds = {property.distanceToBeach} !!
+              </span>
             )}
             {isAdmin && !property.showExactLocation && (
               <Badge variant="secondary" className="text-[10px] ml-2">Admin seulement</Badge>
