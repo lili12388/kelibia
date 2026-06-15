@@ -33,7 +33,7 @@ const FACEBOOK_URL = "https://www.facebook.com/profile.php?id=100063570427669&lo
 export default function Navbar() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
-  const [contactDialogOpen, setContactDialogOpen] = useState(false);
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { data: authStatus } = useQuery<{ isAuthenticated: boolean }>({
@@ -154,19 +154,38 @@ export default function Navbar() {
               <span>Kelibia Annonces</span>
             </a>
 
-            {/* Contact Button */}
-            <Button 
-              variant={isTransparent ? "default" : "outline"}
-              size="sm"
-              className={`h-11 px-6 rounded-full font-black text-sm shadow-md transition-all duration-300 active:scale-[0.98] hover:bg-[#32CD32] hover:border-[#32CD32] hover:text-white hover:shadow-lg hover:shadow-[#32CD32]/25 ${
-                isTransparent 
-                  ? "bg-white text-primary border-0" 
-                  : "border-primary/20 text-primary bg-primary/5"
-              }`}
-              onClick={() => setContactDialogOpen(true)}
-            >
-              📞 50 344 187
-            </Button>
+            {/* Contact Buttons */}
+            <div className="flex items-center gap-2">
+              <Button 
+                variant={isTransparent ? "default" : "outline"}
+                size="sm"
+                className={`h-11 px-4 sm:px-6 rounded-full font-black text-sm shadow-md transition-all duration-300 active:scale-[0.98] hover:bg-[#32CD32] hover:border-[#32CD32] hover:text-white hover:shadow-lg hover:shadow-[#32CD32]/25 ${
+                  isTransparent 
+                    ? "bg-white text-primary border-0" 
+                    : "border-primary/20 text-primary bg-primary/5"
+                }`}
+                onClick={() => {
+                  window.location.href = `tel:50344187`;
+                }}
+              >
+                📞 50 344 187
+              </Button>
+              
+              <Button 
+                variant={isTransparent ? "default" : "outline"}
+                size="sm"
+                className={`h-11 px-4 sm:px-6 rounded-full font-black text-sm shadow-md transition-all duration-300 active:scale-[0.98] hover:bg-[#25D366] hover:border-[#25D366] hover:text-white hover:shadow-lg hover:shadow-[#25D366]/25 ${
+                  isTransparent 
+                    ? "bg-[#25D366] text-white border-0" 
+                    : "border-[#25D366]/20 text-[#25D366] bg-[#25D366]/5"
+                }`}
+                onClick={() => {
+                  window.open(`https://wa.me/21650344187?text=${encodeURIComponent('bonjour je veut reserver ')}`, '_blank');
+                }}
+              >
+                💬 50 344 187
+              </Button>
+            </div>
 
             {/* Admin Controls — Desktop */}
             <div className="flex items-center gap-2">
@@ -211,7 +230,7 @@ export default function Navbar() {
 
           {/* ===== MOBILE: Contact + Hamburger (sm:hidden) ===== */}
           <div className="flex sm:hidden items-center gap-2">
-            {/* Contact button — always visible on mobile as CTA */}
+            {/* Contact buttons — always visible on mobile as CTA */}
             <Button 
               size="sm"
               className={`h-8 px-3 rounded-full font-bold text-[11px] shadow-md transition-all duration-300 active:scale-[0.98] ${
@@ -219,9 +238,25 @@ export default function Navbar() {
                   ? "bg-white text-primary border-0" 
                   : "border-primary/20 text-primary bg-primary/5 border"
               }`}
-              onClick={() => setContactDialogOpen(true)}
+              onClick={() => {
+                window.location.href = `tel:50344187`;
+              }}
             >
               📞 50 344 187
+            </Button>
+            
+            <Button 
+              size="sm"
+              className={`h-8 px-3 rounded-full font-bold text-[11px] shadow-md transition-all duration-300 active:scale-[0.98] ${
+                isTransparent 
+                  ? "bg-[#25D366] text-white border-0" 
+                  : "border-[#25D366]/20 text-[#25D366] bg-[#25D366]/5 border"
+              }`}
+              onClick={() => {
+                window.open(`https://wa.me/21650344187?text=${encodeURIComponent('bonjour je veut reserver ')}`, '_blank');
+              }}
+            >
+              💬 50 344 187
             </Button>
 
             {/* Hamburger Button */}
@@ -348,55 +383,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Unified Contact Modal */}
-      <Dialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
-        <DialogContent className="sm:max-w-md mx-auto w-[90vw] rounded-3xl border-0 shadow-2xl overflow-hidden p-0">
-          <div className="bg-gradient-to-br from-primary/10 via-background to-background p-6 pt-8">
-            <DialogHeader className="mb-6">
-              <DialogTitle className="text-center text-2xl font-black tracking-tight text-foreground">
-                اتصل بنا
-              </DialogTitle>
-              <DialogDescription className="text-center text-muted-foreground font-medium">
-                Choisissez votre mode de communication préféré
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="flex flex-col gap-4 py-2">
-              <Button
-                className="w-full justify-between text-lg py-8 h-auto rounded-2xl shadow-lg transition-all active:scale-[0.98] bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-90 text-white border-0"
-                onClick={() => window.location.href = `tel:${BROKER_PHONE}`}
-              >
-                <div className="flex flex-col items-start">
-                  <span className="font-bold text-base">Appeler par Téléphone</span>
-                  <span className="text-sm opacity-90 font-medium">{BROKER_PHONE_DISPLAY}</span>
-                </div>
-                <div className="bg-white/20 p-2 rounded-full">
-                  <Phone className="w-6 h-6" />
-                </div>
-              </Button>
-
-              <Button
-                className="w-full justify-between text-lg py-8 h-auto rounded-2xl shadow-lg transition-all active:scale-[0.98] bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:opacity-90 text-white border-0"
-                onClick={() => window.open(`https://wa.me/216${BROKER_PHONE}`, '_blank')}
-              >
-                <div className="flex flex-col items-start">
-                  <span className="font-bold text-base">Contactez-nous par WhatsApp</span>
-                  <span className="text-sm opacity-90 font-medium">{BROKER_PHONE_DISPLAY}</span>
-                </div>
-                <div className="bg-white/20 p-2 rounded-full">
-                  <WhatsAppIcon className="w-7 h-7" />
-                </div>
-              </Button>
-            </div>
-
-            <div className="mt-8 text-center">
-              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">
-                Laith Kelibia
-              </p>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
     </nav>
   );
