@@ -57,6 +57,7 @@ export default function BrokerDashboardPage() {
       bathrooms: 1,
       sizeM2: 0,
       location: "",
+      distanceToBeach: "",
       price: "",
       googleMapsUrl: "",
       requiresDeposit: true,
@@ -199,6 +200,7 @@ export default function BrokerDashboardPage() {
       sizeM2: submission.sizeM2,
       location: submission.location,
       price: submission.price,
+      distanceToBeach: submission.distanceToBeach || "",
       pricePerWeek: (submission as any).pricePerWeek || "",
       googleMapsUrl: submission.googleMapsUrl || "",
       requiresDeposit: (submission as any).requiresDeposit ?? true,
@@ -1146,12 +1148,27 @@ export default function BrokerDashboardPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="edit-distance-to-beach">Distance à la plage (ex: À 5 minutes à pied)</Label>
-              <Input
+              <Label htmlFor="edit-distance-to-beach">Distance à la plage sur pieds</Label>
+              <select
                 id="edit-distance-to-beach"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 {...editForm.register("distanceToBeach")}
-                placeholder="ex: À 5 minutes à pied"
-              />
+              >
+                <option value="">Choisir une distance</option>
+                <option value="0 minutes (sur la plage)">0 minutes (sur la plage)</option>
+                <option value="1 minute">1 minute</option>
+                <option value="2 minutes">2 minutes</option>
+                <option value="3 minutes">3 minutes</option>
+                <option value="5 minutes">5 minutes</option>
+                <option value="7 minutes">7 minutes</option>
+                <option value="10 minutes">10 minutes</option>
+                <option value="15 minutes">15 minutes</option>
+                <option value="20 minutes">20 minutes</option>
+                <option value="25 minutes">25 minutes</option>
+                <option value="30 minutes">30 minutes</option>
+                <option value="35 minutes">35 minutes</option>
+                <option value="40 minutes">40 minutes</option>
+              </select>
             </div>
 
             {/* Neighborhood Points */}
