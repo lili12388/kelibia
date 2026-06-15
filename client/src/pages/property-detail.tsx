@@ -67,7 +67,7 @@ export default function PropertyDetailPage() {
   }
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
+
   const [neighborhoodMapFile, setNeighborhoodMapFile] = useState<File | null>(null);
   const [neighborhoodMapPreview, setNeighborhoodMapPreview] = useState<string | null>(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -284,7 +284,8 @@ export default function PropertyDetailPage() {
     }
     setHasInterference(false);
     if (lightboxOpen) setLightboxOpen(false);
-    setBookingDialogOpen(true);
+    trackContact();
+    window.location.href = `tel:${BROKER_PHONE}`;
   };
 
   const { data: authStatus } = useQuery<{ isAuthenticated: boolean }>({
@@ -1321,7 +1322,7 @@ export default function PropertyDetailPage() {
                     className="w-full py-4 text-sm font-black rounded-xl shadow-lg shadow-rose-500/20 transition-all active:scale-[0.98] bg-gradient-to-r from-[#FF385C] to-[#E31C5F] hover:from-[#E0314F] hover:to-[#C8185A] text-white border-0"
                     onClick={onReserveClick}
                   >
-                    Réserver maintenant !
+                    Réserver 
                   </Button>
                 </div>
 
@@ -1649,47 +1650,10 @@ export default function PropertyDetailPage() {
           className="w-full bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-95 text-white font-black py-7 rounded-2xl shadow-lg transition-all active:scale-[0.98] border-0 text-lg"
           onClick={onReserveClick}
         >
-          Réserver maintenant !
+          Réserver 
         </Button>
       </div>
 
-      {/* Booking Options Dialog */}
-      <Dialog open={bookingDialogOpen} onOpenChange={setBookingDialogOpen}>
-        <DialogContent className="sm:max-w-md mx-auto w-[90vw] rounded-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-center text-xl font-bold">Options de contact</DialogTitle>
-            <DialogDescription className="text-center">
-
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-3 py-4">
-            <Button
-              className="w-full justify-between text-lg py-7 h-auto rounded-2xl shadow-md transition-transform active:scale-[0.98] bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-90 text-white border-0"
-              onClick={() => {
-                trackContact();
-                window.location.href = `tel:${BROKER_PHONE}`;
-              }}
-            >
-              <div className="flex flex-col items-start">
-                <span className="font-bold">Appeler par Téléphone</span>
-                <span className="text-xs opacity-90">{BROKER_PHONE_DISPLAY}</span>
-              </div>
-              <Phone className="w-6 h-6" />
-            </Button>
-
-            <Button
-              className="w-full justify-between text-lg py-7 h-auto rounded-2xl shadow-md transition-transform active:scale-[0.98] bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:opacity-90 text-white border-0"
-              onClick={handleWhatsAppReserve}
-            >
-              <div className="flex flex-col items-start">
-                <span className="font-bold">Réserver par WhatsApp</span>
-                <span className="text-xs opacity-90">{BROKER_PHONE_DISPLAY}</span>
-              </div>
-              <WhatsAppIcon className="w-7 h-7" />
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
     </>
   );

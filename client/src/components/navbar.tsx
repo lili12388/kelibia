@@ -90,6 +90,8 @@ export default function Navbar() {
                 src="/logo.png"
                 alt="Laith Kelibia"
                 className="h-12 sm:h-24 w-auto object-contain"
+                width="120"
+                height="100"
               />
               <div className={`flex flex-col border-l pl-2 sm:pl-3 transition-colors duration-300 ${
                 isTransparent ? "border-white/30" : "border-border/50"

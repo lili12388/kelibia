@@ -44,7 +44,7 @@ export default function BrowsePropertiesPage() {
   const [distanceSearch, setDistanceSearch] = useState<string>("all");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [sortBy, setSortBy] = useState<"default" | "cheapest" | "expensive" | "beach" | "most_viewed">("default");
-  const [contactDialogOpen, setContactDialogOpen] = useState(false);
+
   
   // Hero section search states
   const [startDay, setStartDay] = useState("");
@@ -882,54 +882,13 @@ export default function BrowsePropertiesPage() {
           className="w-full bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-95 text-white font-black py-4 rounded-xl shadow-lg shadow-rose-500/25 transition-all active:scale-[0.98] border-0 text-base"
           onClick={() => {
             fetch('/api/analytics/browse-reserve-click', { method: 'POST', keepalive: true }).catch(console.error);
-            setContactDialogOpen(true);
+            window.location.href = `tel:${BROKER_PHONE}`;
           }}
         >
-          Réserver maintenant !
+          Réserver 
         </Button>
       </div>
 
-      {/* Contact Options Dialog */}
-      <Dialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
-        <DialogContent className="sm:max-w-md mx-auto w-[90vw] rounded-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-center text-xl font-bold">Options de contact</DialogTitle>
-            <DialogDescription className="text-center">
-
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-3 py-4">
-            <Button
-              className="w-full justify-between text-lg py-7 h-auto rounded-2xl shadow-md transition-transform active:scale-[0.98] bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-90 text-white border-0"
-              onClick={() => {
-                setContactDialogOpen(false);
-                window.location.href = `tel:${BROKER_PHONE}`;
-              }}
-            >
-              <div className="flex flex-col items-start">
-                <span className="font-bold">Appeler par Téléphone</span>
-                <span className="text-xs opacity-90">{BROKER_PHONE_DISPLAY}</span>
-              </div>
-              <Phone className="w-6 h-6" />
-            </Button>
-
-            <Button
-              className="w-full justify-between text-lg py-7 h-auto rounded-2xl shadow-md transition-transform active:scale-[0.98] bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:opacity-90 text-white border-0"
-              onClick={() => {
-                setContactDialogOpen(false);
-                const message = `Bonjour, je suis intéressé(e) par vos logements disponibles à Kélibia. Pourriez-vous m'envoyer plus de détails ?`;
-                window.open(`https://wa.me/216${BROKER_PHONE}?text=${encodeURIComponent(message)}`, '_blank');
-              }}
-            >
-              <div className="flex flex-col items-start">
-                <span className="font-bold">Réserver par WhatsApp</span>
-                <span className="text-xs opacity-90">{BROKER_PHONE_DISPLAY}</span>
-              </div>
-              <WhatsAppIcon className="w-7 h-7" />
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
