@@ -592,7 +592,7 @@ export default function PropertyDetailPage() {
             {property.distanceToBeach && (
               <span className="flex items-center gap-1.5 font-bold text-blue-600 dark:text-blue-400">
                 <Waves className="w-4 h-4" />
-                Distance à la plage sur pieds = {property.distanceToBeach} !!
+                Distance à la plage sur pieds = {property.distanceToBeach} !
               </span>
             )}
             {isAdmin && !property.showExactLocation && (

@@ -775,7 +775,7 @@ export default function BrowsePropertiesPage() {
                               <Waves className="w-3.5 h-3.5 flex-shrink-0 mt-[1px]" />
                               <span className="leading-tight">
                                 Distance à la plage sur pieds = <br/>
-                                <span className="text-blue-700 dark:text-blue-300 text-[11px] sm:text-xs">{property.distanceToBeach} !!</span>
+                                <span className="text-blue-700 dark:text-blue-300 text-[11px] sm:text-xs">{property.distanceToBeach} !</span>
                               </span>
                             </div>
                           )}
