@@ -203,7 +203,7 @@ export default function BrowsePropertiesPage() {
         </div>
 
       {/* Mobile Filter Bar — horizontal pills */}
-      <div className="lg:hidden px-4 pb-3 pt-6 relative z-20 bg-background">
+      <div className="lg:hidden px-4 pb-3 pt-6 relative z-20">
         {/* Quick filter pills */}
         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
           <button
