@@ -192,7 +192,7 @@ export default function BrowsePropertiesPage() {
           أفضل عروض الكراء الصيفي <br className="hidden sm:block" />
           <span className="inline-block mt-1 sm:mt-2">في قليبية 🌊🏖️</span>
         </h1>
-        <p className="text-base sm:text-lg lg:text-xl text-white mb-6 sm:mb-8 max-w-2xl font-medium drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" dir="rtl">
+        <p className="text-[13px] sm:text-lg lg:text-xl text-white mb-6 sm:mb-8 max-w-2xl font-medium drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" dir="rtl">
           منازل نظيفة و مختارة بعناية🥰🏡مع صور وأسعار واضحة 📸💰
         </p>
 
