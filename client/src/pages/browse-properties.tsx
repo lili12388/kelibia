@@ -166,8 +166,9 @@ export default function BrowsePropertiesPage() {
       >
         {/* The Image with Parallax Transform */}
         <div 
-          className="absolute inset-0 w-full h-[120%] bg-cover will-change-transform"
+          className="absolute left-0 w-full h-[150%] bg-cover will-change-transform"
           style={{ 
+            top: '-30%',
             backgroundImage: `url('/2%20(2).jpeg')`,
             backgroundPosition: 'center 100%',
             transform: `translateY(${parallaxTranslateY}px)`
