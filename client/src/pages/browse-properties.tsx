@@ -161,24 +161,24 @@ export default function BrowsePropertiesPage() {
       
       {/* Background Image Container (Parallax + Fade) */}
       <div 
-        className="absolute top-0 left-0 w-full h-[320px] sm:h-[380px] lg:h-[480px] z-0 pointer-events-none overflow-hidden"
+        className="absolute top-0 left-0 w-full h-[420px] sm:h-[460px] lg:h-[520px] z-0 pointer-events-none overflow-hidden"
         style={{ opacity: fadeRatio }}
       >
         {/* The Image with Parallax Transform */}
         <div 
           className="absolute inset-0 w-full h-[120%] bg-cover will-change-transform"
           style={{ 
-            backgroundImage: `url('/WhatsApp%20Image%202026-06-16%20at%205.42.25%20PM.jpeg')`,
-            backgroundPosition: 'center 60%',
+            backgroundImage: `url('/WhatsApp%20Image%202026-06-16%20at%205.47.46%20PM.jpeg')`,
+            backgroundPosition: 'center 40%',
             transform: `translateY(${parallaxTranslateY}px)`
           }}
         />
         
-        {/* Soft edge blending gradient overlay covering the whole container */}
+        {/* Soft edge blending gradient overlay — strong bottom fade for seamless transition */}
         <div 
           className="absolute inset-0 w-full h-full z-10"
           style={{
-            background: 'linear-gradient(to bottom, hsl(var(--background)) 0%, rgba(255,255,255,0) 20%, rgba(255,255,255,0) 55%, hsl(var(--background)) 95%)'
+            background: 'linear-gradient(to bottom, hsl(var(--background)) 0%, transparent 15%, transparent 50%, hsl(var(--background)) 85%)'
           }}
         />
         
