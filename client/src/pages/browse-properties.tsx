@@ -168,8 +168,8 @@ export default function BrowsePropertiesPage() {
         <div 
           className="absolute inset-0 w-full h-[120%] bg-cover will-change-transform"
           style={{ 
-            backgroundImage: `url('/kelibia%20plage.png')`,
-            backgroundPosition: 'center 80%',
+            backgroundImage: `url('/WhatsApp%20Image%202026-06-16%20at%205.42.25%20PM.jpeg')`,
+            backgroundPosition: 'center 60%',
             transform: `translateY(${parallaxTranslateY}px)`
           }}
         />
@@ -178,7 +178,7 @@ export default function BrowsePropertiesPage() {
         <div 
           className="absolute inset-0 w-full h-full z-10"
           style={{
-            background: 'linear-gradient(to bottom, hsl(var(--background)) 0%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 70%, hsl(var(--background)) 100%)'
+            background: 'linear-gradient(to bottom, hsl(var(--background)) 0%, rgba(255,255,255,0) 20%, rgba(255,255,255,0) 55%, hsl(var(--background)) 95%)'
           }}
         />
         
