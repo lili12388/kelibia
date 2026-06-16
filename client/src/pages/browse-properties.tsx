@@ -168,7 +168,7 @@ export default function BrowsePropertiesPage() {
         <div 
           className="absolute inset-0 w-full h-[120%] bg-cover will-change-transform"
           style={{ 
-            backgroundImage: `url('/WhatsApp%20Image%202026-06-16%20at%205.47.46%20PM.jpeg')`,
+            backgroundImage: `url('/1%20(2).jpeg')`,
             backgroundPosition: 'center 40%',
             transform: `translateY(${parallaxTranslateY}px)`
           }}
