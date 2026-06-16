@@ -14,6 +14,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogClose,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { MapPin, BedDouble, Bath, SlidersHorizontal, X, Eye, Sofa, Building2, ChevronDown, Waves, Wind, Wifi, Car, Users, Flame, ArrowUpDown, Phone } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -222,7 +224,7 @@ export default function BrowsePropertiesPage() {
             <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
               <SelectTrigger className="h-[34px] bg-card border-border/60 text-xs font-bold rounded-full w-auto gap-1.5 px-3 focus:ring-0">
                 <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />
-                <SelectValue placeholder="Par défaut" />
+                <span>Trier par</span>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="default">Par défaut</SelectItem>
@@ -235,8 +237,8 @@ export default function BrowsePropertiesPage() {
           </div>
           
           <div className="flex-shrink-0 flex items-center">
-            <Popover>
-              <PopoverTrigger asChild>
+            <Dialog>
+              <DialogTrigger asChild>
                 <button
                   className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold transition-all border-y border-l ${
                     minPrice || maxPrice
@@ -247,7 +249,7 @@ export default function BrowsePropertiesPage() {
                   Prix TND/nuit
                   <ChevronDown className="w-3.5 h-3.5" />
                 </button>
-              </PopoverTrigger>
+              </DialogTrigger>
               {(minPrice || maxPrice) && (
                 <button
                   onClick={() => { setMinPrice(""); setMaxPrice(""); }}
@@ -256,10 +258,10 @@ export default function BrowsePropertiesPage() {
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
-              <PopoverContent className="w-72 p-4 rounded-2xl shadow-xl border-border/50" align="start">
+              <DialogContent className="w-[90%] max-w-[320px] rounded-2xl p-5 border-border/50">
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h4 className="font-bold text-sm">Prix (TND / nuit)</h4>
+                <DialogHeader className="flex flex-row justify-between items-center text-left pb-2">
+                  <DialogTitle className="font-bold text-base m-0">Prix (TND / nuit)</DialogTitle>
                   {(minPrice || maxPrice) && (
                     <button 
                       onClick={() => { setMinPrice(""); setMaxPrice(""); }}
@@ -268,7 +270,7 @@ export default function BrowsePropertiesPage() {
                       <X className="w-3 h-3" /> Effacer
                     </button>
                   )}
-                </div>
+                </DialogHeader>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label className="text-xs text-muted-foreground font-medium">Min</Label>
@@ -291,32 +293,17 @@ export default function BrowsePropertiesPage() {
                     />
                   </div>
                 </div>
-                <div className="pt-2">
-                  <PopoverTrigger asChild>
-                    <Button className="w-full h-10 rounded-xl font-bold bg-primary text-primary-foreground">
+                <div className="pt-4">
+                  <DialogClose asChild>
+                    <Button className="w-full h-11 rounded-xl font-bold bg-primary text-primary-foreground text-sm">
                       Appliquer
                     </Button>
-                  </PopoverTrigger>
+                  </DialogClose>
                 </div>
               </div>
-            </PopoverContent>
-          </Popover>
+            </DialogContent>
+          </Dialog>
           </div>
-
-          {/* Quick type pills */}
-          {(["all", "furnished"] as const).map((type) => (
-            <button
-              key={type}
-              onClick={() => setFurnishedFilter(furnishedFilter === type && type !== "all" ? "all" : type)}
-              className={`flex-shrink-0 px-3 py-2 rounded-full text-xs font-bold border transition-all ${
-                furnishedFilter === type
-                  ? "bg-[#E6F7F7] text-primary border-primary/30 shadow-sm"
-                  : "bg-card border-border/60 text-muted-foreground"
-              }`}
-            >
-              {type === "all" ? "Tous" : "Meublé"}
-            </button>
-          ))}
 
           {/* Quick room pills */}
           {[2, 3].map((num) => (
@@ -386,28 +373,7 @@ export default function BrowsePropertiesPage() {
               </div>
             </div>
 
-            {/* Type */}
-            <div className="space-y-2 mb-5">
-              <Label className="text-sm font-semibold">Type</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {([
-                  { value: "all" as const, label: "Tous" },
-                  { value: "furnished" as const, label: "Meublé" },
-                ]).map(({ value, label }) => (
-                  <button
-                    key={value}
-                    onClick={() => setFurnishedFilter(value)}
-                    className={`px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                      furnishedFilter === value
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted/40 text-foreground"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* Type removed since all houses are furnished */}
 
             {/* Rooms */}
             <div className="space-y-2 mb-5">
@@ -562,29 +528,7 @@ export default function BrowsePropertiesPage() {
 
               <Separator className="bg-border/30" />
 
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold">Type</Label>
-                <div className="grid grid-cols-1 gap-1">
-                  {([
-                    { value: "all" as const, label: "Tous" },
-                    { value: "furnished" as const, label: "Meublé" },
-                  ]).map(({ value, label }) => (
-                    <button
-                      key={value}
-                      onClick={() => setFurnishedFilter(value)}
-                      className={`text-left px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                        furnishedFilter === value
-                          ? "bg-primary text-primary-foreground"
-                          : "text-foreground hover:bg-muted/50"
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <Separator className="bg-border/30" />
+              {/* Type removed since all houses are furnished */}
 
               <div className="space-y-2">
                 <Label className="text-xs font-semibold">Chambres</Label>
