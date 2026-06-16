@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Dialog,
   DialogContent,
@@ -233,6 +234,75 @@ export default function BrowsePropertiesPage() {
             </Select>
           </div>
           
+          <div className="flex-shrink-0 flex items-center">
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold transition-all border-y border-l ${
+                    minPrice || maxPrice
+                      ? "bg-[#E6F7F7] text-primary border-primary/30 rounded-l-full"
+                      : "bg-card border-border/60 border-r rounded-full text-muted-foreground"
+                  }`}
+                >
+                  Prix TND/nuit
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </button>
+              </PopoverTrigger>
+              {(minPrice || maxPrice) && (
+                <button
+                  onClick={() => { setMinPrice(""); setMaxPrice(""); }}
+                  className="flex items-center justify-center bg-[#E6F7F7] text-primary border-y border-r border-primary/30 pr-3 pl-1.5 py-2 rounded-r-full hover:bg-primary/20 transition-colors"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+              <PopoverContent className="w-72 p-4 rounded-2xl shadow-xl border-border/50" align="start">
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h4 className="font-bold text-sm">Prix (TND / nuit)</h4>
+                  {(minPrice || maxPrice) && (
+                    <button 
+                      onClick={() => { setMinPrice(""); setMaxPrice(""); }}
+                      className="text-xs font-bold text-[#FF385C] hover:underline flex items-center gap-1 bg-[#FF385C]/10 px-2 py-1 rounded-md"
+                    >
+                      <X className="w-3 h-3" /> Effacer
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground font-medium">Min</Label>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      value={minPrice}
+                      onChange={(e) => setMinPrice(e.target.value)}
+                      className="h-10 text-sm rounded-xl"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground font-medium">Max</Label>
+                    <Input
+                      type="number"
+                      placeholder="1000"
+                      value={maxPrice}
+                      onChange={(e) => setMaxPrice(e.target.value)}
+                      className="h-10 text-sm rounded-xl"
+                    />
+                  </div>
+                </div>
+                <div className="pt-2">
+                  <PopoverTrigger asChild>
+                    <Button className="w-full h-10 rounded-xl font-bold bg-primary text-primary-foreground">
+                      Appliquer
+                    </Button>
+                  </PopoverTrigger>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+          </div>
+
           {/* Quick type pills */}
           {(["all", "furnished"] as const).map((type) => (
             <button
@@ -759,17 +829,11 @@ export default function BrowsePropertiesPage() {
                           {/* Badges */}
                           <div className="absolute top-2 left-2 right-2 flex justify-between items-start pointer-events-none">
                             <div className="flex flex-col gap-1.5 items-start">
-                              {views > 30 ? (
-                                <span className="bg-[#FF385C] text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1">
-                                  <Flame className="w-3 h-3" /> Très demandé
-                                </span>
-                              ) : views <= 10 ? (
+                              {views <= 10 ? (
                                 <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">
                                   Nouveau
                                 </span>
                               ) : null}
-                              
-
                             </div>
                             
                           </div>
