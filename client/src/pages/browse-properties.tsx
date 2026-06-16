@@ -178,15 +178,12 @@ export default function BrowsePropertiesPage() {
         <div 
           className="absolute inset-0 w-full h-full z-10"
           style={{
-            background: 'linear-gradient(to bottom, hsl(var(--background)) 0%, transparent 15%, transparent 50%, hsl(var(--background)) 85%)'
+            background: 'linear-gradient(to bottom, transparent 0%, transparent 50%, hsl(var(--background)) 85%)'
           }}
         />
         
         {/* Subtle Dark overlay for text readability (between image and blending gradient) */}
         <div className="absolute inset-0 bg-black/15 z-0" />
-        
-        {/* Top-to-bottom dark gradient for header visibility */}
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/40 to-transparent z-10 pointer-events-none" />
       </div>
 
       {/* Hero Content */}
