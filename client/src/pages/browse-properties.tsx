@@ -877,13 +877,17 @@ export default function BrowsePropertiesPage() {
       {/* Mobile Sticky Reserve Button */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-background/98 backdrop-blur-lg border-t border-border/40 px-4 py-2.5 pb-4 z-[100] shadow-[0_-8px_30px_-10px_rgba(0,0,0,0.15)]">
         <Button
-          className="w-full bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-95 text-white font-black py-4 rounded-xl shadow-lg shadow-rose-500/25 transition-all active:scale-[0.98] border-0 text-base"
+          className="w-full bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-95 text-white py-3 h-auto rounded-xl shadow-lg shadow-rose-500/25 transition-all active:scale-[0.98] border-0 flex flex-col items-center justify-center gap-0.5"
           onClick={() => {
             fetch('/api/analytics/browse-reserve-click', { method: 'POST', keepalive: true }).catch(console.error);
             window.location.href = `tel:${BROKER_PHONE}`;
           }}
         >
-          Réserver 
+          <span className="font-black text-base">Réserver</span>
+          <div className="flex items-center gap-1.5 opacity-90">
+            <Phone className="w-3 h-3" />
+            <span className="text-[11px] font-bold tracking-wider">{BROKER_PHONE_DISPLAY}</span>
+          </div>
         </Button>
       </div>
 

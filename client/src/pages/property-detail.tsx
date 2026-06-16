@@ -1640,10 +1640,14 @@ export default function PropertyDetailPage() {
         </div>
 
         <Button
-          className="w-full bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-95 text-white font-black py-7 rounded-2xl shadow-lg transition-all active:scale-[0.98] border-0 text-lg"
+          className="w-full bg-gradient-to-r from-[#FF385C] to-[#D80765] hover:opacity-95 text-white py-3 h-auto rounded-2xl shadow-lg transition-all active:scale-[0.98] border-0 flex flex-col items-center justify-center gap-0.5"
           onClick={onReserveClick}
         >
-          Réserver 
+          <span className="font-black text-[17px]">Réserver</span>
+          <div className="flex items-center gap-1.5 opacity-90">
+            <Phone className="w-3 h-3" />
+            <span className="text-[11px] font-bold tracking-wider">{BROKER_PHONE_DISPLAY}</span>
+          </div>
         </Button>
       </div>
 
