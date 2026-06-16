@@ -771,9 +771,12 @@ export default function BrowsePropertiesPage() {
                           </h3>
                           
                           {property.distanceToBeach && (
-                            <div className="flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-blue-600 dark:text-blue-400 mb-2">
-                              <Waves className="w-3 h-3 flex-shrink-0" />
-                              <span className="truncate">Distance à la plage sur pieds = {property.distanceToBeach} !!</span>
+                            <div className="flex items-start gap-1.5 text-[10px] sm:text-[11px] font-bold text-blue-600 dark:text-blue-400 mb-2">
+                              <Waves className="w-3.5 h-3.5 flex-shrink-0 mt-[1px]" />
+                              <span className="leading-tight">
+                                Distance à la plage sur pieds = <br/>
+                                <span className="text-blue-700 dark:text-blue-300 text-[11px] sm:text-xs">{property.distanceToBeach} !!</span>
+                              </span>
                             </div>
                           )}
                           
