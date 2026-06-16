@@ -169,7 +169,7 @@ export default function BrowsePropertiesPage() {
           className="absolute inset-0 w-full h-[120%] bg-cover will-change-transform"
           style={{ 
             backgroundImage: `url('/2%20(2).jpeg')`,
-            backgroundPosition: 'center 40%',
+            backgroundPosition: 'center 75%',
             transform: `translateY(${parallaxTranslateY}px)`
           }}
         />
