@@ -220,7 +220,7 @@ export default function BrowsePropertiesPage() {
 
           <div className="flex-shrink-0 flex items-center">
             <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
-              <SelectTrigger className="h-[34px] bg-card border-border/60 text-xs font-bold rounded-full w-auto gap-1.5 px-3 focus:ring-0">
+              <SelectTrigger aria-label="Trier par" className="h-[34px] bg-card border-border/60 text-xs font-bold rounded-full w-auto gap-1.5 px-3 focus:ring-0">
                 <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />
                 <span>Trier par</span>
               </SelectTrigger>
@@ -784,9 +784,9 @@ export default function BrowsePropertiesPage() {
 
                         {/* Info */}
                         <div className="p-2.5 sm:p-3 flex-1 flex flex-col">
-                          <h3 className="font-semibold text-foreground text-xs sm:text-sm mb-1 line-clamp-2 group-hover:text-primary transition-colors leading-snug">
+                          <h2 className="font-semibold text-foreground text-xs sm:text-sm mb-1 line-clamp-2 group-hover:text-primary transition-colors leading-snug">
                             {frenchTitle(property.title, property.rooms)}
-                          </h3>
+                          </h2>
                           
                           {property.distanceToBeach && (
                             <div className="flex items-start gap-1.5 text-[10px] sm:text-[11px] font-bold text-blue-600 dark:text-blue-400 mb-2">
