@@ -166,7 +166,7 @@ export default function BrowsePropertiesPage() {
       >
         {/* The Image with Parallax Transform */}
         <div 
-          className="absolute inset-0 w-full h-[120%] bg-cover bg-center will-change-transform"
+          className="absolute inset-0 w-full h-[120%] bg-cover bg-bottom will-change-transform"
           style={{ 
             backgroundImage: `url('/kelibia%20plage.png')`,
             transform: `translateY(${parallaxTranslateY}px)`
