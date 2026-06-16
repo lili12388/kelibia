@@ -1196,10 +1196,12 @@ export default function PropertyDetailPage() {
                 </div>
                 <div className="relative w-full h-64 md:h-[350px] rounded-xl overflow-hidden border border-border shadow-sm mb-4">
                   <a 
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                    href={property.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
                       /^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/.test(property.location.trim()) 
                         ? property.location.trim() 
-                        : (property.location.toLowerCase().includes('tunisi') ? property.location : property.location + ', Tunisia')
+                        : (property.location.toLowerCase().includes('kelibia') || property.location.toLowerCase().includes('kélibia') 
+                            ? (property.location.toLowerCase().includes('tunisi') ? property.location : property.location + ', Tunisia') 
+                            : property.location + ', Kelibia, Tunisia')
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -1216,7 +1218,9 @@ export default function PropertyDetailPage() {
                     src={`https://www.google.com/maps?q=${encodeURIComponent(
                       /^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/.test(property.location.trim()) 
                         ? property.location.trim() 
-                        : (property.location.toLowerCase().includes('tunisi') ? property.location : property.location + ', Tunisia')
+                        : (property.location.toLowerCase().includes('kelibia') || property.location.toLowerCase().includes('kélibia') 
+                            ? (property.location.toLowerCase().includes('tunisi') ? property.location : property.location + ', Tunisia') 
+                            : property.location + ', Kelibia, Tunisia')
                     )}&z=15&output=embed`}
                     allowFullScreen
                   ></iframe>
