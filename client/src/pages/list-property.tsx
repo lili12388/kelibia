@@ -1257,19 +1257,37 @@ export default function ListPropertyPage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="0 minutes">0 minutes (sur la plage)</SelectItem>
+                            <SelectItem value="0 minutes (sur la plage)">0 minutes (sur la plage)</SelectItem>
                             <SelectItem value="1 minute">1 minute</SelectItem>
                             <SelectItem value="2 minutes">2 minutes</SelectItem>
                             <SelectItem value="3 minutes">3 minutes</SelectItem>
+                            <SelectItem value="4 minutes">4 minutes</SelectItem>
                             <SelectItem value="5 minutes">5 minutes</SelectItem>
+                            <SelectItem value="6 minutes">6 minutes</SelectItem>
                             <SelectItem value="7 minutes">7 minutes</SelectItem>
+                            <SelectItem value="8 minutes">8 minutes</SelectItem>
+                            <SelectItem value="9 minutes">9 minutes</SelectItem>
                             <SelectItem value="10 minutes">10 minutes</SelectItem>
+                            <SelectItem value="11 minutes">11 minutes</SelectItem>
+                            <SelectItem value="12 minutes">12 minutes</SelectItem>
+                            <SelectItem value="13 minutes">13 minutes</SelectItem>
+                            <SelectItem value="14 minutes">14 minutes</SelectItem>
                             <SelectItem value="15 minutes">15 minutes</SelectItem>
+                            <SelectItem value="16 minutes">16 minutes</SelectItem>
+                            <SelectItem value="17 minutes">17 minutes</SelectItem>
+                            <SelectItem value="18 minutes">18 minutes</SelectItem>
+                            <SelectItem value="19 minutes">19 minutes</SelectItem>
                             <SelectItem value="20 minutes">20 minutes</SelectItem>
+                            <SelectItem value="21 minutes">21 minutes</SelectItem>
+                            <SelectItem value="22 minutes">22 minutes</SelectItem>
+                            <SelectItem value="23 minutes">23 minutes</SelectItem>
+                            <SelectItem value="24 minutes">24 minutes</SelectItem>
                             <SelectItem value="25 minutes">25 minutes</SelectItem>
+                            <SelectItem value="26 minutes">26 minutes</SelectItem>
+                            <SelectItem value="27 minutes">27 minutes</SelectItem>
+                            <SelectItem value="28 minutes">28 minutes</SelectItem>
+                            <SelectItem value="29 minutes">29 minutes</SelectItem>
                             <SelectItem value="30 minutes">30 minutes</SelectItem>
-                            <SelectItem value="35 minutes">35 minutes</SelectItem>
-                            <SelectItem value="40 minutes">40 minutes</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />

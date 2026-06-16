@@ -1159,15 +1159,33 @@ export default function BrokerDashboardPage() {
                 <option value="1 minute">1 minute</option>
                 <option value="2 minutes">2 minutes</option>
                 <option value="3 minutes">3 minutes</option>
+                <option value="4 minutes">4 minutes</option>
                 <option value="5 minutes">5 minutes</option>
+                <option value="6 minutes">6 minutes</option>
                 <option value="7 minutes">7 minutes</option>
+                <option value="8 minutes">8 minutes</option>
+                <option value="9 minutes">9 minutes</option>
                 <option value="10 minutes">10 minutes</option>
+                <option value="11 minutes">11 minutes</option>
+                <option value="12 minutes">12 minutes</option>
+                <option value="13 minutes">13 minutes</option>
+                <option value="14 minutes">14 minutes</option>
                 <option value="15 minutes">15 minutes</option>
+                <option value="16 minutes">16 minutes</option>
+                <option value="17 minutes">17 minutes</option>
+                <option value="18 minutes">18 minutes</option>
+                <option value="19 minutes">19 minutes</option>
                 <option value="20 minutes">20 minutes</option>
+                <option value="21 minutes">21 minutes</option>
+                <option value="22 minutes">22 minutes</option>
+                <option value="23 minutes">23 minutes</option>
+                <option value="24 minutes">24 minutes</option>
                 <option value="25 minutes">25 minutes</option>
+                <option value="26 minutes">26 minutes</option>
+                <option value="27 minutes">27 minutes</option>
+                <option value="28 minutes">28 minutes</option>
+                <option value="29 minutes">29 minutes</option>
                 <option value="30 minutes">30 minutes</option>
-                <option value="35 minutes">35 minutes</option>
-                <option value="40 minutes">40 minutes</option>
               </select>
             </div>
 
