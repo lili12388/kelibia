@@ -216,9 +216,25 @@ export default function BrowsePropertiesPage() {
               <span className="bg-primary/20 text-primary rounded-full px-1.5 text-[10px]">{activeFilterCount}</span>
             )}
           </button>
+
+          <div className="flex-shrink-0 flex items-center">
+            <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+              <SelectTrigger className="h-[34px] bg-card border-border/60 text-xs font-bold rounded-full w-auto gap-1.5 px-3 focus:ring-0">
+                <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />
+                <SelectValue placeholder="Par défaut" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="default">Par défaut</SelectItem>
+                <SelectItem value="cheapest">Prix croissant</SelectItem>
+                <SelectItem value="expensive">Prix décroissant</SelectItem>
+                <SelectItem value="beach">Plus proche de la plage</SelectItem>
+                <SelectItem value="most_viewed">Les plus consultés</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           
           {/* Quick type pills */}
-          {(["all", "furnished", "unfurnished"] as const).map((type) => (
+          {(["all", "furnished"] as const).map((type) => (
             <button
               key={type}
               onClick={() => setFurnishedFilter(furnishedFilter === type && type !== "all" ? "all" : type)}
@@ -228,12 +244,12 @@ export default function BrowsePropertiesPage() {
                   : "bg-card border-border/60 text-muted-foreground"
               }`}
             >
-              {type === "all" ? "Tous" : type === "furnished" ? "Meublé" : "Non meublé"}
+              {type === "all" ? "Tous" : "Meublé"}
             </button>
           ))}
 
           {/* Quick room pills */}
-          {[1, 2, 3].map((num) => (
+          {[2, 3].map((num) => (
             <button
               key={`room-${num}`}
               onClick={() => setSelectedRooms(selectedRooms === num ? null : num)}
@@ -307,8 +323,6 @@ export default function BrowsePropertiesPage() {
                 {([
                   { value: "all" as const, label: "Tous" },
                   { value: "furnished" as const, label: "Meublé" },
-                  { value: "semi-furnished" as const, label: "Semi-meublé" },
-                  { value: "unfurnished" as const, label: "Non meublé" },
                 ]).map(({ value, label }) => (
                   <button
                     key={value}
@@ -328,8 +342,8 @@ export default function BrowsePropertiesPage() {
             {/* Rooms */}
             <div className="space-y-2 mb-5">
               <Label className="text-sm font-semibold">Chambres</Label>
-              <div className="grid grid-cols-5 gap-2">
-                {[0, 1, 2, 3, 4].map((num) => (
+              <div className="grid grid-cols-4 gap-2">
+                {[0, 2, 3, 4].map((num) => (
                   <button
                     key={num}
                     onClick={() => setSelectedRooms(selectedRooms === num ? null : num)}
@@ -484,8 +498,6 @@ export default function BrowsePropertiesPage() {
                   {([
                     { value: "all" as const, label: "Tous" },
                     { value: "furnished" as const, label: "Meublé" },
-                    { value: "semi-furnished" as const, label: "Semi-meublé" },
-                    { value: "unfurnished" as const, label: "Non meublé" },
                   ]).map(({ value, label }) => (
                     <button
                       key={value}
@@ -506,8 +518,8 @@ export default function BrowsePropertiesPage() {
 
               <div className="space-y-2">
                 <Label className="text-xs font-semibold">Chambres</Label>
-                <div className="grid grid-cols-5 gap-1">
-                  {[0, 1, 2, 3, 4].map((num) => (
+                <div className="grid grid-cols-4 gap-1">
+                  {[0, 2, 3, 4].map((num) => (
                     <button
                       key={num}
                       onClick={() => setSelectedRooms(selectedRooms === num ? null : num)}
